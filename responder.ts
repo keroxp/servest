@@ -32,7 +32,7 @@ class ServerResponderImpl implements ServerResponder {
     }
   }
 
-  respond(response: ServerResponse): Promise<void> {
+  async respond(response: ServerResponse): Promise<void> {
     this.checkIfResponded();
     this._responded = true;
     return writeResponse(this.w, response);

@@ -44,17 +44,17 @@ export function findLongestAndNearestMatch(
   return { index, match };
 }
 
-export interface HttpServer {
+export interface HttpRouter {
   handle(pattern: string | RegExp, handler: HttpHandler);
   listen(addr: string, cancel?: Promise<any>): void;
 }
 
-/** create HttpServer object */
-export function createServer(): HttpServer {
-  return new HttpServerImpl();
+/** create HttpRouter object */
+export function createRouter(): HttpRouter {
+  return new HttpRouterImpl();
 }
 
-class HttpServerImpl implements HttpServer {
+class HttpRouterImpl implements HttpRouter {
   private handlers: { pattern: string | RegExp; handler: HttpHandler }[] = [];
 
   handle(pattern: string | RegExp, handler: HttpHandler) {

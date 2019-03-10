@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createServer, findLongestAndNearestMatch } from "./router.ts";
+import { createRouter, findLongestAndNearestMatch } from "./router.ts";
 import { runIfMain, test } from "https://deno.land/std@v0.3.1/testing/mod.ts";
 import { defer } from "./deferred.ts";
 import {
@@ -51,7 +51,7 @@ test(function httpMatchNearest() {
   );
 });
 test(async function router() {
-  const server = createServer();
+  const server = createRouter();
   server.handle("/index", async (req, res) => {
     await res.respond({
       status: 200,

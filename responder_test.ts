@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { test } from "https://deno.land/std@v0.3.1/testing/mod.ts";
+import { test, runIfMain } from "https://deno.land/std@v0.3.1/testing/mod.ts";
 import { createResponder } from "./responder.ts";
 import {
   assert,
@@ -53,32 +53,5 @@ test(async function httpServerResponderShouldThrow() {
       "responded"
     );
   }
-  {
-    const res = createResponder(w);
-    await res.respondText("");
-    await assertThrowsAsync(
-      async () =>
-        res.respond({
-          status: 200,
-          headers: new Headers(),
-          body: null
-        }),
-      Error,
-      "responded"
-    );
-  }
-  {
-    const res = createResponder(w);
-    await res.respondJson({});
-    await assertThrowsAsync(
-      async () =>
-        res.respond({
-          status: 200,
-          headers: new Headers(),
-          body: null
-        }),
-      Error,
-      "responded"
-    );
-  }
 });
+runIfMain(import.meta)
