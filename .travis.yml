@@ -5,4 +5,4 @@ install:
 - export PATH="$HOME/.deno/bin:$PATH"
 
 script:
-- ./tests.ts
+- deno ./tests.ts
