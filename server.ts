@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import listen = Deno.listen;
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;

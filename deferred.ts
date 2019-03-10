@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 export type Deferred<T = any, R = Error> = {
   promise: Promise<T>;
   resolve: (t?: T) => void;

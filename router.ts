@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { createResponder, ServerResponder } from "./responder.ts";
 import { serve, ServerRequest } from "./server.ts";
 import { defer } from "./deferred.ts";

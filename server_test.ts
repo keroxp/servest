@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { runIfMain, test } from "https://deno.land/std@v0.3.1/testing/mod.ts";
 import { defer } from "./deferred.ts";
 import { serve, writeResponse } from "./server.ts";
