@@ -1,5 +1,7 @@
 # servest
 
+![https://travis-ci.org/keroxp/servest.svg?branch=master](https://travis-ci.org/keroxp/servest.svg?branch=master)
+
 🌾minimal http server / router for deno🌾
 
 ## Usage
