@@ -51,43 +51,39 @@ export interface HttpRouter {
 
 /** create HttpRouter object */
 export function createRouter(): HttpRouter {
-  return new HttpRouterImpl();
-}
-
-class HttpRouterImpl implements HttpRouter {
-  private handlers: { pattern: string | RegExp; handler: HttpHandler }[] = [];
-
-  handle(pattern: string | RegExp, handler: HttpHandler) {
-    this.handlers.push({ pattern, handler });
-  }
-
-  listen(addr: string, cancel = defer<any>().promise) {
-    (async () => {
-      for await (const req of serve(addr, cancel)) {
-        let { pathname } = new URL(req.url, addr);
-        const { index, match } = findLongestAndNearestMatch(
-          pathname,
-          this.handlers.map(v => v.pattern)
-        );
-        const res = createResponder(req.bufWriter);
-        if (index > -1) {
-          const { handler } = this.handlers[index];
-          await handler(Object.assign(req, { match }), res);
-          if (!res.isResponded) {
+  const handlers: { pattern: string | RegExp; handler: HttpHandler }[] = [];
+  return {
+    handle(pattern: string | RegExp, handler: HttpHandler) {
+      handlers.push({ pattern, handler });
+    },
+    listen(addr: string, cancel = defer<any>().promise) {
+      (async () => {
+        for await (const req of serve(addr, cancel)) {
+          let { pathname } = new URL(req.url, addr);
+          const { index, match } = findLongestAndNearestMatch(
+            pathname,
+            handlers.map(v => v.pattern)
+          );
+          const res = createResponder(req.bufWriter);
+          if (index > -1) {
+            const { handler } = handlers[index];
+            await handler(Object.assign(req, { match }), res);
+            if (!res.isResponded) {
+              await res.respond({
+                status: 500,
+                headers: new Headers(),
+                body: encode("Not Responded")
+              });
+            }
+          } else {
             await res.respond({
-              status: 500,
+              status: 404,
               headers: new Headers(),
-              body: encode("Not Responded")
+              body: encode("Not Found")
             });
           }
-        } else {
-          await res.respond({
-            status: 404,
-            headers: new Headers(),
-            body: encode("Not Found")
-          });
         }
-      }
-    })();
-  }
+      })();
+    }
+  };
 }
