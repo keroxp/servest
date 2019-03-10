@@ -7,7 +7,7 @@
 ## Usage
 
 ```ts
-import { createRouter } from "https://denopkg.com/keroxp/servest@v0.1.0/router.ts";
+import { createRouter } from "https://denopkg.com/keroxp/servest@v0.1.1/router.ts";
 
 const router = createRouter();
 router.handle("/", async (req, { respond }) => {
