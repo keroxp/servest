@@ -22,7 +22,7 @@ test(async function server() {
     }
   })();
   try {
-    const {status, headers, body} = await fetch("http://127.0.0.1:8899");
+    const { status, headers, body } = await fetch("http://127.0.0.1:8899");
     assertEquals(headers.get("content-length"), "5");
     assertEquals(status, 200);
     assertEquals(headers.get("content-type"), "text/plain");
@@ -30,7 +30,7 @@ test(async function server() {
     await copy(dest, body);
     assertEquals(dest.toString(), "hello");
   } finally {
-    d.resolve()
+    d.resolve();
   }
 });
 

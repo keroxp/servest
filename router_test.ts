@@ -52,8 +52,8 @@ test(function httpMatchNearest() {
 });
 test(async function router() {
   const server = createRouter();
-  server.handle("/index", async (req, res) => {
-    await res.respond({
+  server.handle("/index", async (req, { respond }) => {
+    await respond({
       status: 200,
       headers: new Headers({
         "content-type": "text/plain"
@@ -61,9 +61,9 @@ test(async function router() {
       body: new StringReader("ok")
     });
   });
-  server.handle(new RegExp("/foo/(?<id>.+)"), async (req, res) => {
+  server.handle(new RegExp("/foo/(?<id>.+)"), async (req, { respond }) => {
     const { id } = req.match.groups;
-    await res.respond({
+    await respond({
       status: 200,
       headers: new Headers({
         "content-type": "application/json"

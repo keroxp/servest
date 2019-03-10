@@ -54,4 +54,4 @@ test(async function httpServerResponderShouldThrow() {
     );
   }
 });
-runIfMain(import.meta)
+runIfMain(import.meta);
