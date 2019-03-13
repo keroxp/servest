@@ -24,11 +24,6 @@ export interface ServerRequest {
   proto: string;
   /** HTTP Headers */
   headers: Headers;
-  /** basic/digest auth */
-  auth?: {
-    username: string;
-    password: string;
-  };
   /** body stream. body with "transfer-encoding: chunked" will automatically be combined into original data */
   body?: Reader & Finalizer;
   bufReader: BufReader;
@@ -38,7 +33,7 @@ export interface ServerRequest {
 
 export interface ServerResponse {
   status: number;
-  headers: Headers;
+  headers?: Headers;
   body?: Uint8Array | Reader;
 }
 
@@ -126,11 +121,6 @@ export async function readRequest(
   proto: string;
   /** HTTP Headers */
   headers: Headers;
-  /** basic/digest auth */
-  auth?: {
-    username: string;
-    password: string;
-  };
   body?: Reader & Finalizer;
 }> {
   const reader = bufReader(r);
@@ -148,17 +138,6 @@ export async function readRequest(
   [headers, state] = await tpReader.readMIMEHeader();
   if (state) {
     throw new Error(`read failed: ${state}`);
-  }
-  let auth;
-  if (headers.has("authorization")) {
-    const v = headers.get("authorization");
-    const m = v.match(/^Basic (.+?)/);
-    if (m && m.length > 1) {
-      const s = m[1];
-      const up = atob(s);
-      const [username, password] = up.split(":");
-      auth = { username, password };
-    }
   }
   // read body
   let body: Reader & Finalizer;
@@ -179,8 +158,7 @@ export async function readRequest(
     url,
     proto,
     headers,
-    body,
-    auth
+    body
   };
 }
 
