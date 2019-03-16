@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { ServerRequest } from "./server.ts";
 import { MultipartReader } from "https://deno.land/std@v0.3.1/multipart/multipart.ts";
 import { FormFile } from "https://deno.land/std@v0.3.1/multipart/formfile.ts";

@@ -2,18 +2,16 @@
 import listen = Deno.listen;
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;
-import { TextProtoReader } from "https://deno.land/std@v0.3.1/textproto/mod.ts";
-import {
-  BufReader,
-  BufState,
-  BufWriter
-} from "https://deno.land/std@v0.3.1/io/bufio.ts";
-import { BodyReader, ChunkedBodyReader, Finalizer } from "./readers.ts";
-import { assert } from "https://deno.land/std@v0.3.1/testing/asserts.ts";
-import { encode } from "https://deno.land/std@v0.3.1/strings/strings.ts";
-import { defer, Deferred } from "./deferred.ts";
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
+import {TextProtoReader} from "https://deno.land/std@v0.3.1/textproto/mod.ts";
+import {BufReader, BufState, BufWriter} from "https://deno.land/std@v0.3.1/io/bufio.ts";
+import {BodyReader, ChunkedBodyReader, readUntilEof} from "./readers.ts";
+import {assert} from "https://deno.land/std@v0.3.1/testing/asserts.ts";
+import {encode} from "https://deno.land/std@v0.3.1/strings/strings.ts";
+import {defer, Deferred} from "./deferred.ts";
+import {wait} from "./util.ts";
+
 
 export interface ServerRequest {
   /** request path with queries. always begin with / */
@@ -25,7 +23,7 @@ export interface ServerRequest {
   /** HTTP Headers */
   headers: Headers;
   /** body stream. body with "transfer-encoding: chunked" will automatically be combined into original data */
-  body?: Reader & Finalizer;
+  body?: Reader;
   bufReader: BufReader;
   bufWriter: BufWriter;
   conn: Conn;
@@ -45,10 +43,21 @@ function isServerRequest(x): x is ServerRequest {
   return typeof x === "object" && x.hasOwnProperty("url");
 }
 
+/** serve options */
+export type ServeOptions = {
+  /** canceller promise for async iteration. use defer() */
+  cancel?: Promise<any>;
+  /** read timeout for keep-alive connection in sec. default=75 */
+  keepAliveTimeout?: number;
+};
+
 export async function* serve(
   addr: string,
-  cancel: Promise<any>
+  opts?: ServeOptions
 ): AsyncIterableIterator<ServerRequest> {
+  const cancel = (opts && opts.cancel) || defer().promise;
+  const keepAliveTimeout = ((opts && opts.keepAliveTimeout) || 75) * 1000;
+  assert(keepAliveTimeout >= 0, "keepAliveTimeout must be >= 0");
   const listener = listen("tcp", addr);
   let canceled = false;
   let onRequestDeferred: Deferred<ServerRequest> = defer();
@@ -62,7 +71,7 @@ export async function* serve(
       const bufWriter = new BufWriter(conn);
       (async () => {
         try {
-          const req = await readRequest(bufReader);
+          const req = await readRequest(bufReader, {timeout: keepAliveTimeout});
           onRequestDeferred.resolve(
             Object.assign(req, {
               bufWriter,
@@ -84,14 +93,14 @@ export async function* serve(
     }
     yield req;
     (async function prepareForNext() {
-      const { bufWriter, bufReader, body, conn } = req;
+      const {bufWriter, bufReader, body, conn} = req;
       try {
         if (body) {
-          await body.finalize();
+          await readUntilEof(body);
         }
-        const nextReq = await readRequest(bufReader);
+        const nextReq = await readRequest(bufReader, {timeout: keepAliveTimeout});
         onRequestDeferred.resolve(
-          Object.assign(nextReq, { bufWriter, bufReader, conn })
+          Object.assign(nextReq, {bufWriter, bufReader, conn})
         );
       } catch (unused) {
         conn.close();
@@ -111,7 +120,10 @@ function bufReader(r: Reader): BufReader {
 }
 
 export async function readRequest(
-  r: Reader
+  r: Reader,
+  opts: {
+    timeout: number
+  }
 ): Promise<{
   /** request path with queries. always begin with / */
   url: string;
@@ -121,7 +133,7 @@ export async function readRequest(
   proto: string;
   /** HTTP Headers */
   headers: Headers;
-  body?: Reader & Finalizer;
+  body?: Reader;
 }> {
   const reader = bufReader(r);
   const tpReader = new TextProtoReader(reader);
@@ -129,18 +141,24 @@ export async function readRequest(
   let resLine: string;
   let headers: Headers;
   let state: BufState;
-  [resLine, state] = await tpReader.readLine();
+  [resLine, state] = await Promise.race([
+    wait<[string, BufState]>(opts.timeout, ["", new Error("keep-alive read timeout")]),
+    tpReader.readLine()
+  ]);
   if (state) {
     throw new Error(`read failed: ${state}`);
   }
   const [m, method, url, proto] = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
   // read header
-  [headers, state] = await tpReader.readMIMEHeader();
+  [headers, state] = await Promise.race<[Headers, BufState]>([
+    wait<[Headers, BufState]>(opts.timeout, [null, new Error("keep-alive read timeout")]),
+    tpReader.readMIMEHeader()
+  ]);
   if (state) {
     throw new Error(`read failed: ${state}`);
   }
   // read body
-  let body: Reader & Finalizer;
+  let body: Reader;
   if (method === "POST" || method === "PUT") {
     if (headers.get("transfer-encoding") === "chunked") {
       body = new ChunkedBodyReader(reader);
@@ -162,16 +180,75 @@ export async function readRequest(
   };
 }
 
-export async function readResponse(r: Reader): Promise<ServerResponse> {
+export async function writeRequest(w: Writer, req: {
+  url: string,
+  method: string,
+  headers?: Headers,
+  body?: Uint8Array | Reader
+}) {
+  const writer = w instanceof BufWriter ? w : new BufWriter(w);
+  let {method, body, headers} = req;
+  const url = new URL(req.url);
+  if (!headers) {
+    headers = new Headers();
+  }
+  // start line
+  const lines = [`${method} ${url.pathname}${url.search || ""} HTTP/1.1`];
+  // header
+  if (!headers.has("Host")) {
+    headers.set("Host", url.host);
+  }
+  let contentLength: number;
+  if (body) {
+    if (headers.has("Content-Length")) {
+      contentLength = parseInt(headers.get("Content-Length"))
+    } else if (body instanceof Uint8Array) {
+      contentLength = body.byteLength;
+      headers.set("Content-Length", `${body.byteLength}`);
+    } else {
+      headers.set("Transfer-Encoding", "chunked");
+    }
+  }
+  for (const [key, value] of headers) {
+    lines.push(`${key}: ${value}`);
+  }
+  lines.push("\r\n");
+  const headerText = lines.join("\r\n");
+  await writer.write(encode(headerText));
+  const state = await writer.flush();
+  if (state) {
+    if (state instanceof Error) {
+      throw state;
+    } else {
+      throw new Error(state);
+    }
+  }
+  if (body) {
+    await writeBody(writer, body, contentLength)
+  }
+}
+
+export async function readResponse(
+  r: Reader,
+  opts: {
+    timeout: number
+  }
+): Promise<ServerResponse> {
   const reader = bufReader(r);
-  const tp = new TextProtoReader(reader!);
+  const tp = new TextProtoReader(reader);
   // First line: HTTP/1,1 200 OK
-  const [line, lineErr] = await tp.readLine();
+  const [line, lineErr] = await Promise.race([
+    wait<[string, BufState]>(opts.timeout, [null, new Error("read timeout")]),
+    tp.readLine()
+  ]);
   if (lineErr) {
     throw lineErr;
   }
   const [proto, status, statusText] = line.split(" ", 3);
-  const [headers, headersErr] = await tp.readMIMEHeader();
+  const [headers, headersErr] = await Promise.race([
+    wait<[Headers, BufState]>(opts.timeout, [null, new Error("read timeout")]),
+    tp.readMIMEHeader(),
+  ]);
   if (headersErr) {
     throw headersErr;
   }
@@ -180,7 +257,7 @@ export async function readResponse(r: Reader): Promise<ServerResponse> {
     headers.get("transfer-encoding") === "chunked"
       ? new ChunkedBodyReader(reader)
       : new BodyReader(reader, parseInt(contentLength));
-  return { status: parseInt(status), headers, body };
+  return {status: parseInt(status), headers, body};
 }
 
 function bufWriter(w: Writer) {
@@ -255,7 +332,7 @@ async function writeBody(
   const reader = body instanceof Uint8Array ? new Buffer(body) : body;
   const hasContentLength = Number.isInteger(contentLength);
   while (true) {
-    const { nread, eof } = await reader.read(buf);
+    const {nread, eof} = await reader.read(buf);
     if (nread > 0) {
       const chunk = buf.slice(0, nread);
       if (hasContentLength) {

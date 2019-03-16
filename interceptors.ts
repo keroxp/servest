@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { ServerRequest } from "./server.ts";
 import { HttpHandler } from "./router.ts";
 import { encode } from "https://deno.land/std@v0.3.1/strings/strings.ts";

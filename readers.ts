@@ -3,11 +3,8 @@ import { Reader, ReadResult } from "deno";
 import { BufReader } from "https://deno.land/std@v0.3.1/io/bufio.ts";
 import { TextProtoReader } from "https://deno.land/std@v0.3.1/textproto/mod.ts";
 
-export interface Finalizer {
-  finalize(): Promise<void>;
-}
-
 const nullBuffer = new Uint8Array(1024);
+
 export async function readUntilEof(reader: Reader): Promise<number> {
   let total = 0;
   while (true) {
@@ -20,7 +17,7 @@ export async function readUntilEof(reader: Reader): Promise<number> {
   return total;
 }
 
-export class BodyReader implements Reader, Finalizer {
+export class BodyReader implements Reader {
   total: number;
 
   constructor(readonly reader: Reader, readonly contentLength: number) {
@@ -32,19 +29,9 @@ export class BodyReader implements Reader, Finalizer {
     this.total += nread;
     return { nread, eof: this.total === this.contentLength };
   }
-
-  async finalize(): Promise<void> {
-    if (this.total < this.contentLength) {
-      try {
-        await readUntilEof(this);
-      } finally {
-        this.total = this.contentLength;
-      }
-    }
-  }
 }
 
-export class ChunkedBodyReader implements Reader, Finalizer {
+export class ChunkedBodyReader implements Reader {
   bufReader = new BufReader(this.reader);
   tpReader = new TextProtoReader(this.bufReader);
 
@@ -85,14 +72,21 @@ export class ChunkedBodyReader implements Reader, Finalizer {
       return { nread: 0, eof: true };
     }
   }
+}
 
-  async finalize(): Promise<void> {
-    if (!this.finished) {
-      try {
-        await readUntilEof(this);
-      } finally {
-        this.finished = true;
-      }
+export class TimeoutReader implements Reader {
+  constructor(private readonly r: Reader, private readonly timeoutMs: number) {}
+
+  async read(p: Uint8Array): Promise<ReadResult> {
+    const res = await Promise.race([
+      this.r.read(p),
+      new Promise<ReadResult>(resolve => {
+        setTimeout(resolve, this.timeoutMs);
+      })
+    ]);
+    if (!res) {
+      throw new Error("read timeout");
     }
+    return res;
   }
 }

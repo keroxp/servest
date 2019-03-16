@@ -7,7 +7,7 @@ export type Deferred<T = any, R = Error> = {
 };
 
 /** Create deferred promise that can be resolved and rejected by outside */
-export function defer<T>(): Deferred<T> {
+export function defer<T = unknown>(): Deferred<T> {
   let handled = false;
   let resolve;
   let reject;
