@@ -6,7 +6,7 @@ import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
 import {TextProtoReader} from "https://deno.land/std@v0.3.1/textproto/mod.ts";
 import {BufReader, BufState, BufWriter} from "https://deno.land/std@v0.3.1/io/bufio.ts";
-import {BodyReader, ChunkedBodyReader, readUntilEof} from "./readers.ts";
+import {BodyReader, ChunkedBodyReader, readUntilEof, TimeoutReader} from "./readers.ts";
 import {assert} from "https://deno.land/std@v0.3.1/testing/asserts.ts";
 import {encode} from "https://deno.land/std@v0.3.1/strings/strings.ts";
 import {defer, Deferred} from "./deferred.ts";
@@ -55,7 +55,7 @@ export async function* serve(
   addr: string,
   opts?: ServeOptions
 ): AsyncIterableIterator<ServerRequest> {
-  const cancel = (opts && opts.cancel) || defer().promise;
+  const cancel = opts && opts.cancel || defer().promise;
   const keepAliveTimeout = ((opts && opts.keepAliveTimeout) || 75) * 1000;
   assert(keepAliveTimeout >= 0, "keepAliveTimeout must be >= 0");
   const listener = listen("tcp", addr);
@@ -161,14 +161,14 @@ export async function readRequest(
   let body: Reader;
   if (method === "POST" || method === "PUT") {
     if (headers.get("transfer-encoding") === "chunked") {
-      body = new ChunkedBodyReader(reader);
+      body = new TimeoutReader(new ChunkedBodyReader(reader), opts.timeout);
     } else {
       const contentLength = parseInt(headers.get("content-length"));
       assert(
         contentLength >= 0,
         `content-length is missing or invalid: ${headers.get("content-length")}`
       );
-      body = new BodyReader(reader, contentLength);
+      body = new TimeoutReader(new BodyReader(reader, contentLength), opts.timeout);
     }
   }
   return {
