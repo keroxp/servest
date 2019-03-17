@@ -6,3 +6,5 @@ deno.d.ts:
 	deno --types > deno.d.ts
 tsconfig.json:
 	./make.sh > tsconfig.json
+test:
+	deno -A tests.ts

@@ -1,7 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import {createResponder, ServerResponder} from "./responder.ts";
-import {IncomingHttpRequest, serve, ServeOptions} from "./server.ts";
-import {encode} from "https://deno.land/std@v0.3.1/strings/strings.ts";
+import { createResponder, ServerResponder } from "./responder.ts";
+import { IncomingHttpRequest, serve, ServeOptions } from "./server.ts";
+import { encode } from "https://deno.land/std@v0.3.1/strings/strings.ts";
 
 export type RoutedServerRequest = IncomingHttpRequest & {
   match?: RegExpMatchArray;

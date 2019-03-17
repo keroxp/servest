@@ -1,23 +1,23 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   BufReader,
   BufState,
   BufWriter
 } from "https://deno.land/std@v0.3.1/io/bufio.ts";
-import {TextProtoReader} from "https://deno.land/std@v0.3.1/textproto/mod.ts";
-import {wait} from "./util.ts";
+import { TextProtoReader } from "https://deno.land/std@v0.3.1/textproto/mod.ts";
 import {
   BodyReader,
   ChunkedBodyReader,
   readUntilEof,
   TimeoutReader
 } from "./readers.ts";
-import {defer} from "./deferred.ts";
-import {assert} from "https://deno.land/std@v0.3.1/testing/asserts.ts";
+import { defer, promiseInterrupter } from "./promises.ts";
+import { assert } from "https://deno.land/std@v0.3.1/testing/asserts.ts";
 import {
   decode,
   encode
 } from "https://deno.land/std@v0.3.1/strings/strings.ts";
-import {IncomingHttpRequestBase, IncomingHttpResponseBase} from "./server.ts";
+import { IncomingHttpRequestBase, IncomingHttpResponseBase } from "./server.ts";
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
@@ -36,15 +36,29 @@ const kProhibitedTrailerHeaders = [
   "trailer"
 ];
 
+const unresolved = defer().promise;
+
 export async function readRequest(
   r: Reader,
   opts?: {
-    timeout: number;
+    cancel: Promise<void>;
+    keepAliveTimeout: number;
+    readTimeout: number;
   }
 ): Promise<IncomingHttpRequestBase> {
-  let timeout = -1;
-  if (opts && Number.isInteger(opts.timeout)) {
-    timeout = opts.timeout;
+  let keepAliveTimeout = 75000;
+  let readTimeout = 75000;
+  let cancel = unresolved;
+  if (opts) {
+    if (Number.isInteger(opts.keepAliveTimeout)) {
+      keepAliveTimeout = opts.keepAliveTimeout;
+    }
+    if (Number.isInteger(opts.readTimeout)) {
+      readTimeout = opts.readTimeout;
+    }
+    if (opts.cancel) {
+      cancel = opts.cancel;
+    }
   }
   const reader = bufReader(r);
   const tpReader = new TextProtoReader(reader);
@@ -52,25 +66,19 @@ export async function readRequest(
   let resLine: string;
   let headers: Headers;
   let state: BufState;
-  [resLine, state] = await Promise.race([
-    wait<[string, BufState]>(timeout, [
-      "",
-      new Error("keep-alive read timeout")
-    ]),
-    tpReader.readLine()
-  ]);
+  [resLine, state] = await promiseInterrupter({
+    timeout: keepAliveTimeout,
+    cancel
+  })(tpReader.readLine());
   if (state) {
     throw new Error(`read failed: ${state}`);
   }
   const [m, method, url, proto] = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
   // read header
-  [headers, state] = await Promise.race<[Headers, BufState]>([
-    wait<[Headers, BufState]>(timeout, [
-      null,
-      new Error("keep-alive read timeout")
-    ]),
-    tpReader.readMIMEHeader()
-  ]);
+  [headers, state] = await promiseInterrupter({
+    timeout: readTimeout,
+    cancel
+  })(tpReader.readMIMEHeader());
   if (state) {
     throw new Error(`read failed: ${state}`);
   }
@@ -90,23 +98,23 @@ export async function readRequest(
     if (headers.get("transfer-encoding") === "chunked") {
       if (headers.has("trailer")) {
         finalizers.push(async () => {
-          trailers = await readTrailers(reader, headers)
+          trailers = await readTrailers(reader, headers);
         });
       }
-      body = new TimeoutReader(
-        new ChunkedBodyReader(reader),
-        timeout
-      );
+      body = new TimeoutReader(new ChunkedBodyReader(reader), {
+        timeout: readTimeout,
+        cancel
+      });
     } else {
       const contentLength = parseInt(headers.get("content-length"));
       assert(
         contentLength >= 0,
         `content-length is missing or invalid: ${headers.get("content-length")}`
       );
-      body = new TimeoutReader(
-        new BodyReader(reader, contentLength),
-        timeout
-      );
+      body = new TimeoutReader(new BodyReader(reader, contentLength), {
+        timeout: readTimeout,
+        cancel
+      });
     }
   }
   return {
@@ -116,7 +124,7 @@ export async function readRequest(
     headers,
     body,
     get trailers() {
-      return trailers
+      return trailers;
     },
     finalize
   };
@@ -132,7 +140,7 @@ export async function writeRequest(
   }
 ) {
   const writer = w instanceof BufWriter ? w : new BufWriter(w);
-  let {method, body, headers} = req;
+  let { method, body, headers } = req;
   const url = new URL(req.url);
   if (!headers) {
     headers = new Headers();
@@ -175,36 +183,37 @@ export async function writeRequest(
 
 export async function readResponse(
   r: Reader,
-  opts?: { timeout: number }
+  opts?: { timeout?: number; cancel?: Promise<void> }
 ): Promise<IncomingHttpResponseBase> {
   let timeout = -1;
   if (opts && Number.isInteger(opts.timeout)) {
     timeout = opts.timeout;
   }
+  let cancel = defer().promise;
+  if (opts && opts.cancel) {
+    cancel = opts.cancel;
+  }
   const reader = bufReader(r);
   const tp = new TextProtoReader(reader);
+  const timeoutOrCancel = promiseInterrupter({ timeout, cancel });
   // First line: HTTP/1,1 200 OK
-  const [line, lineErr] = await Promise.race([
-    wait<[string, BufState]>(timeout, [null, new Error("read timeout")]),
-    tp.readLine()
-  ]);
+  const [line, lineErr] = await timeoutOrCancel(tp.readLine());
   if (lineErr) {
     throw lineErr;
   }
   const [proto, status, statusText] = line.split(" ", 3);
-  const [headers, headersErr] = await Promise.race([
-    wait<[Headers, BufState]>(timeout, [null, new Error("read timeout")]),
-    tp.readMIMEHeader()
-  ]);
+  const [headers, headersErr] = await timeoutOrCancel(tp.readMIMEHeader());
   if (headersErr) {
     throw headersErr;
   }
   const contentLength = headers.get("content-length");
   const isChunked = headers.get("transfer-encoding") === "chunked";
   let body: Reader;
-  let finalizers = [async () => {
-    await readUntilEof(body);
-  }];
+  let finalizers = [
+    async () => {
+      await readUntilEof(body);
+    }
+  ];
   const finalize = async () => {
     for (const f of finalizers) {
       await f();
@@ -214,12 +223,18 @@ export async function readResponse(
   if (isChunked) {
     if (headers.has("trailer")) {
       finalizers.push(async () => {
-        trailers = await readTrailers(reader, headers)
-      })
+        trailers = await readTrailers(reader, headers);
+      });
     }
-    body = new ChunkedBodyReader(reader)
+    body = new TimeoutReader(new ChunkedBodyReader(reader), {
+      timeout,
+      cancel
+    });
   } else {
-    body = new BodyReader(reader, parseInt(contentLength));
+    body = new TimeoutReader(new BodyReader(reader, parseInt(contentLength)), {
+      timeout,
+      cancel
+    });
   }
   return {
     proto,
@@ -228,7 +243,7 @@ export async function readResponse(
     headers,
     body,
     get trailers() {
-      return trailers
+      return trailers;
     },
     finalize
   };
@@ -313,7 +328,7 @@ export async function writeBody(
   const reader = body instanceof Uint8Array ? new Buffer(body) : body;
   const hasContentLength = Number.isInteger(contentLength);
   while (true) {
-    const {nread, eof} = await reader.read(buf);
+    const { nread, eof } = await reader.read(buf);
     if (nread > 0) {
       const chunk = buf.slice(0, nread);
       if (hasContentLength) {

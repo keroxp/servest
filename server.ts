@@ -4,7 +4,7 @@ import Conn = Deno.Conn;
 import Reader = Deno.Reader;
 import { BufReader, BufWriter } from "https://deno.land/std@v0.3.1/io/bufio.ts";
 import { assert } from "https://deno.land/std@v0.3.1/testing/asserts.ts";
-import { defer } from "./deferred.ts";
+import { defer, promiseInterrupter } from "./promises.ts";
 import { readRequest } from "./serveio.ts";
 
 export type ServerResponse = {
@@ -26,7 +26,7 @@ export type IncomingHttpRequestBase = {
   /** HTTP Body */
   body?: Reader;
   /** Trailer headers. Note that it won't be assigned until finalizer will be called */
-  trailers?: Headers
+  trailers?: Headers;
   /** Request finalizer. Consume all body and trailers */
   finalize: () => Promise<void>;
 };
@@ -37,7 +37,6 @@ export type IncomingHttpRequest = IncomingHttpRequestBase & {
   bufWriter: BufWriter;
   bufReader: BufReader;
 };
-
 
 /** Incoming http response for receiving from server */
 export type IncomingHttpResponseBase = {
@@ -77,22 +76,39 @@ export type ServeOptions = {
   cancel?: Promise<void>;
   /** read timeout for keep-alive connection in sec. default=75 */
   keepAliveTimeout?: number;
+  /** read timeout for all read request. default=75 */
+  readTimeout?: number;
 };
 
 export async function* serve(
   addr: string,
   opts?: ServeOptions
 ): AsyncIterableIterator<IncomingHttpRequest> {
-  const cancel = (opts && opts.cancel) || defer().promise;
-  const keepAliveTimeout = ((opts && opts.keepAliveTimeout) || 75) * 1000;
+  let cancel = defer().promise;
+  let keepAliveTimeout = 7500;
+  let readTimeout = 7500;
+  if (opts) {
+    if (opts.cancel) {
+      cancel = opts.cancel;
+    }
+    if (opts.keepAliveTimeout !== void 0) {
+      keepAliveTimeout = opts.keepAliveTimeout;
+    }
+    if (opts.readTimeout !== void 0) {
+      readTimeout = opts.readTimeout;
+    }
+  }
   assert(keepAliveTimeout >= 0, "keepAliveTimeout must be >= 0");
   const listener = listen("tcp", addr);
   let canceled = false;
   let onRequestDeferred = defer<IncomingHttpRequest>();
+  const rejectCancel = promiseInterrupter({ timeout: -1, cancel });
   (async function acceptRoutine() {
     while (!canceled) {
-      const conn = await Promise.race([cancel, listener.accept()]);
-      if (!isConn(conn)) {
+      let conn: Conn;
+      try {
+        conn = await rejectCancel(listener.accept());
+      } catch (unused) {
         break;
       }
       const bufReader = new BufReader(conn);
@@ -100,7 +116,9 @@ export async function* serve(
       (async () => {
         try {
           const req = await readRequest(bufReader, {
-            timeout: keepAliveTimeout
+            keepAliveTimeout: readTimeout,
+            readTimeout,
+            cancel
           });
           onRequestDeferred.resolve(
             Object.assign(req, {
@@ -116,18 +134,25 @@ export async function* serve(
     }
   })();
   while (true) {
-    const req = await Promise.race([cancel, onRequestDeferred.promise]);
+    let req: IncomingHttpRequest;
+    try {
+      req = await rejectCancel(onRequestDeferred.promise);
+    } catch (unused) {
+      break;
+    }
     onRequestDeferred = defer();
     if (!isIncomingHttpRequest(req)) {
       break;
     }
     yield req;
     (async function prepareForNext() {
-      const { bufWriter, bufReader, body, conn, finalize } = req;
+      const { bufWriter, bufReader, conn, finalize } = req;
       try {
         await finalize();
         const nextReq = await readRequest(bufReader, {
-          timeout: keepAliveTimeout
+          keepAliveTimeout,
+          readTimeout,
+          cancel
         });
         onRequestDeferred.resolve(
           Object.assign(nextReq, { bufWriter, bufReader, conn })

@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { writeRequest, writeResponse, writeTrailers } from "../serveio.ts";
 import { encode } from "https://deno.land/std@v0.3.1/strings/strings.ts";
 import { StringReader } from "https://deno.land/std@v0.3.1/io/readers.ts";
@@ -57,11 +58,14 @@ async function chunkedRequestPost() {
 }
 
 async function chunkedRequestPostWithTrailers() {
-  const f = await Deno.open("./fixtures/request_post_chunked_trailers.txt", "w");
+  const f = await Deno.open(
+    "./fixtures/request_post_chunked_trailers.txt",
+    "w"
+  );
   const headers = new Headers({
     "Content-Type": "text/plain",
     "Transfer-Encoding": "chunked",
-    "Trailer": "X-Deno, X-Node"
+    Trailer: "X-Deno, X-Node"
   });
   await writeRequest(f, {
     url: "http://deno.land/index.html",
@@ -81,7 +85,6 @@ async function chunkedRequestPostWithTrailers() {
   );
   f.close();
 }
-
 
 async function basicResponse() {
   const f = await Deno.open("./fixtures/response.txt", "w");
