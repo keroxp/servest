@@ -17,7 +17,7 @@ import {
 import copy = Deno.copy;
 import { createResponder } from "./responder.ts";
 import { readUntilEof } from "./readers.ts";
-import { encode } from "https://deno.land/x/strings/strings.ts";
+import { encode } from "https://deno.land/std@v0.3.1/strings/strings.ts";
 
 test(async function server() {
   const d = defer();
