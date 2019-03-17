@@ -1,10 +1,9 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createResponder, ServerResponder } from "./responder.ts";
-import { serve, ServerRequest } from "./server.ts";
-import { defer } from "./deferred.ts";
-import { encode } from "https://deno.land/std@v0.3.1/strings/strings.ts";
+import {createResponder, ServerResponder} from "./responder.ts";
+import {IncomingHttpRequest, serve, ServeOptions} from "./server.ts";
+import {encode} from "https://deno.land/std@v0.3.1/strings/strings.ts";
 
-export type RoutedServerRequest = ServerRequest & {
+export type RoutedServerRequest = IncomingHttpRequest & {
   match?: RegExpMatchArray;
 };
 
@@ -46,7 +45,7 @@ export function findLongestAndNearestMatch(
 
 export interface HttpRouter {
   handle(pattern: string | RegExp, handlers: HttpHandler);
-  listen(addr: string, cancel?: Promise<any>): void;
+  listen(addr: string, opts?: ServeOptions): void;
 }
 
 /** create HttpRouter object */
@@ -56,9 +55,9 @@ export function createRouter(): HttpRouter {
     handle(pattern: string | RegExp, ...handlers: HttpHandler[]) {
       routes.push({ pattern, handlers });
     },
-    listen(addr: string, cancel = defer<any>().promise) {
+    listen(addr: string, opts?: ServeOptions) {
       (async () => {
-        for await (const req of serve(addr, cancel)) {
+        for await (const req of serve(addr, opts)) {
           let { pathname } = new URL(req.url, addr);
           const { index, match } = findLongestAndNearestMatch(
             pathname,
