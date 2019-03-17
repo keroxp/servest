@@ -72,12 +72,3 @@ export function promiseInterrupter(opts: {
       }
     });
 }
-
-export function isDeferred(x): x is Promises {
-  return (
-    typeof x === "object" &&
-    x.promise instanceof Promise &&
-    typeof x["resolve"] === "function" &&
-    typeof x["reject"] === "function"
-  );
-}

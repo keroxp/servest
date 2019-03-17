@@ -1,12 +1,12 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { ServerRequest } from "./server.ts";
+import { IncomingHttpRequest } from "./server.ts";
 import { MultipartReader } from "https://deno.land/std@v0.3.1/multipart/multipart.ts";
 import { FormFile } from "https://deno.land/std@v0.3.1/multipart/formfile.ts";
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
 import { assert } from "https://deno.land/std@v0.3.1/testing/asserts.ts";
 
-export type RequestMapper<V> = (req: ServerRequest) => Promise<V>;
+export type RequestMapper<V> = (req: IncomingHttpRequest) => Promise<V>;
 
 function formData(): RequestMapper<{ [key: string]: FormFile | string }> {
   return async req => {
