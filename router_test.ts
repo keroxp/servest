@@ -1,7 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { createRouter, findLongestAndNearestMatch } from "./router.ts";
 import { runIfMain, test } from "https://deno.land/std@v0.3.1/testing/mod.ts";
-import { defer } from "./deferred.ts";
+import { defer } from "./promises.ts";
 import {
   assert,
   assertEquals
@@ -74,7 +74,7 @@ test(async function router() {
   server.handle("/no-response", async (req, res) => {});
   const cancel = defer<void>();
   try {
-    server.listen("127.0.0.1:8898", cancel.promise);
+    server.listen("127.0.0.1:8898", { cancel: cancel.promise });
     {
       const res1 = await fetch("http://127.0.0.1:8898/index");
       const text = await res1.body.text();

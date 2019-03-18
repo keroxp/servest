@@ -7,7 +7,7 @@ import {
   assertThrowsAsync
 } from "https://deno.land/std@v0.3.1/testing/asserts.ts";
 import { StringReader } from "https://deno.land/std@v0.3.1/io/readers.ts";
-import { readResponse } from "./server.ts";
+import { readResponse } from "./serveio.ts";
 import { StringWriter } from "https://deno.land/std@v0.3.1/io/writers.ts";
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
@@ -16,7 +16,7 @@ import Reader = Deno.Reader;
 test(async function httpServerResponder() {
   const w = new Buffer();
   const res = createResponder(w);
-  assert(!res.isResponded);
+  assert(!res.isResponded());
   await res.respond({
     status: 200,
     headers: new Headers({
@@ -24,7 +24,7 @@ test(async function httpServerResponder() {
     }),
     body: new StringReader("ok")
   });
-  assert(res.isResponded);
+  assert(res.isResponded());
   const resp = await readResponse(w);
   assertEquals(resp.status, 200);
   assertEquals(resp.headers.get("content-type"), "text/plain");

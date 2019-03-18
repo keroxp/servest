@@ -1,10 +1,9 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { createResponder, ServerResponder } from "./responder.ts";
-import { serve, ServerRequest } from "./server.ts";
-import { defer } from "./deferred.ts";
+import { IncomingHttpRequest, serve, ServeOptions } from "./server.ts";
 import { encode } from "https://deno.land/std@v0.3.1/strings/strings.ts";
 
-export type RoutedServerRequest = ServerRequest & {
+export type RoutedServerRequest = IncomingHttpRequest & {
   match?: RegExpMatchArray;
 };
 
@@ -45,30 +44,35 @@ export function findLongestAndNearestMatch(
 }
 
 export interface HttpRouter {
-  handle(pattern: string | RegExp, handler: HttpHandler);
-  listen(addr: string, cancel?: Promise<any>): void;
+  handle(pattern: string | RegExp, handlers: HttpHandler);
+  listen(addr: string, opts?: ServeOptions): void;
 }
 
 /** create HttpRouter object */
 export function createRouter(): HttpRouter {
-  const handlers: { pattern: string | RegExp; handler: HttpHandler }[] = [];
+  const routes: { pattern: string | RegExp; handlers: HttpHandler[] }[] = [];
   return {
-    handle(pattern: string | RegExp, handler: HttpHandler) {
-      handlers.push({ pattern, handler });
+    handle(pattern: string | RegExp, ...handlers: HttpHandler[]) {
+      routes.push({ pattern, handlers });
     },
-    listen(addr: string, cancel = defer<any>().promise) {
+    listen(addr: string, opts?: ServeOptions) {
       (async () => {
-        for await (const req of serve(addr, cancel)) {
+        for await (const req of serve(addr, opts)) {
           let { pathname } = new URL(req.url, addr);
           const { index, match } = findLongestAndNearestMatch(
             pathname,
-            handlers.map(v => v.pattern)
+            routes.map(v => v.pattern)
           );
           const res = createResponder(req.bufWriter);
           if (index > -1) {
-            const { handler } = handlers[index];
-            await handler(Object.assign(req, { match }), res);
-            if (!res.isResponded) {
+            const { handlers } = routes[index];
+            for (const handler of handlers) {
+              await handler(Object.assign(req, { match }), res);
+              if (res.isResponded()) {
+                break;
+              }
+            }
+            if (!res.isResponded()) {
               await res.respond({
                 status: 500,
                 headers: new Headers(),
