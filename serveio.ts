@@ -17,7 +17,12 @@ import {
   decode,
   encode
 } from "https://deno.land/std@v0.3.1/strings/strings.ts";
-import { IncomingHttpRequestBase, IncomingHttpResponseBase } from "./server.ts";
+import {
+  ClientRequest,
+  IncomingHttpRequestBase,
+  IncomingHttpResponseBase,
+  ServerResponse
+} from "./server.ts";
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
@@ -30,14 +35,11 @@ function bufReader(r: Reader): BufReader {
   }
 }
 
-const kProhibitedTrailerHeaders = [
-  "transfer-encoding",
-  "content-length",
-  "trailer"
-];
-
-const unresolved = defer().promise;
-
+/**
+ * read http request from reader
+ * status-line and headers are certainly read. body and trailers may not be read
+ * read will be aborted when opts.cancel is called or any read wait to reader is over opts.readTimeout
+ * */
 export async function readRequest(
   r: Reader,
   opts?: {
@@ -48,7 +50,7 @@ export async function readRequest(
 ): Promise<IncomingHttpRequestBase> {
   let keepAliveTimeout = 75000;
   let readTimeout = 75000;
-  let cancel = unresolved;
+  let cancel = defer().promise;
   if (opts) {
     if (Number.isInteger(opts.keepAliveTimeout)) {
       keepAliveTimeout = opts.keepAliveTimeout;
@@ -130,16 +132,9 @@ export async function readRequest(
   };
 }
 
-export async function writeRequest(
-  w: Writer,
-  req: {
-    url: string;
-    method: string;
-    headers?: Headers;
-    body?: Uint8Array | Reader;
-  }
-) {
-  const writer = w instanceof BufWriter ? w : new BufWriter(w);
+/** write http request. Host, Content-Length, Transfer-Encoding headers are set if needed */
+export async function writeRequest(w: Writer, req: ClientRequest) {
+  const writer = bufWriter(w);
   let { method, body, headers } = req;
   const url = new URL(req.url);
   if (!headers) {
@@ -154,7 +149,12 @@ export async function writeRequest(
   let contentLength: number;
   if (body) {
     if (headers.has("Content-Length")) {
-      contentLength = parseInt(headers.get("Content-Length"));
+      const cl = headers.get("Content-Length");
+      contentLength = parseInt(cl);
+      assert(
+        Number.isInteger(contentLength),
+        `content-length is not number: ${cl}`
+      );
     } else if (body instanceof Uint8Array) {
       contentLength = body.byteLength;
       headers.set("Content-Length", `${body.byteLength}`);
@@ -170,17 +170,14 @@ export async function writeRequest(
   await writer.write(encode(headerText));
   const state = await writer.flush();
   if (state) {
-    if (state instanceof Error) {
-      throw state;
-    } else {
-      throw new Error(state);
-    }
+    throw new Error(`failed to write headers: ${state}`);
   }
   if (body) {
     await writeBody(writer, body, contentLength);
   }
 }
 
+/** read http response from reader */
 export async function readResponse(
   r: Reader,
   opts?: { timeout?: number; cancel?: Promise<void> }
@@ -275,14 +272,8 @@ const kHttpStatusCodes = {
   500: "Internal Server Error"
 };
 
-export async function writeResponse(
-  w: Writer,
-  res: {
-    status: number;
-    headers?: Headers;
-    body?: Uint8Array | Reader;
-  }
-) {
+/** write http response to writer. Content-Length, Transfer-Encoding headers are set if needed */
+export async function writeResponse(w: Writer, res: ServerResponse) {
   const writer = bufWriter(w);
   // status line
   const statusText = kHttpStatusCodes[res.status];
@@ -305,6 +296,7 @@ export async function writeResponse(
   }
 }
 
+/** write headers to writer */
 export async function writeHeaders(w: Writer, headers: Headers) {
   const lines = [];
   const writer = bufWriter(w);
@@ -317,6 +309,7 @@ export async function writeHeaders(w: Writer, headers: Headers) {
   await writer.flush();
 }
 
+/** write http body to writer. Reader without contentLength will be written by chunked encoding */
 export async function writeBody(
   w: Writer,
   body: Uint8Array | Reader,
@@ -351,6 +344,13 @@ export async function writeBody(
   }
 }
 
+const kProhibitedTrailerHeaders = [
+  "transfer-encoding",
+  "content-length",
+  "trailer"
+];
+
+/** write trailer headers to writer. it mostly should be called after writeResponse */
 export async function writeTrailers(
   w: Writer,
   headers: Headers,
@@ -386,6 +386,7 @@ export async function writeTrailers(
   await writer.flush();
 }
 
+/** read trailer headers from reader. it should mostly be called after readRequest */
 export async function readTrailers(
   r: Reader,
   headers: Headers

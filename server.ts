@@ -7,9 +7,25 @@ import { assert } from "https://deno.land/std@v0.3.1/testing/asserts.ts";
 import { defer, promiseInterrupter } from "./promises.ts";
 import { readRequest } from "./serveio.ts";
 
+/** request data for building http request to server */
+export type ClientRequest = {
+  /** full request url with queries */
+  url: string;
+  /** HTTP method */
+  method: string;
+  /** HTTP Headers */
+  headers: Headers;
+  /** HTTP Body */
+  body?: Uint8Array | Reader;
+};
+
+/** response data for building http response to client */
 export type ServerResponse = {
+  /** HTTP status code */
   status: number;
+  /** HTTP headers */
   headers?: Headers;
+  /** HTTP body */
   body?: Uint8Array | Reader;
 };
 
@@ -62,14 +78,6 @@ export type IncomingHttpResponse = IncomingHttpRequestBase & {
   bufReader: BufReader;
 };
 
-function isConn(x): x is Conn {
-  return typeof x === "object" && x.hasOwnProperty("rid");
-}
-
-function isIncomingHttpRequest(x): x is IncomingHttpRequest {
-  return typeof x === "object" && x.hasOwnProperty("url");
-}
-
 /** serve options */
 export type ServeOptions = {
   /** canceller promise for async iteration. use defer() */
@@ -100,68 +108,57 @@ export async function* serve(
   }
   assert(keepAliveTimeout >= 0, "keepAliveTimeout must be >= 0");
   const listener = listen("tcp", addr);
-  let canceled = false;
   let onRequestDeferred = defer<IncomingHttpRequest>();
-  const rejectCancel = promiseInterrupter({ timeout: -1, cancel });
+  const breakWhenCancelled = promiseInterrupter({ timeout: -1, cancel });
+  const handleRequest = ({ bufReader, bufWriter, conn }, forNext: boolean) => {
+    readRequest(bufReader, {
+      keepAliveTimeout: forNext ? keepAliveTimeout : readTimeout,
+      readTimeout,
+      cancel
+    })
+      .then(req => {
+        onRequestDeferred.resolve(
+          Object.assign(req, {
+            bufWriter,
+            bufReader,
+            conn
+          })
+        );
+      })
+      .catch(e => {
+        conn.close();
+      });
+  };
+  // start accept routine
+  // it continually accept new tcp socket
   (async function acceptRoutine() {
-    while (!canceled) {
+    while (true) {
       let conn: Conn;
       try {
-        conn = await rejectCancel(listener.accept());
+        conn = await breakWhenCancelled(listener.accept());
       } catch (unused) {
         break;
       }
       const bufReader = new BufReader(conn);
       const bufWriter = new BufWriter(conn);
-      (async () => {
-        try {
-          const req = await readRequest(bufReader, {
-            keepAliveTimeout: readTimeout,
-            readTimeout,
-            cancel
-          });
-          onRequestDeferred.resolve(
-            Object.assign(req, {
-              bufWriter,
-              bufReader,
-              conn
-            })
-          );
-        } catch (unused) {
-          conn.close();
-        }
-      })();
+      // start read first request
+      handleRequest({ conn, bufReader, bufWriter }, false);
     }
   })();
   while (true) {
     let req: IncomingHttpRequest;
     try {
-      req = await rejectCancel(onRequestDeferred.promise);
+      // break loop if canceller is called
+      req = await breakWhenCancelled(onRequestDeferred.promise);
     } catch (unused) {
       break;
     }
     onRequestDeferred = defer();
-    if (!isIncomingHttpRequest(req)) {
-      break;
-    }
     yield req;
-    (async function prepareForNext() {
-      const { bufWriter, bufReader, conn, finalize } = req;
-      try {
-        await finalize();
-        const nextReq = await readRequest(bufReader, {
-          keepAliveTimeout,
-          readTimeout,
-          cancel
-        });
-        onRequestDeferred.resolve(
-          Object.assign(nextReq, { bufWriter, bufReader, conn })
-        );
-      } catch (unused) {
-        conn.close();
-      }
-    })();
+    req
+      .finalize()
+      .then(() => handleRequest(req, true))
+      .catch(e => req.conn.close());
   }
-  canceled = true;
   listener.close();
 }

@@ -4,5 +4,4 @@ import "./server_test.ts";
 import "./responder_test.ts";
 import "./router_test.ts";
 import "./serveio_test.ts";
-import "./body_parsers_test.ts"
 import "https://deno.land/std@v0.3.1/testing/main.ts";
