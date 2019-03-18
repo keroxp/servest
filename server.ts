@@ -73,7 +73,7 @@ export type IncomingHttpResponseBase = {
   finalize: () => Promise<void>;
 };
 
-export type IncomingHttpResponse = IncomingHttpRequest & {
+export type ClientResponse = IncomingHttpRequest & {
   conn: Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
@@ -92,7 +92,7 @@ export type ServeOptions = {
 export async function* serve(
   addr: string,
   opts?: ServeOptions
-): AsyncIterableIterator<IncomingHttpRequest> {
+): AsyncIterableIterator<ServerRequest> {
   let cancel = defer().promise;
   let keepAliveTimeout = 7500;
   let readTimeout = 7500;
