@@ -155,7 +155,7 @@ export async function* serve(
       break;
     }
     onRequestDeferred = defer();
-    yield Object.assign(createResponder(req.bufWriter), req);
+    yield req;
     req
       .finalize()
       .then(() => handleRequest(req, true))
