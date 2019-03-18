@@ -56,7 +56,7 @@ export type ServerRequest = IncomingHttpRequest & {
 } & ServerResponder;
 
 /** Incoming http response for receiving from server */
-export type IncomingHttpResponseBase = {
+export type IncomingHttpResponse = {
   /** requested protocol. like HTTP/1.1 */
   proto: string;
   /** request path with queries. always begin with / */
@@ -73,7 +73,7 @@ export type IncomingHttpResponseBase = {
   finalize: () => Promise<void>;
 };
 
-export type ClientResponse = IncomingHttpRequest & {
+export type ClientResponse = IncomingHttpResponse & {
   conn: Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;

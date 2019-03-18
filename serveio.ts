@@ -18,9 +18,9 @@ import {
   encode
 } from "https://deno.land/std@v0.3.1/strings/strings.ts";
 import {
-  ClientRequest,
-  IncomingHttpRequestBase,
-  IncomingHttpResponseBase,
+  ClientRequest, IncomingHttpRequest,
+  IncomingHttpResponse,
+  ServerRequest,
   ServerResponse
 } from "./server.ts";
 import Reader = Deno.Reader;
@@ -47,7 +47,7 @@ export async function readRequest(
     keepAliveTimeout: number;
     readTimeout: number;
   }
-): Promise<IncomingHttpRequestBase> {
+): Promise<IncomingHttpRequest> {
   let keepAliveTimeout = 75000;
   let readTimeout = 75000;
   let cancel = defer().promise;
@@ -181,7 +181,7 @@ export async function writeRequest(w: Writer, req: ClientRequest) {
 export async function readResponse(
   r: Reader,
   opts?: { timeout?: number; cancel?: Promise<void> }
-): Promise<IncomingHttpResponseBase> {
+): Promise<IncomingHttpResponse> {
   let timeout = -1;
   if (opts && Number.isInteger(opts.timeout)) {
     timeout = opts.timeout;
