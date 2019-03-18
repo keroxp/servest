@@ -1,7 +1,6 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createResponder, ServerResponder } from "./responder.ts";
-import { IncomingHttpRequest, serve, ServeOptions } from "./server.ts";
-import { encode } from "https://deno.land/std@v0.3.1/strings/strings.ts";
+import {IncomingHttpRequest, serve, ServeOptions} from "./server.ts";
+import {encode} from "https://deno.land/std@v0.3.1/strings/strings.ts";
 
 export type RoutedServerRequest = IncomingHttpRequest & {
   match?: RegExpMatchArray;
@@ -9,8 +8,7 @@ export type RoutedServerRequest = IncomingHttpRequest & {
 
 /** basic handler for http request */
 export type HttpHandler = (
-  req: RoutedServerRequest,
-  res: ServerResponder
+  req: RoutedServerRequest
 ) => unknown;
 
 /**
@@ -63,24 +61,23 @@ export function createRouter(): HttpRouter {
             pathname,
             routes.map(v => v.pattern)
           );
-          const res = createResponder(req.bufWriter);
           if (index > -1) {
             const { handlers } = routes[index];
             for (const handler of handlers) {
-              await handler(Object.assign(req, { match }), res);
-              if (res.isResponded()) {
+              await handler(Object.assign(req, { match }));
+              if (req.isResponded()) {
                 break;
               }
             }
-            if (!res.isResponded()) {
-              await res.respond({
+            if (!req.isResponded()) {
+              await req.respond({
                 status: 500,
                 headers: new Headers(),
                 body: encode("Not Responded")
               });
             }
           } else {
-            await res.respond({
+            await req.respond({
               status: 404,
               headers: new Headers(),
               body: encode("Not Found")
