@@ -68,11 +68,11 @@ export function createRouter(): HttpRouter {
             const { handlers } = routes[index];
             for (const handler of handlers) {
               await handler(Object.assign(req, { match }), res);
-              if (res.isResponded) {
+              if (res.isResponded()) {
                 break;
               }
             }
-            if (!res.isResponded) {
+            if (!res.isResponded()) {
               await res.respond({
                 status: 500,
                 headers: new Headers(),

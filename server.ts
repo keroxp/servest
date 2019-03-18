@@ -6,6 +6,7 @@ import { BufReader, BufWriter } from "https://deno.land/std@v0.3.1/io/bufio.ts";
 import { assert } from "https://deno.land/std@v0.3.1/testing/asserts.ts";
 import { defer, promiseInterrupter } from "./promises.ts";
 import { readRequest } from "./serveio.ts";
+import { createResponder, ServerResponder } from "./responder.ts";
 
 /** request data for building http request to server */
 export type ClientRequest = {
@@ -30,7 +31,7 @@ export type ServerResponse = {
 };
 
 /** Incoming http request for handling request from client */
-export type IncomingHttpRequestBase = {
+export type IncomingHttpRequest = {
   /** request path with queries. always begin with / */
   url: string;
   /** HTTP method */
@@ -48,11 +49,11 @@ export type IncomingHttpRequestBase = {
 };
 
 /** Outgoing http response for building request to server */
-export type IncomingHttpRequest = IncomingHttpRequestBase & {
+export type ServerRequest = IncomingHttpRequest & {
   conn: Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
-};
+} & ServerResponder;
 
 /** Incoming http response for receiving from server */
 export type IncomingHttpResponseBase = {
@@ -72,7 +73,7 @@ export type IncomingHttpResponseBase = {
   finalize: () => Promise<void>;
 };
 
-export type IncomingHttpResponse = IncomingHttpRequestBase & {
+export type IncomingHttpResponse = IncomingHttpRequest & {
   conn: Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
@@ -108,7 +109,7 @@ export async function* serve(
   }
   assert(keepAliveTimeout >= 0, "keepAliveTimeout must be >= 0");
   const listener = listen("tcp", addr);
-  let onRequestDeferred = defer<IncomingHttpRequest>();
+  let onRequestDeferred = defer<ServerRequest>();
   const breakWhenCancelled = promiseInterrupter({ timeout: -1, cancel });
   const handleRequest = ({ bufReader, bufWriter, conn }, forNext: boolean) => {
     readRequest(bufReader, {
@@ -118,11 +119,11 @@ export async function* serve(
     })
       .then(req => {
         onRequestDeferred.resolve(
-          Object.assign(req, {
-            bufWriter,
-            bufReader,
-            conn
-          })
+          Object.assign(
+            req,
+            { bufWriter, bufReader, conn },
+            createResponder(bufWriter)
+          )
         );
       })
       .catch(e => {
@@ -146,7 +147,7 @@ export async function* serve(
     }
   })();
   while (true) {
-    let req: IncomingHttpRequest;
+    let req: ServerRequest;
     try {
       // break loop if canceller is called
       req = await breakWhenCancelled(onRequestDeferred.promise);
@@ -154,7 +155,7 @@ export async function* serve(
       break;
     }
     onRequestDeferred = defer();
-    yield req;
+    yield Object.assign(createResponder(req.bufWriter), req);
     req
       .finalize()
       .then(() => handleRequest(req, true))

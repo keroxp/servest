@@ -23,7 +23,7 @@ test(async function server() {
   const d = defer();
   (async function() {
     for await (const req of serve(`0.0.0.0:8899`, { cancel: d.promise })) {
-      await writeResponse(req.bufWriter, {
+      await req.respond({
         status: 200,
         headers: new Headers({
           "Content-Type": "text/plain",

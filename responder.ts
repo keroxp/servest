@@ -7,7 +7,7 @@ import { ServerResponse } from "./server.ts";
 export interface ServerResponder {
   respond(response: ServerResponse): Promise<void>;
   writeTrailers(trailers: Headers): Promise<void>;
-  readonly isResponded: boolean;
+  isResponded(): boolean;
 }
 
 /** create ServerResponder object */
@@ -15,7 +15,7 @@ export function createResponder(w: Writer): ServerResponder {
   let isResponded = false;
   let headers: Headers;
   return {
-    get isResponded() {
+    isResponded() {
       return isResponded;
     },
     async writeTrailers(trailers: Headers): Promise<void> {
