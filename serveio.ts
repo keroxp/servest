@@ -18,7 +18,8 @@ import {
   encode
 } from "https://deno.land/std@v0.3.1/strings/strings.ts";
 import {
-  ClientRequest, IncomingHttpRequest,
+  ClientRequest,
+  IncomingHttpRequest,
   IncomingHttpResponse,
   ServerRequest,
   ServerResponse

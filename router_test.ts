@@ -52,8 +52,8 @@ test(function httpMatchNearest() {
 });
 test(async function router() {
   const server = createRouter();
-  server.handle("/index", async (req, { respond }) => {
-    await respond({
+  server.handle("/index", async req => {
+    await req.respond({
       status: 200,
       headers: new Headers({
         "content-type": "text/plain"
@@ -61,9 +61,9 @@ test(async function router() {
       body: new StringReader("ok")
     });
   });
-  server.handle(new RegExp("/foo/(?<id>.+)"), async (req, { respond }) => {
+  server.handle(new RegExp("/foo/(?<id>.+)"), async req => {
     const { id } = req.match.groups;
-    await respond({
+    await req.respond({
       status: 200,
       headers: new Headers({
         "content-type": "application/json"
@@ -71,7 +71,7 @@ test(async function router() {
       body: new StringReader(JSON.stringify({ id }))
     });
   });
-  server.handle("/no-response", async (req, res) => {});
+  server.handle("/no-response", async req => {});
   const cancel = defer<void>();
   try {
     server.listen("127.0.0.1:8898", { cancel: cancel.promise });
