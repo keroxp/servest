@@ -18,7 +18,7 @@ Some progressive features for HTTP/1.1 server are implemented.
 - Fully interface based type definition
 
 ```ts
-import { serve } from "https://denopkg.com/keroxp/servest@v0.2.0/server.ts";
+import { serve } from "https://denopkg.com/keroxp/servest@v0.2.1/server.ts";
 async function main() {
   for await (const req of serve(`0.0.0.0:8899`)) {
     await req.respond({
@@ -38,7 +38,7 @@ main();
 Router API is minimal routing system on top of `serve()`
 
 ```ts
-import { createRouter } from "https://denopkg.com/keroxp/servest@v0.2.0/router.ts";
+import { createRouter } from "https://denopkg.com/keroxp/servest@v0.2.1/router.ts";
 
 const router = createRouter();
 router.handle("/", async req => {
