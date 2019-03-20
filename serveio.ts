@@ -3,8 +3,8 @@ import {
   BufReader,
   BufState,
   BufWriter
-} from "https://deno.land/std@v0.3.1/io/bufio.ts";
-import { TextProtoReader } from "https://deno.land/std@v0.3.1/textproto/mod.ts";
+} from "https://deno.land/std@v0.3.2/io/bufio.ts";
+import { TextProtoReader } from "https://deno.land/std@v0.3.2/textproto/mod.ts";
 import {
   BodyReader,
   ChunkedBodyReader,
@@ -12,11 +12,11 @@ import {
   TimeoutReader
 } from "./readers.ts";
 import { defer, promiseInterrupter } from "./promises.ts";
-import { assert } from "https://deno.land/std@v0.3.1/testing/asserts.ts";
+import { assert } from "https://deno.land/std@v0.3.2/testing/asserts.ts";
 import {
   decode,
   encode
-} from "https://deno.land/std@v0.3.1/strings/strings.ts";
+} from "https://deno.land/std@v0.3.2/strings/strings.ts";
 import {
   ClientRequest,
   IncomingHttpRequest,

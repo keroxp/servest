@@ -2,8 +2,8 @@
 import listen = Deno.listen;
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;
-import { BufReader, BufWriter } from "https://deno.land/std@v0.3.1/io/bufio.ts";
-import { assert } from "https://deno.land/std@v0.3.1/testing/asserts.ts";
+import { BufReader, BufWriter } from "https://deno.land/std@v0.3.2/io/bufio.ts";
+import { assert } from "https://deno.land/std@v0.3.2/testing/asserts.ts";
 import { defer, promiseInterrupter } from "./promises.ts";
 import { readRequest } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";

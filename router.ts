@@ -1,19 +1,13 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  serve,
-  ServeOptions,
-  ServerRequest
-} from "./server.ts";
-import { encode } from "https://deno.land/std@v0.3.1/strings/strings.ts";
+import { serve, ServeOptions, ServerRequest } from "./server.ts";
+import { encode } from "https://deno.land/std@v0.3.2/strings/strings.ts";
 
 export type RoutedServerRequest = ServerRequest & {
   match?: RegExpMatchArray;
 };
 
 /** basic handler for http request */
-export type HttpHandler = (
-  req: RoutedServerRequest
-) => unknown;
+export type HttpHandler = (req: RoutedServerRequest) => unknown;
 
 /**
  * Find the match that appeared in the nearest position to the beginning of word.
