@@ -1,10 +1,10 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { runIfMain, test } from "https://deno.land/std@v0.3.1/testing/mod.ts";
+import { runIfMain, test } from "https://deno.land/std@v0.3.2/testing/mod.ts";
 import { readRequest, readResponse } from "./serveio.ts";
 import {
   assert,
   assertEquals
-} from "https://deno.land/std@v0.3.1/testing/asserts.ts";
+} from "https://deno.land/std@v0.3.2/testing/asserts.ts";
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 

@@ -1,13 +1,13 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { runIfMain, test } from "https://deno.land/std@v0.3.1/testing/mod.ts";
+import { runIfMain, test } from "https://deno.land/std@v0.3.2/testing/mod.ts";
 import { defer } from "./promises.ts";
 import { serve } from "./server.ts";
-import { StringReader } from "https://deno.land/std@v0.3.1/io/readers.ts";
-import { StringWriter } from "https://deno.land/std@v0.3.1/io/writers.ts";
+import { StringReader } from "https://deno.land/std@v0.3.2/io/readers.ts";
+import { StringWriter } from "https://deno.land/std@v0.3.2/io/writers.ts";
 import {
   assertEquals,
   assertThrowsAsync
-} from "https://deno.land/std@v0.3.1/testing/asserts.ts";
+} from "https://deno.land/std@v0.3.2/testing/asserts.ts";
 import {
   readRequest,
   readResponse,
@@ -17,7 +17,7 @@ import {
 import copy = Deno.copy;
 import { createResponder } from "./responder.ts";
 import { readUntilEof } from "./readers.ts";
-import { encode } from "https://deno.land/std@v0.3.1/strings/strings.ts";
+import { encode } from "https://deno.land/std@v0.3.2/strings/strings.ts";
 
 test(async function server() {
   const d = defer();

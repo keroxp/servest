@@ -8,7 +8,7 @@
 
 ### Serve API
 
-`serve` API is compatible to [deno_std@v0.3.1](https://github.com/denoland/deno_std/blob/master/http/server.ts) but has different implementation.
+`serve` API is compatible to [deno_std@v0.3.2](https://github.com/denoland/deno_std/blob/master/http/server.ts) but has different implementation.
 Some progressive features for HTTP/1.1 server are implemented.
 
 - Support Keep-Alive connection
