@@ -276,6 +276,9 @@ const kHttpStatusCodes = {
 /** write http response to writer. Content-Length, Transfer-Encoding headers are set if needed */
 export async function writeResponse(w: Writer, res: ServerResponse) {
   const writer = bufWriter(w);
+  if (res.headers === void 0) {
+    res.headers = new Headers();
+  }
   // status line
   const statusText = kHttpStatusCodes[res.status];
   assert(!!statusText, `unsupported status code: ${statusText}`);
