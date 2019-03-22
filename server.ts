@@ -44,8 +44,15 @@ export type IncomingHttpRequest = {
   body?: Reader;
   /** Trailer headers. Note that it won't be assigned until finalizer will be called */
   trailers?: Headers;
+  /** keep-alive info */
+  keepAlive?: KeepAlive;
   /** Request finalizer. Consume all body and trailers */
   finalize: () => Promise<void>;
+};
+
+export type KeepAlive = {
+  timeout: number;
+  max: number;
 };
 
 /** Outgoing http response for building request to server */
@@ -83,19 +90,21 @@ export type ClientResponse = IncomingHttpResponse & {
 export type ServeOptions = {
   /** canceller promise for async iteration. use defer() */
   cancel?: Promise<void>;
-  /** read timeout for keep-alive connection in sec. default=75 */
+  /** read timeout for keep-alive connection. ms. default=75000(ms) */
   keepAliveTimeout?: number;
-  /** read timeout for all read request. default=75 */
+  /** read timeout for all read request. ms. default=75000(ms) */
   readTimeout?: number;
 };
+
+const kDefaultKeepAliveTimeout = 75000;
 
 export async function* serve(
   addr: string,
   opts?: ServeOptions
 ): AsyncIterableIterator<ServerRequest> {
   let cancel = defer().promise;
-  let keepAliveTimeout = 7500;
-  let readTimeout = 7500;
+  let keepAliveTimeout = kDefaultKeepAliveTimeout;
+  let readTimeout = kDefaultKeepAliveTimeout;
   if (opts) {
     if (opts.cancel) {
       cancel = opts.cancel;
@@ -111,25 +120,6 @@ export async function* serve(
   const listener = listen("tcp", addr);
   let onRequestDeferred = defer<ServerRequest>();
   const breakWhenCancelled = promiseInterrupter({ timeout: -1, cancel });
-  const handleRequest = ({ bufReader, bufWriter, conn }, forNext: boolean) => {
-    readRequest(bufReader, {
-      keepAliveTimeout: forNext ? keepAliveTimeout : readTimeout,
-      readTimeout,
-      cancel
-    })
-      .then(req => {
-        onRequestDeferred.resolve(
-          Object.assign(
-            req,
-            { bufWriter, bufReader, conn },
-            createResponder(bufWriter)
-          )
-        );
-      })
-      .catch(e => {
-        conn.close();
-      });
-  };
   // start accept routine
   // it continually accept new tcp socket
   (async function acceptRoutine() {
@@ -143,7 +133,23 @@ export async function* serve(
       const bufReader = new BufReader(conn);
       const bufWriter = new BufWriter(conn);
       // start read first request
-      handleRequest({ conn, bufReader, bufWriter }, false);
+      readRequest(bufReader, {
+        keepAliveTimeout: readTimeout,
+        readTimeout,
+        cancel
+      })
+        .then(req => {
+          onRequestDeferred.resolve(
+            Object.assign(
+              req,
+              { bufWriter, bufReader, conn },
+              createResponder(bufWriter)
+            )
+          );
+        })
+        .catch(e => {
+          conn.close();
+        });
     }
   })();
   while (true) {
@@ -156,10 +162,33 @@ export async function* serve(
     }
     onRequestDeferred = defer();
     yield req;
-    req
-      .finalize()
-      .then(() => handleRequest(req, true))
-      .catch(e => req.conn.close());
+    (async () => {
+      await req.finalize();
+      let _keepAliveTimeout = keepAliveTimeout;
+      if (req.keepAlive && req.keepAlive.max <= 0) {
+        req.conn.close();
+        return;
+      }
+      if (req.keepAlive && Number.isInteger(req.keepAlive.timeout)) {
+        _keepAliveTimeout = Math.min(
+          _keepAliveTimeout,
+          req.keepAlive.timeout * 1000
+        );
+      }
+      const nextReq = await readRequest(req.bufReader, {
+        keepAliveTimeout: _keepAliveTimeout,
+        readTimeout,
+        cancel
+      });
+      const { bufWriter, bufReader, conn } = req;
+      onRequestDeferred.resolve(
+        Object.assign(
+          nextReq,
+          { bufWriter, bufReader, conn },
+          createResponder(req.bufWriter)
+        )
+      );
+    })().catch(e => req.conn.close());
   }
   listener.close();
 }

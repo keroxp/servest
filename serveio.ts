@@ -21,7 +21,7 @@ import {
   ClientRequest,
   IncomingHttpRequest,
   IncomingHttpResponse,
-  ServerRequest,
+  KeepAlive,
   ServerResponse
 } from "./server.ts";
 import Reader = Deno.Reader;
@@ -85,6 +85,10 @@ export async function readRequest(
   if (state) {
     throw new Error(`read failed: ${state}`);
   }
+  let keepAlive;
+  if (headers.has("keep-alive")) {
+    keepAlive = parseKeepAlive(headers);
+  }
   // body
   let body: Reader;
   let trailers: Headers;
@@ -126,6 +130,7 @@ export async function readRequest(
     proto,
     headers,
     body,
+    keepAlive,
     get trailers() {
       return trailers;
     },
@@ -422,4 +427,26 @@ export async function readTrailers(
     h.set(field.trim(), value.trim());
   }
   return h;
+}
+
+export function parseKeepAlive(h: Headers): KeepAlive {
+  let timeout;
+  let max;
+  const kv = h
+    .get("keep-alive")
+    .split(",")
+    .map(s => s.trim().split("="));
+  for (const [key, value] of kv) {
+    if (key === "timeout") {
+      timeout = parseInt(value);
+      assert(
+        Number.isInteger(timeout),
+        `"timeout" must be integer: ${timeout}`
+      );
+    } else if (key === "max") {
+      max = parseInt(value);
+      assert(Number.isInteger(max), `"max" max be integer: ${max}`);
+    }
+  }
+  return { timeout, max };
 }
