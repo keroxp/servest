@@ -1,13 +1,18 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { runIfMain, test } from "https://deno.land/std@v0.3.2/testing/mod.ts";
-import { readRequest, readResponse, writeResponse } from "./serveio.ts";
+import {
+  parseKeepAlive,
+  readRequest,
+  readResponse,
+  writeResponse
+} from "./serveio.ts";
 import {
   assert,
   assertEquals
 } from "https://deno.land/std@v0.3.2/testing/asserts.ts";
+import { encode } from "https://deno.land/std@v0.3.2/strings/strings.ts";
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
-import { encode } from "https://deno.land/std@v0.3.2/strings/strings.ts";
 import copy = Deno.copy;
 
 async function readString(r: Reader) {
@@ -146,6 +151,16 @@ test(async function serveioWriteResponseWithoutHeaders() {
   const resBody = new Buffer();
   await copy(resBody, res.body);
   assertEquals(resBody.toString(), "ok");
+});
+
+test(function serveioParseKeepAlive() {
+  const ka = parseKeepAlive(
+    new Headers({
+      "keep-alive": "timeout=5, max=100"
+    })
+  );
+  assertEquals(ka.timeout, 5);
+  assertEquals(ka.max, 100);
 });
 
 runIfMain(import.meta);
