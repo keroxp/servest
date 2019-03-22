@@ -169,6 +169,10 @@ export async function* serve(
         req.conn.close();
         return;
       }
+      if (req.headers.get("connection") === "close") {
+        req.conn.close();
+        return;
+      }
       if (req.keepAlive && Number.isInteger(req.keepAlive.timeout)) {
         _keepAliveTimeout = Math.min(
           _keepAliveTimeout,

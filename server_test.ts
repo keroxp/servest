@@ -118,4 +118,42 @@ test(async function serverKeepAliveTimeoutMax() {
   }
 });
 
+test(async function serverConnectionClose() {
+  const d = defer();
+  port++;
+  (async () => {
+    for await (const req of serve(`0.0.0.0:${port}`, {
+      cancel: d.promise
+    })) {
+      await createResponder(req.bufWriter).respond({
+        status: 200,
+        headers: new Headers(),
+        body: encode("ok")
+      });
+    }
+  })();
+  try {
+    const conn = await Deno.dial("tcp", `127.0.0.1:${port}`);
+    const req = {
+      url: `http://127.0.0.1:${port}/`,
+      method: "POST",
+      headers: new Headers({
+        host: "deno.land",
+        "connection": "close",
+      }),
+      body: encode("hello")
+    };
+    await writeRequest(conn, req);
+    const { status, body } = await readResponse(conn);
+    await readUntilEof(body);
+    assertEquals(200, status);
+    await assertThrowsAsync(async () => {
+      await writeRequest(conn, req);
+      await readResponse(conn);
+    });
+  } finally {
+    d.resolve();
+  }
+});
+
 runIfMain(import.meta);
