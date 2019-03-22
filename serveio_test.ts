@@ -1,12 +1,14 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { runIfMain, test } from "https://deno.land/std@v0.3.2/testing/mod.ts";
-import { readRequest, readResponse } from "./serveio.ts";
+import { readRequest, readResponse, writeResponse } from "./serveio.ts";
 import {
   assert,
   assertEquals
 } from "https://deno.land/std@v0.3.2/testing/asserts.ts";
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
+import { encode } from "https://deno.land/std@v0.3.2/strings/strings.ts";
+import copy = Deno.copy;
 
 async function readString(r: Reader) {
   const buf = new Buffer();
@@ -112,6 +114,38 @@ test(async function serveioReadResponseChunked() {
   assertEquals(res.trailers.get("x-deno"), "land");
   assertEquals(res.trailers.get("x-node"), "js");
   assert(typeof res.finalize === "function");
+});
+
+test(async function serveioWriteResponse() {
+  const buf = new Buffer();
+  await writeResponse(buf, {
+    status: 200,
+    headers: new Headers({
+      "Content-Type": "text/plain"
+    }),
+    body: encode("ok")
+  });
+  const res = await readResponse(buf);
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("content-type"), "text/plain");
+  assertEquals(res.headers.get("content-length"), "2");
+  const resBody = new Buffer();
+  await copy(resBody, res.body);
+  assertEquals(resBody.toString(), "ok");
+});
+
+test(async function serveioWriteResponseWithoutHeaders() {
+  const buf = new Buffer();
+  await writeResponse(buf, {
+    status: 200,
+    body: encode("ok")
+  });
+  const res = await readResponse(buf);
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("content-length"), "2");
+  const resBody = new Buffer();
+  await copy(resBody, res.body);
+  assertEquals(resBody.toString(), "ok");
 });
 
 runIfMain(import.meta);
