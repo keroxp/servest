@@ -52,15 +52,6 @@ test(function httpMatchNearest() {
 });
 test(async function router() {
   const server = createRouter();
-  server.handle("/", async req => {
-    await req.respond({
-      status: 200,
-      headers: new Headers({
-        "content-type": "text/plain"
-      }),
-      body: new StringReader("ok")
-    });
-  });
   server.handle("/index", async req => {
     await req.respond({
       status: 200,
@@ -84,12 +75,6 @@ test(async function router() {
   const cancel = defer<void>();
   try {
     server.listen("127.0.0.1:8898", { cancel: cancel.promise });
-    {
-      const res = await fetch("http://127.0.0.1:8898/");
-      const text = await res.body.text();
-      assertEquals(res.status, 200);
-      assertEquals(text, "ok");
-    }
     {
       const res1 = await fetch("http://127.0.0.1:8898/index");
       const text = await res1.body.text();
