@@ -41,6 +41,7 @@ export function findLongestAndNearestMatch(
 
 export interface HttpRouter {
   handle(pattern: string | RegExp, handlers: HttpHandler);
+
   listen(addr: string, opts?: ServeOptions): void;
 }
 
@@ -52,8 +53,9 @@ export function createRouter(): HttpRouter {
       routes.push({ pattern, handlers });
     },
     listen(addr: string, opts?: ServeOptions) {
+      const server = serve(addr, opts);
       (async () => {
-        for await (const req of serve(addr, opts)) {
+        for await (const req of server) {
           let { pathname } = new URL(req.url, addr);
           const { index, match } = findLongestAndNearestMatch(
             pathname,

@@ -1,5 +1,4 @@
-#!/usr/bin/env deno --allow-net
-// Copyright 2018-2019 the Deno authors. All rights reserved. MIT license.
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { serve } from "../server.ts";
 
 const addr = Deno.args[1] || "127.0.0.1:4500";

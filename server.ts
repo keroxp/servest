@@ -15,7 +15,7 @@ export type ClientRequest = {
   /** HTTP method */
   method: string;
   /** HTTP Headers */
-  headers: Headers;
+  headers?: Headers;
   /** HTTP Body */
   body?: Uint8Array | Reader;
 };
