@@ -59,17 +59,18 @@ test(async function serverKeepAliveTimeout() {
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
     const req = {
+      path: "/",
       method: "POST",
       headers: new Headers({
         host: "deno.land"
       }),
       body: encode("hello")
     };
-    const { status, finalize } = await agent.send("/", req);
+    const { status, finalize } = await agent.send(req);
     await finalize();
     assertEquals(200, status);
     await assertThrowsAsync(async () => {
-      await agent.send("/", req);
+      await agent.send(req);
     });
   } finally {
     agent.conn.close();
@@ -94,6 +95,7 @@ test(async function serverKeepAliveTimeoutMax() {
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
     const req = {
+      path: "/",
       method: "POST",
       headers: new Headers({
         host: "deno.land",
@@ -101,11 +103,11 @@ test(async function serverKeepAliveTimeoutMax() {
       }),
       body: encode("hello")
     };
-    const { status, finalize } = await agent.send("/", req);
+    const { status, finalize } = await agent.send(req);
     await finalize();
     assertEquals(200, status);
     await assertThrowsAsync(async () => {
-      await agent.send("/", req);
+      await agent.send(req);
     });
   } finally {
     agent.conn.close();
@@ -130,6 +132,7 @@ test(async function serverConnectionClose() {
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
     const req = {
+      path: "/",
       method: "POST",
       headers: new Headers({
         host: "deno.land",
@@ -137,11 +140,11 @@ test(async function serverConnectionClose() {
       }),
       body: encode("hello")
     };
-    const { status, finalize } = await agent.send("/", req);
+    const { status, finalize } = await agent.send(req);
     await finalize();
     assertEquals(200, status);
     await assertThrowsAsync(async () => {
-      await agent.send("/", req);
+      await agent.send(req);
     });
   } finally {
     agent.conn.close();

@@ -67,6 +67,8 @@ router.listen("127.0.0.1:8898");
 
 Agent API is basic HTTP agent. It manages persistent connection to host. Each request will be sent in serial.
 
+`fetch` is enough for most cases. It is useful if you want to manage keep-alive connection to host. 
+
 **NOTE: Currently TLS (HTTPS) agent is not supported as Deno doesn't.**
 
 Use `fetch` for https request.
@@ -76,14 +78,18 @@ Use `fetch` for https request.
 ```ts
 import { createAgent } from "https://denopkg.com/keroxp/servest@v0.5.0/agent.ts";
 const agent = createAgent("http://127.0.0.1:8700");
-const { status, body } = await agent.send("/get?deno=land");
+const { status, body } = await agent.send({
+  path: "/get?deno=land",
+  method: "GET"
+});
 ```
 
 #### POST
 
 ```ts
 import { createAgent } from "https://denopkg.com/keroxp/servest@v0.5.0/agent.ts";
-const { status, headers, body } = await agent.send("/post", {
+const { status, headers, body } = await agent.send({
+  path: "/post",
   method: "POST",
   headers: new Headers({
     "Content-Type": "text/plain"
@@ -96,6 +102,7 @@ const { status, headers, body } = await agent.send("/post", {
 
 - Middleware API for Router
 - HTTP/2
+- HTTP testing api
 
 ## License
 

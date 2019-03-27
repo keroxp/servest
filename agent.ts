@@ -10,28 +10,35 @@ import Reader = Deno.Reader;
 /** keep-alive http agent for single host. each message will be sent in serial */
 export interface HttpAgent {
   /** send request to host. it throws EOF if conn is closed */
-  send(path: string, opts?: HttpAgentSendOptions): Promise<ClientResponse>;
+  send(opts: HttpAgentSendOptions): Promise<ClientResponse>;
 
   /** tcp connection for http agent */
   conn: Conn;
 }
 
+/** error that is thrown when tcp connection is closed */
 export class ConnectionClosedError extends Error {}
-
-export type HttpAgentSendOptions = {
-  method: string;
-  headers?: Headers;
-  body?: Uint8Array | Reader;
-};
 
 export type HttpAgentOptions = {
   cancel?: Promise<void>;
   timeout?: number; // ms
 };
 
+/** http agent send options */
+export type HttpAgentSendOptions = {
+  /** relative path that continues after base url. must begin with /. include queries, hash */
+  path: string;
+  /** http method. */
+  method: string;
+  /** http headers */
+  headers?: Headers;
+  /** http body */
+  body?: Uint8Array | Reader;
+};
+
 const kPortMap = {
-  http: 80,
-  https: 443
+  "http:": 80,
+  "https:": 443
 };
 
 export function createAgent(
@@ -45,13 +52,18 @@ export function createAgent(
   let bufReader: BufReader;
   let bufWriter: BufWriter;
   const url = new URL(baseUrl);
+  assert(url.protocol !== "https:", "https is not supported yet");
+  assert(
+    url.protocol === "http:" || url.protocol === "https:",
+    `scheme must be http or https: ${url.protocol}`
+  );
+  let port = url.port || kPortMap[url.protocol];
+  assert(port !== void 0, `unexpected protocol: ${url.protocol}`);
   const connect = async () => {
     if (connected) return;
     if (connecting) return connectDeferred.promise;
     connecting = true;
     const host = url.hostname;
-    let port = url.port || kPortMap[url.protocol];
-    assert(port !== void 0, `unexpected protocol: ${url.protocol}`);
     _conn = await Deno.dial("tcp", `${host}:${port}`);
     bufReader = new BufReader(_conn);
     bufWriter = new BufWriter(_conn);
@@ -62,7 +74,6 @@ export function createAgent(
   let prevResponse: ClientResponse;
   let sending = false;
   const send = async (
-    path: string,
     sendOptions?: HttpAgentSendOptions
   ): Promise<ClientResponse> => {
     if (sending) {
@@ -72,20 +83,18 @@ export function createAgent(
     if (!connected) {
       await connect();
     }
+    const { path, method, headers, body } = sendOptions;
     const destUrl = new URL(path, url);
     try {
       if (prevResponse) {
         await prevResponse.finalize();
       }
-      await writeRequest(
-        _conn,
-        Object.assign(
-          {
-            url: destUrl.toString()
-          },
-          sendOptions
-        )
-      );
+      await writeRequest(_conn, {
+        url: destUrl.toString(),
+        method,
+        headers,
+        body
+      });
       const res = await readResponse(_conn, opts);
       return (prevResponse = Object.assign(res, {
         bufWriter,

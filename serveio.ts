@@ -145,6 +145,7 @@ export async function writeRequest(
 ): Promise<void> {
   const writer = bufWriter(w);
   let { method, body, headers } = req;
+  method = method.toUpperCase();
   const url = new URL(req.url);
   if (!headers) {
     headers = new Headers();
