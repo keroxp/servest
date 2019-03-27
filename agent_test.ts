@@ -74,6 +74,7 @@ test(async function agentUnreadBody() {
     });
     assertEquals(await readString(body), "denoland");
   } finally {
+    agent.conn.close();
     d.resolve();
   }
 });
