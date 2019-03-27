@@ -27,9 +27,17 @@ export class BodyReader implements Reader {
   }
 
   async read(p: Uint8Array): Promise<ReadResult> {
-    const { nread } = await this.reader.read(p);
+    const remaining = this.contentLength - this.total;
+    let buf = p;
+    if (p.byteLength > remaining) {
+      buf = new Uint8Array(remaining);
+    }
+    let { nread, eof } = await this.reader.read(buf);
+    if (buf !== p) {
+      p.set(buf);
+    }
     this.total += nread;
-    const eof = this.total === this.contentLength;
+    eof = eof || this.total === this.contentLength;
     return { nread, eof };
   }
 }
@@ -93,7 +101,7 @@ export class TimeoutReader implements Reader {
     private readonly r: Reader,
     opts: {
       timeout: number;
-      cancel: Promise<void>;
+      cancel?: Promise<void>;
     }
   ) {
     this.timeoutOrCancel = promiseInterrupter(opts);

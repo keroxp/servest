@@ -8,10 +8,9 @@ import {
   assertEquals,
   assertThrowsAsync
 } from "https://deno.land/std@v0.3.2/testing/asserts.ts";
-import { readResponse, writeRequest } from "./serveio.ts";
 import { createResponder } from "./responder.ts";
-import { readUntilEof } from "./readers.ts";
 import { encode } from "https://deno.land/std@v0.3.2/strings/strings.ts";
+import { createAgent } from "./agent.ts";
 import copy = Deno.copy;
 
 let port = 8880;
@@ -57,25 +56,23 @@ test(async function serverKeepAliveTimeout() {
       });
     }
   })();
+  const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
-    const conn = await Deno.dial("tcp", `127.0.0.1:${port}`);
     const req = {
-      url: `http://127.0.0.1:${port}/`,
       method: "POST",
       headers: new Headers({
         host: "deno.land"
       }),
       body: encode("hello")
     };
-    await writeRequest(conn, req);
-    const { status, body } = await readResponse(conn);
-    await readUntilEof(body);
+    const { status, finalize } = await agent.send("/", req);
+    await finalize();
     assertEquals(200, status);
     await assertThrowsAsync(async () => {
-      await writeRequest(conn, req);
-      await readResponse(conn);
+      await agent.send("/", req);
     });
   } finally {
+    agent.conn.close();
     d.resolve();
   }
 });
@@ -94,10 +91,9 @@ test(async function serverKeepAliveTimeoutMax() {
       });
     }
   })();
+  const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
-    const conn = await Deno.dial("tcp", `127.0.0.1:${port}`);
     const req = {
-      url: `http://127.0.0.1:${port}/`,
       method: "POST",
       headers: new Headers({
         host: "deno.land",
@@ -105,15 +101,14 @@ test(async function serverKeepAliveTimeoutMax() {
       }),
       body: encode("hello")
     };
-    await writeRequest(conn, req);
-    const { status, body } = await readResponse(conn);
-    await readUntilEof(body);
+    const { status, finalize } = await agent.send("/", req);
+    await finalize();
     assertEquals(200, status);
     await assertThrowsAsync(async () => {
-      await writeRequest(conn, req);
-      await readResponse(conn);
+      await agent.send("/", req);
     });
   } finally {
+    agent.conn.close();
     d.resolve();
   }
 });
@@ -132,26 +127,24 @@ test(async function serverConnectionClose() {
       });
     }
   })();
+  const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
-    const conn = await Deno.dial("tcp", `127.0.0.1:${port}`);
     const req = {
-      url: `http://127.0.0.1:${port}/`,
       method: "POST",
       headers: new Headers({
         host: "deno.land",
-        "connection": "close",
+        connection: "close"
       }),
       body: encode("hello")
     };
-    await writeRequest(conn, req);
-    const { status, body } = await readResponse(conn);
-    await readUntilEof(body);
+    const { status, finalize } = await agent.send("/", req);
+    await finalize();
     assertEquals(200, status);
     await assertThrowsAsync(async () => {
-      await writeRequest(conn, req);
-      await readResponse(conn);
+      await agent.send("/", req);
     });
   } finally {
+    agent.conn.close();
     d.resolve();
   }
 });

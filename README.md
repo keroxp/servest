@@ -8,7 +8,7 @@
 
 ### Serve API
 
-`serve` API is compatible to [deno_std@v0.3.2](https://github.com/denoland/deno_std/blob/master/http/server.ts) but has different implementation.
+`serve` API is compatible with [deno_std@v0.3.2](https://github.com/denoland/deno_std/blob/master/http/server.ts) but has different implementation.
 Some progressive features for HTTP/1.1 server are implemented.
 
 - Support Keep-Alive connection
@@ -63,9 +63,37 @@ router.handle(new RegExp("/foo/(?<id>.+)"), async req => {
 router.listen("127.0.0.1:8898");
 ```
 
+### Agent API
+
+Agent API is basic HTTP agent. It manages persistent connection to host. Each request will be sent in serial.
+
+**NOTE: Currently TLS (HTTPS) agent is not supported as Deno doesn't.**
+
+Use `fetch` for https request.
+
+#### GET
+
+```ts
+import { createAgent } from "https://denopkg.com/keroxp/servest@v0.5.0/agent.ts";
+const agent = createAgent("http://127.0.0.1:8700");
+const { status, body } = await agent.send("/get?deno=land");
+```
+
+#### POST
+
+```ts
+import { createAgent } from "https://denopkg.com/keroxp/servest@v0.5.0/agent.ts";
+const { status, headers, body } = await agent.send("/post", {
+  method: "POST",
+  headers: new Headers({
+    "Content-Type": "text/plain"
+  }),
+  body: new TextEncoder().encode("deno=land")
+});
+```
+
 ## Loadmaps
 
-- Requester API
 - Middleware API for Router
 - HTTP/2
 

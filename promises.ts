@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-export type Promises<T = any, R = Error> = {
+export type Deferred<T = any, R = Error> = {
   promise: Promise<T>;
   resolve: (t?: T) => void;
   reject: (r?: R) => void;
@@ -7,7 +7,7 @@ export type Promises<T = any, R = Error> = {
 };
 
 /** Create deferred promise that can be resolved and rejected by outside */
-export function defer<T = void>(): Promises<T> {
+export function defer<T = void>(): Deferred<T> {
   let handled = false;
   let resolve;
   let reject;
@@ -48,15 +48,18 @@ export class TimeoutError extends Error {}
 
 /** returns curried promise factory that  */
 export function promiseInterrupter(opts: {
-  timeout: number;
-  cancel: Promise<void>;
+  timeout?: number;
+  cancel?: Promise<void>;
 }): <T>(p: Promise<T>) => Promise<T> {
-  const { timeout, cancel } = opts;
+  let { timeout, cancel } = opts;
+  timeout = Number.isInteger(timeout) ? timeout : -1;
   return <T>(p) =>
     new Promise<T>((resolve, reject) => {
       if (timeout < 0) {
         p.then(resolve).catch(reject);
-        cancel.then(reject).catch(reject);
+        if (cancel) {
+          cancel.then(reject).catch(reject);
+        }
       } else {
         const i = setTimeout(() => {
           reject(new TimeoutError());
@@ -65,10 +68,12 @@ export function promiseInterrupter(opts: {
         p.then(resolve)
           .catch(reject)
           .finally(clear);
-        cancel
-          .then(reject)
-          .catch(reject)
-          .finally(clear);
+        if (cancel) {
+          cancel
+            .then(reject)
+            .catch(reject)
+            .finally(clear);
+        }
       }
     });
 }

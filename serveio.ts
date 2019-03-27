@@ -139,7 +139,10 @@ export async function readRequest(
 }
 
 /** write http request. Host, Content-Length, Transfer-Encoding headers are set if needed */
-export async function writeRequest(w: Writer, req: ClientRequest) {
+export async function writeRequest(
+  w: Writer,
+  req: ClientRequest
+): Promise<void> {
   const writer = bufWriter(w);
   let { method, body, headers } = req;
   const url = new URL(req.url);
@@ -147,7 +150,9 @@ export async function writeRequest(w: Writer, req: ClientRequest) {
     headers = new Headers();
   }
   // start line
-  const lines = [`${method} ${url.pathname}${url.search || ""} HTTP/1.1`];
+  await writer.write(
+    encode(`${method} ${url.pathname}${url.search || ""} HTTP/1.1\r\n`)
+  );
   // header
   if (!headers.has("Host")) {
     headers.set("Host", url.host);
@@ -168,16 +173,9 @@ export async function writeRequest(w: Writer, req: ClientRequest) {
       headers.set("Transfer-Encoding", "chunked");
     }
   }
-  for (const [key, value] of headers) {
-    lines.push(`${key}: ${value}`);
-  }
-  lines.push("\r\n");
-  const headerText = lines.join("\r\n");
-  await writer.write(encode(headerText));
-  const state = await writer.flush();
-  if (state) {
-    throw new Error(`failed to write headers: ${state}`);
-  }
+  await writeHeaders(writer, headers);
+  const err = await writer.flush();
+  if (err) throw err;
   if (body) {
     await writeBody(writer, body, contentLength);
   }
@@ -279,7 +277,10 @@ const kHttpStatusCodes = {
 };
 
 /** write http response to writer. Content-Length, Transfer-Encoding headers are set if needed */
-export async function writeResponse(w: Writer, res: ServerResponse) {
+export async function writeResponse(
+  w: Writer,
+  res: ServerResponse
+): Promise<void> {
   const writer = bufWriter(w);
   if (res.headers === void 0) {
     res.headers = new Headers();
@@ -306,7 +307,7 @@ export async function writeResponse(w: Writer, res: ServerResponse) {
 }
 
 /** write headers to writer */
-export async function writeHeaders(w: Writer, headers: Headers) {
+export async function writeHeaders(w: Writer, headers: Headers): Promise<void> {
   const lines = [];
   const writer = bufWriter(w);
   for (const [key, value] of headers) {
@@ -315,7 +316,8 @@ export async function writeHeaders(w: Writer, headers: Headers) {
   lines.push("\r\n");
   const headerText = lines.join("\r\n");
   await writer.write(encode(headerText));
-  await writer.flush();
+  const err = await writer.flush();
+  if (err) throw err;
 }
 
 /** write http body to writer. Reader without contentLength will be written by chunked encoding */
@@ -323,7 +325,7 @@ export async function writeBody(
   w: Writer,
   body: Uint8Array | Reader,
   contentLength?: number
-) {
+): Promise<void> {
   if (!body) return;
   const buf = new Uint8Array(1024);
   let writer = bufWriter(w);
@@ -341,12 +343,14 @@ export async function writeBody(
         await writer.write(chunk);
         await writer.write(encode("\r\n"));
       }
-      await writer.flush();
+      const err = await writer.flush();
+      if (err) throw err;
     }
     if (eof) {
       if (!hasContentLength) {
         await writer.write(encode("0\r\n\r\n"));
-        await writer.flush();
+        const err = await writer.flush();
+        if (err) throw err;
       }
       break;
     }
@@ -364,7 +368,7 @@ export async function writeTrailers(
   w: Writer,
   headers: Headers,
   trailers: Headers
-) {
+): Promise<void> {
   assert(
     headers.has("trailer"),
     'response headers must have "trailer" header field'
@@ -392,7 +396,8 @@ export async function writeTrailers(
     );
     await writer.write(encode(`${key}: ${value}\r\n`));
   }
-  await writer.flush();
+  const err = await writer.flush();
+  if (err) throw err;
 }
 
 /** read trailer headers from reader. it should mostly be called after readRequest */
