@@ -4,7 +4,10 @@ import { defer, Deferred } from "./promises.ts";
 import { encode } from "https://deno.land/std@v0.3.2/strings/strings.ts";
 import { createAgent } from "./agent.ts";
 import { createRouter } from "./router.ts";
-import { assertEquals } from "https://deno.land/std@v0.3.2/testing/asserts.ts";
+import {
+  assertEquals,
+  assertThrows
+} from "https://deno.land/std@v0.3.2/testing/asserts.ts";
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
@@ -43,18 +46,24 @@ test(async function agent() {
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
     {
-      const res = await agent.send("/get");
+      const res = await agent.send({
+        path: "/get",
+        method: "GET"
+      });
       assertEquals(res.status, 200);
       assertEquals(await readString(res.body), "ok");
     }
     {
-      const res = await agent.send("/post", {
+      const res = await agent.send({
+        path: "/post",
         method: "POST",
         body: encode("denoland")
       });
       assertEquals(res.status, 200);
       assertEquals(await readString(res.body), "denoland");
     }
+  } catch (e) {
+    console.error(e);
   } finally {
     agent.conn.close();
     d.resolve();
@@ -66,17 +75,35 @@ test(async function agentUnreadBody() {
   const d = serveRouter(port);
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
-    await agent.send("/get");
-    await agent.send("/post", { method: "POST", body: encode("ko") });
-    const { body } = await agent.send("/post", {
+    await agent.send({ path: "/get", method: "GET" });
+    await agent.send({ path: "/post", method: "POST", body: encode("ko") });
+    const { body } = await agent.send({
+      path: "/post",
       method: "POST",
       body: encode("denoland")
     });
     assertEquals(await readString(body), "denoland");
+  } catch (e) {
+    console.error(e);
   } finally {
     agent.conn.close();
     d.resolve();
   }
+});
+
+test(async function agentHttps() {
+  assertThrows(() => {
+    createAgent("https://127.0.0.1");
+  });
+  assertThrows(() => {
+    createAgent("https://127.0.0.1:8888");
+  });
+});
+
+test(async function agentInvalidScheme() {
+  assertThrows(() => {
+    createAgent("ftp://127.0.0.1");
+  });
 });
 
 runIfMain(import.meta);
