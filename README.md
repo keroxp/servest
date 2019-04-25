@@ -22,7 +22,7 @@ Some progressive features for HTTP/1.1 server are implemented.
 - Fully interface based type definition
 
 ```ts
-import { serve } from "https://denopkg.com/keroxp/servest@v0.6.0/server.ts";
+import { serve } from "https://denopkg.com/keroxp/servest@v0.7.0/server.ts";
 async function main() {
   for await (const req of serve(`0.0.0.0:8899`)) {
     await req.respond({
@@ -42,7 +42,7 @@ main();
 Router API is minimal routing system on top of `serve()`
 
 ```ts
-import { createRouter } from "https://denopkg.com/keroxp/servest@v0.6.0/router.ts";
+import { createRouter } from "https://denopkg.com/keroxp/servest@v0.7.0/router.ts";
 
 const router = createRouter();
 router.handle("/", async req => {
@@ -80,7 +80,7 @@ Use `fetch` for https request.
 #### GET
 
 ```ts
-import { createAgent } from "https://denopkg.com/keroxp/servest@v0.6.0/agent.ts";
+import { createAgent } from "https://denopkg.com/keroxp/servest@v0.7.0/agent.ts";
 const agent = createAgent("http://127.0.0.1:8700");
 const { status, body } = await agent.send({
   path: "/get?deno=land",
@@ -91,7 +91,7 @@ const { status, body } = await agent.send({
 #### POST
 
 ```ts
-import { createAgent } from "https://denopkg.com/keroxp/servest@v0.6.0/agent.ts";
+import { createAgent } from "https://denopkg.com/keroxp/servest@v0.7.0/agent.ts";
 const { status, headers, body } = await agent.send({
   path: "/post",
   method: "POST",
