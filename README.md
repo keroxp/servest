@@ -12,30 +12,38 @@
 
 ### Serve API
 
-`serve` API is compatible with [deno_std@v0.3.2](https://github.com/denoland/deno_std/blob/master/http/server.ts) but has different implementation.
+Serve API is compatible with [deno_std@v0.3.2](https://github.com/denoland/deno_std/blob/master/http/server.ts) but has different implementation.
 Some progressive features for HTTP/1.1 server are implemented.
 
 - Support Keep-Alive connection
 - Support trailer headers
 - Support keep-alive timeout and read timeout
-- `serve` is cancellable by cancel promise
+- `serve` and `listenAndServe` is cancellable by cancel promise
 - Fully interface based type definition
 
 ```ts
-import { serve } from "https://denopkg.com/keroxp/servest@v0.7.0/server.ts";
-async function main() {
-  for await (const req of serve(`0.0.0.0:8899`)) {
-    await req.respond({
+import { listenAndServe } from "https://denopkg.com/keroxp/servest@v0.7.0/server.ts";
+listenAndServe(":8899", async req => {
+  await req.respond({
       status: 200,
       headers: new Headers({
         "Content-Type": "text/plain"
       }),
       body: new TextEncoder().encode("hello")
     });
-  }
-}
-main();
+})
 ```
+
+**NOTE: use listenAndServe instead of serve**
+
+Generally `listenAndServe` has higher concurrency than `serve`
+because `serve` is built top of async iteration.
+`yield` in async iteration degrades concurrency of promises.
+
+Processing of requests from identical keep-alive connection should be handled in serial, but requests from different connections should be handled in concurrent. 
+
+`listenAndServe` does it as it is built top of async callback.
+ It is faster than `serve` about x2 in our benchmark test.
 
 ### Router API
 
