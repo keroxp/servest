@@ -22,6 +22,7 @@ import {
   IncomingHttpRequest,
   IncomingHttpResponse,
   KeepAlive,
+  ServeOptions,
   ServerResponse
 } from "./server.ts";
 import Reader = Deno.Reader;
@@ -36,6 +37,23 @@ function bufReader(r: Reader): BufReader {
   }
 }
 
+const kDefaultKeepAliveTimeout = 75000; // ms
+
+export function initServeOptions(opts: ServeOptions = {}): ServeOptions {
+  let cancel = opts.cancel;
+  let keepAliveTimeout = kDefaultKeepAliveTimeout;
+  let readTimeout = kDefaultKeepAliveTimeout;
+  if (opts.keepAliveTimeout !== void 0) {
+    keepAliveTimeout = opts.keepAliveTimeout;
+  }
+  if (opts.readTimeout !== void 0) {
+    readTimeout = opts.readTimeout;
+  }
+  assert(keepAliveTimeout >= 0, "keepAliveTimeout must be >= 0");
+  assert(readTimeout >= 0, "readTimeout must be >= 0");
+  return { cancel, keepAliveTimeout, readTimeout };
+}
+
 /**
  * read http request from reader
  * status-line and headers are certainly read. body and trailers may not be read
@@ -43,35 +61,19 @@ function bufReader(r: Reader): BufReader {
  * */
 export async function readRequest(
   r: Reader,
-  opts?: {
-    cancel: Promise<void>;
-    keepAliveTimeout: number;
-    readTimeout: number;
-  }
+  opts: ServeOptions = {}
 ): Promise<IncomingHttpRequest> {
-  let keepAliveTimeout = 75000;
-  let readTimeout = 75000;
-  let cancel = defer().promise;
-  if (opts) {
-    if (Number.isInteger(opts.keepAliveTimeout)) {
-      keepAliveTimeout = opts.keepAliveTimeout;
-    }
-    if (Number.isInteger(opts.readTimeout)) {
-      readTimeout = opts.readTimeout;
-    }
-    if (opts.cancel) {
-      cancel = opts.cancel;
-    }
-  }
+  opts = initServeOptions(opts);
   const reader = bufReader(r);
   const tpReader = new TextProtoReader(reader);
   // read status line
   let resLine: string;
   let headers: Headers;
   let state: BufState;
+  // use keepAliveTimeout for reading request line
   [resLine, state] = await promiseInterrupter({
-    timeout: keepAliveTimeout,
-    cancel
+    timeout: opts.keepAliveTimeout,
+    cancel: opts.cancel
   })(tpReader.readLine());
   if (state) {
     throw new Error(`read failed: ${state}`);
@@ -79,8 +81,8 @@ export async function readRequest(
   const [m, method, url, proto] = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
   // read header
   [headers, state] = await promiseInterrupter({
-    timeout: readTimeout,
-    cancel
+    timeout: opts.readTimeout,
+    cancel: opts.cancel
   })(tpReader.readMIMEHeader());
   if (state) {
     throw new Error(`read failed: ${state}`);
@@ -109,8 +111,8 @@ export async function readRequest(
         });
       }
       body = new TimeoutReader(new ChunkedBodyReader(reader), {
-        timeout: readTimeout,
-        cancel
+        timeout: opts.readTimeout,
+        cancel: opts.cancel
       });
     } else {
       const contentLength = parseInt(headers.get("content-length"));
@@ -119,8 +121,8 @@ export async function readRequest(
         `content-length is missing or invalid: ${headers.get("content-length")}`
       );
       body = new TimeoutReader(new BodyReader(reader, contentLength), {
-        timeout: readTimeout,
-        cancel
+        timeout: opts.readTimeout,
+        cancel: opts.cancel
       });
     }
   }

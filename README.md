@@ -71,7 +71,7 @@ router.listen("127.0.0.1:8898");
 
 Agent API is basic HTTP agent. It manages persistent connection to host. Each request will be sent in serial.
 
-`fetch` is enough for most cases. It is useful if you want to manage keep-alive connection to host. 
+`fetch` is enough for most cases. It is useful if you want to manage keep-alive connection to host.
 
 **NOTE: Currently TLS (HTTPS) agent is not supported as Deno doesn't.**
 
