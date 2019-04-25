@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { serve, ServeOptions, ServerRequest } from "./server.ts";
+import { listenAndServe, ServeOptions, ServerRequest } from "./server.ts";
 import { encode } from "https://deno.land/std@v0.3.2/strings/strings.ts";
 
 export type RoutedServerRequest = ServerRequest & {
@@ -53,9 +53,9 @@ export function createRouter(): HttpRouter {
       routes.push({ pattern, handlers });
     },
     listen(addr: string, opts?: ServeOptions) {
-      const server = serve(addr, opts);
-      (async () => {
-        for await (const req of server) {
+      listenAndServe(
+        addr,
+        async req => {
           let { pathname } = new URL(req.url, addr);
           const { index, match } = findLongestAndNearestMatch(
             pathname,
@@ -83,8 +83,9 @@ export function createRouter(): HttpRouter {
               body: encode("Not Found")
             });
           }
-        }
-      })();
+        },
+        opts
+      );
     }
   };
 }
