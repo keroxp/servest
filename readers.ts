@@ -1,6 +1,6 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { BufReader } from "https://deno.land/std@v0.3.2/io/bufio.ts";
-import { TextProtoReader } from "https://deno.land/std@v0.3.2/textproto/mod.ts";
+import { BufReader } from "https://deno.land/std@v0.3.4/io/bufio.ts";
+import { TextProtoReader } from "https://deno.land/std@v0.3.4/textproto/mod.ts";
 import { promiseInterrupter } from "./promises.ts";
 import Reader = Deno.Reader;
 import ReadResult = Deno.ReadResult;

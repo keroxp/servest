@@ -1,7 +1,7 @@
 language: python
 
 install:
-- curl -fsSL https://deno.land/x/install/install.sh | sh -s -- v0.3.3
+- curl -fsSL https://deno.land/x/install/install.sh | sh -s -- v0.3.10
 - export PATH="$HOME/.deno/bin:$PATH"
 
 script:
