@@ -1,6 +1,6 @@
 # servest
 
-![https://travis-ci.org/keroxp/servest.svg?branch=master](https://travis-ci.org/keroxp/servest.svg?branch=master)
+![https://travis-ci.com/keroxp/servest](https://travis-ci.com/keroxp/servest.svg?branch=master)
 ![https://img.shields.io/github/tag/keroxp/servest.svg](https://img.shields.io/github/tag/keroxp/servest.svg)
 [![license](https://img.shields.io/github/license/keroxp/servest.svg)](https://github.com/keroxp/servest)
 [![tag](https://img.shields.io/badge/deno__std-v0.3.2-green.svg)](https://github.com/denoland/deno_std)
