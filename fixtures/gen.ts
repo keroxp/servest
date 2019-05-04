@@ -1,7 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { writeRequest, writeResponse, writeTrailers } from "../serveio.ts";
-import { encode } from "https://deno.land/std@v0.3.4/strings/strings.ts";
-import { StringReader } from "https://deno.land/std@v0.3.4/io/readers.ts";
+import { encode } from "https://deno.land/std@v0.4.0/strings/strings.ts";
+import { StringReader } from "https://deno.land/std@v0.4.0/io/readers.ts";
 
 async function main() {
   await basicRequestGet();

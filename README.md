@@ -3,7 +3,7 @@
 ![https://travis-ci.com/keroxp/servest](https://travis-ci.com/keroxp/servest.svg?branch=master)
 ![https://img.shields.io/github/tag/keroxp/servest.svg](https://img.shields.io/github/tag/keroxp/servest.svg)
 [![license](https://img.shields.io/github/license/keroxp/servest.svg)](https://github.com/keroxp/servest)
-[![tag](https://img.shields.io/badge/deno__std-v0.3.4-green.svg)](https://github.com/denoland/deno_std)
+[![tag](https://img.shields.io/badge/deno__std-v0.4.0-green.svg)](https://github.com/denoland/deno_std)
 [![tag](https://img.shields.io/badge/deno-v0.3.3-green.svg)](https://github.com/denoland/deno)
 
 🌾A progressive http server / router for deno🌾
@@ -12,7 +12,7 @@
 
 ### Serve API
 
-Serve API is compatible with [deno_std@v0.3.4](https://github.com/denoland/deno_std/blob/master/http/server.ts) but has different implementation.
+Serve API is compatible with [deno_std@v0.4.0](https://github.com/denoland/deno_std/blob/master/http/server.ts) but has different implementation.
 Some progressive features for HTTP/1.1 server are implemented.
 
 - Support Keep-Alive connection
