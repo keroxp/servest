@@ -47,10 +47,10 @@ Processing of requests from identical keep-alive connection should be handled in
 
 ### Router API
 
-Router API is minimal routing system on top of `serve()`
+Router API is minimal routing system on top of `listenAndServe()`
 
 ```ts
-import { createRouter } from "https://denopkg.com/keroxp/servest@v0.7.1/router.ts";
+import { createRouter } from "https://denopkg.com/keroxp/servest@v0.7.2/router.ts";
 
 const router = createRouter();
 router.handle("/", async req => {
@@ -88,7 +88,7 @@ Use `fetch` for https request.
 #### GET
 
 ```ts
-import { createAgent } from "https://denopkg.com/keroxp/servest@v0.7.1/agent.ts";
+import { createAgent } from "https://denopkg.com/keroxp/servest@v0.7.2/agent.ts";
 const agent = createAgent("http://127.0.0.1:8700");
 const { status, body } = await agent.send({
   path: "/get?deno=land",
@@ -99,7 +99,7 @@ const { status, body } = await agent.send({
 #### POST
 
 ```ts
-import { createAgent } from "https://denopkg.com/keroxp/servest@v0.7.1/agent.ts";
+import { createAgent } from "https://denopkg.com/keroxp/servest@v0.7.2/agent.ts";
 const { status, headers, body } = await agent.send({
   path: "/post",
   method: "POST",
