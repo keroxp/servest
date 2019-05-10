@@ -5,4 +5,5 @@ install:
 - export PATH="$HOME/.deno/bin:$PATH"
 
 script:
+- deno fetch ./tests.ts
 - deno run -A ./tests.ts
