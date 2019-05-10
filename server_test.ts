@@ -1,6 +1,6 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { runIfMain, test } from "https://deno.land/std@v0.4.0/testing/mod.ts";
-import { defer } from "./promises.ts";
+import { defer, delay } from "./promises.ts";
 import { serve } from "./server.ts";
 import { StringReader } from "https://deno.land/std@v0.4.0/io/readers.ts";
 import { StringWriter } from "https://deno.land/std@v0.4.0/io/writers.ts";
@@ -38,6 +38,7 @@ test(async function server() {
     assertEquals(dest.toString(), "hello");
   } finally {
     d.resolve();
+    await delay(100);
   }
 });
 
@@ -75,6 +76,7 @@ test(async function serverKeepAliveTimeout() {
   } finally {
     agent.conn.close();
     d.resolve();
+    await delay(100);
   }
 });
 
@@ -112,6 +114,7 @@ test(async function serverKeepAliveTimeoutMax() {
   } finally {
     agent.conn.close();
     d.resolve();
+    await delay(100);
   }
 });
 
@@ -149,6 +152,7 @@ test(async function serverConnectionClose() {
   } finally {
     agent.conn.close();
     d.resolve();
+    await delay(100);
   }
 });
 

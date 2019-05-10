@@ -11,6 +11,7 @@ import {
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
+import { delay } from "./promises.ts";
 
 async function readString(r: Reader) {
   const buf = new Buffer();
@@ -20,7 +21,7 @@ async function readString(r: Reader) {
 
 let port = 8700;
 
-function serveRouter(port: number): Deferred {
+async function serveRouter(port: number): Promise<Deferred> {
   const d = defer();
   const router = createRouter();
   router.handle("/get", async req => {
@@ -37,12 +38,14 @@ function serveRouter(port: number): Deferred {
     });
   });
   router.listen(`:${port}`, { cancel: d.promise });
+  // ensuring listener will have listened...
+  await delay(100);
   return d;
 }
 
 test(async function agent() {
   port++;
-  const d = serveRouter(port);
+  const d = await serveRouter(port);
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
     {
@@ -67,12 +70,13 @@ test(async function agent() {
   } finally {
     agent.conn.close();
     d.resolve();
+    await delay(100);
   }
 });
 
 test(async function agentUnreadBody() {
   port++;
-  const d = serveRouter(port);
+  const d = await serveRouter(port);
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
     await agent.send({ path: "/get", method: "GET" });
@@ -88,6 +92,7 @@ test(async function agentUnreadBody() {
   } finally {
     agent.conn.close();
     d.resolve();
+    await delay(100);
   }
 });
 
