@@ -1,10 +1,10 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   BufReader,
-  BufState,
-  BufWriter
-} from "https://deno.land/std@v0.4.0/io/bufio.ts";
-import { TextProtoReader } from "https://deno.land/std@v0.4.0/textproto/mod.ts";
+  BufWriter,
+  EOF
+} from "https://deno.land/std@v0.7.0/io/bufio.ts";
+import { TextProtoReader } from "https://deno.land/std@v0.7.0/textproto/mod.ts";
 import {
   BodyReader,
   ChunkedBodyReader,
@@ -12,11 +12,7 @@ import {
   TimeoutReader
 } from "./readers.ts";
 import { defer, promiseInterrupter } from "./promises.ts";
-import { assert } from "https://deno.land/std@v0.4.0/testing/asserts.ts";
-import {
-  decode,
-  encode
-} from "https://deno.land/std@v0.4.0/strings/strings.ts";
+import { assert } from "https://deno.land/std@v0.7.0/testing/asserts.ts";
 import {
   ClientRequest,
   IncomingHttpRequest,
@@ -28,6 +24,8 @@ import {
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
+import { encode } from "https://deno.land/std@v0.7.0/strings/encode.ts";
+import { decode } from "https://deno.land/std@v0.7.0/strings/decode.ts";
 
 function bufReader(r: Reader): BufReader {
   if (r instanceof BufReader) {
@@ -67,25 +65,22 @@ export async function readRequest(
   const reader = bufReader(r);
   const tpReader = new TextProtoReader(reader);
   // read status line
-  let resLine: string;
-  let headers: Headers;
-  let state: BufState;
   // use keepAliveTimeout for reading request line
-  [resLine, state] = await promiseInterrupter({
+  const resLine = await promiseInterrupter({
     timeout: opts.keepAliveTimeout,
     cancel: opts.cancel
   })(tpReader.readLine());
-  if (state) {
-    throw new Error(`read failed: ${state}`);
+  if (resLine === EOF) {
+    throw EOF;
   }
   const [m, method, url, proto] = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
   // read header
-  [headers, state] = await promiseInterrupter({
+  const headers = await promiseInterrupter({
     timeout: opts.readTimeout,
     cancel: opts.cancel
   })(tpReader.readMIMEHeader());
-  if (state) {
-    throw new Error(`read failed: ${state}`);
+  if (headers === EOF) {
+    throw EOF;
   }
   let keepAlive;
   if (headers.has("keep-alive")) {
@@ -177,8 +172,7 @@ export async function writeRequest(
     }
   }
   await writeHeaders(writer, headers);
-  const err = await writer.flush();
-  if (err) throw err;
+  await writer.flush();
   if (body) {
     await writeBody(writer, body, contentLength);
   }
@@ -201,14 +195,14 @@ export async function readResponse(
   const tp = new TextProtoReader(reader);
   const timeoutOrCancel = promiseInterrupter({ timeout, cancel });
   // First line: HTTP/1,1 200 OK
-  const [line, lineErr] = await timeoutOrCancel(tp.readLine());
-  if (lineErr) {
-    throw lineErr;
+  const line = await timeoutOrCancel(tp.readLine());
+  if (line === EOF) {
+    throw EOF;
   }
   const [proto, status, statusText] = line.split(" ", 3);
-  const [headers, headersErr] = await timeoutOrCancel(tp.readMIMEHeader());
-  if (headersErr) {
-    throw headersErr;
+  const headers = await timeoutOrCancel(tp.readMIMEHeader());
+  if (headers === EOF) {
+    throw EOF;
   }
   const contentLength = headers.get("content-length");
   const isChunked = headers.get("transfer-encoding") === "chunked";
@@ -319,8 +313,7 @@ export async function writeHeaders(w: Writer, headers: Headers): Promise<void> {
   lines.push("\r\n");
   const headerText = lines.join("\r\n");
   await writer.write(encode(headerText));
-  const err = await writer.flush();
-  if (err) throw err;
+  await writer.flush();
 }
 
 /** write http body to writer. Reader without contentLength will be written by chunked encoding */
@@ -346,14 +339,12 @@ export async function writeBody(
         await writer.write(chunk);
         await writer.write(encode("\r\n"));
       }
-      const err = await writer.flush();
-      if (err) throw err;
+      await writer.flush();
     }
     if (eof) {
       if (!hasContentLength) {
         await writer.write(encode("0\r\n\r\n"));
-        const err = await writer.flush();
-        if (err) throw err;
+        await writer.flush();
       }
       break;
     }
@@ -399,8 +390,7 @@ export async function writeTrailers(
     );
     await writer.write(encode(`${key}: ${value}\r\n`));
   }
-  const err = await writer.flush();
-  if (err) throw err;
+  await writer.flush();
 }
 
 /** read trailer headers from reader. it should mostly be called after readRequest */
@@ -421,11 +411,11 @@ export async function readTrailers(
     );
   }
   for (let i = 0; i < trailerHeaderFields.length; i++) {
-    const [line, ok, state] = await reader.readLine();
-    if (state) {
-      throw new Error(`${state}`);
+    const readLine = await reader.readLine();
+    if (readLine === EOF) {
+      throw EOF;
     }
-    const [_, field, value] = decode(line)
+    const [_, field, value] = decode(readLine.line)
       .trim()
       .match(/^([^ :]+?):(.+?)$/);
     assert(
