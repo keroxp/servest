@@ -1,6 +1,6 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { BufReader } from "https://deno.land/std@v0.4.0/io/bufio.ts";
-import { TextProtoReader } from "https://deno.land/std@v0.4.0/textproto/mod.ts";
+import { BufReader, EOF } from "https://deno.land/std@v0.7.0/io/bufio.ts";
+import { TextProtoReader } from "https://deno.land/std@v0.7.0/textproto/mod.ts";
 import { promiseInterrupter } from "./promises.ts";
 import Reader = Deno.Reader;
 import ReadResult = Deno.ReadResult;
@@ -60,24 +60,23 @@ export class ChunkedBodyReader implements Reader {
     if (this.finished) {
       return { eof: true, nread: 0 };
     }
-    const [line, sizeErr] = await this.tpReader.readLine();
-    if (sizeErr) {
-      throw sizeErr;
+    const line = await this.tpReader.readLine();
+    if (line === EOF) {
+      throw EOF;
     }
     const len = parseInt(line, 16);
-    let nread, state;
     if (len === 0) {
       this.finished = true;
-      [nread, state] = await this.bufReader.readFull(this.crlfBuf);
-      if (state) {
-        throw state;
+      const res = await this.bufReader.readFull(this.crlfBuf);
+      if (res === EOF) {
+        throw res;
       }
       return { nread: 0, eof: true };
     } else {
       const buf = new Uint8Array(len + 2);
-      [nread, state] = await this.bufReader.readFull(buf);
-      if (state) {
-        throw state;
+      const res = await this.bufReader.readFull(buf);
+      if (res === EOF) {
+        throw res;
       }
       this.chunks.push(buf.slice(0, len));
     }
