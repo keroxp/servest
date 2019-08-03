@@ -19,8 +19,7 @@ async function readString(r: Reader) {
 }
 
 let port = 8700;
-
-function serveRouter(port: number): Deferred {
+function setupRouter(): Deferred {
   const d = defer();
   const router = createRouter();
   router.handle("/get", async req => {
@@ -41,8 +40,6 @@ function serveRouter(port: number): Deferred {
 }
 
 test(async function agent() {
-  port++;
-  const d = serveRouter(port);
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
     {
@@ -66,13 +63,10 @@ test(async function agent() {
     console.error(e);
   } finally {
     agent.conn.close();
-    d.resolve();
   }
 });
 
 test(async function agentUnreadBody() {
-  port++;
-  const d = serveRouter(port);
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
     await agent.send({ path: "/get", method: "GET" });
@@ -87,7 +81,6 @@ test(async function agentUnreadBody() {
     console.error(e);
   } finally {
     agent.conn.close();
-    d.resolve();
   }
 });
 
@@ -106,4 +99,9 @@ test(async function agentInvalidScheme() {
   });
 });
 
-runIfMain(import.meta);
+const setup = setupRouter();
+runIfMain(import.meta).finally( () => {
+  setTimeout(() => {
+    setup.resolve()
+  }, 100)
+});
