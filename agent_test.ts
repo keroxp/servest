@@ -1,13 +1,13 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { runIfMain, test } from "https://deno.land/std@v0.7.0/testing/mod.ts";
+import { runIfMain, test } from "https://deno.land/std@v0.12.0/testing/mod.ts";
 import { defer, Deferred } from "./promises.ts";
-import { encode } from "https://deno.land/std@v0.7.0/strings/encode.ts";
+import { encode } from "https://deno.land/std@v0.12.0/strings/encode.ts";
 import { createAgent } from "./agent.ts";
 import { createRouter } from "./router.ts";
 import {
   assertEquals,
   assertThrows
-} from "https://deno.land/std@v0.7.0/testing/asserts.ts";
+} from "https://deno.land/std@v0.12.0/testing/asserts.ts";
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
@@ -19,8 +19,7 @@ async function readString(r: Reader) {
 }
 
 let port = 8700;
-
-function serveRouter(port: number): Deferred {
+function setupRouter(): Deferred {
   const d = defer();
   const router = createRouter();
   router.handle("/get", async req => {
@@ -41,8 +40,6 @@ function serveRouter(port: number): Deferred {
 }
 
 test(async function agent() {
-  port++;
-  const d = serveRouter(port);
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
     {
@@ -66,13 +63,10 @@ test(async function agent() {
     console.error(e);
   } finally {
     agent.conn.close();
-    d.resolve();
   }
 });
 
 test(async function agentUnreadBody() {
-  port++;
-  const d = serveRouter(port);
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
     await agent.send({ path: "/get", method: "GET" });
@@ -87,7 +81,6 @@ test(async function agentUnreadBody() {
     console.error(e);
   } finally {
     agent.conn.close();
-    d.resolve();
   }
 });
 
@@ -106,4 +99,9 @@ test(async function agentInvalidScheme() {
   });
 });
 
-runIfMain(import.meta);
+const setup = setupRouter();
+runIfMain(import.meta).finally( () => {
+  setTimeout(() => {
+    setup.resolve()
+  }, 100)
+});

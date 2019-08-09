@@ -1,20 +1,20 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { BufReader, EOF } from "https://deno.land/std@v0.7.0/io/bufio.ts";
-import { TextProtoReader } from "https://deno.land/std@v0.7.0/textproto/mod.ts";
+import { BufReader } from "https://deno.land/std@v0.12.0/io/bufio.ts";
+import { TextProtoReader } from "https://deno.land/std@v0.12.0/textproto/mod.ts";
 import { promiseInterrupter } from "./promises.ts";
 import Reader = Deno.Reader;
-import ReadResult = Deno.ReadResult;
+import EOF = Deno.EOF;
 
 const nullBuffer = new Uint8Array(1024);
 
 export async function readUntilEof(reader: Reader): Promise<number> {
   let total = 0;
   while (true) {
-    const { eof, nread } = await reader.read(nullBuffer);
-    total += nread;
-    if (eof) {
+    const result = await reader.read(nullBuffer);
+    if (result === EOF) {
       break;
     }
+    total += result;
   }
   return total;
 }
@@ -26,19 +26,21 @@ export class BodyReader implements Reader {
     this.total = 0;
   }
 
-  async read(p: Uint8Array): Promise<ReadResult> {
+  async read(p: Uint8Array): Promise<number | EOF> {
     const remaining = this.contentLength - this.total;
     let buf = p;
     if (p.byteLength > remaining) {
       buf = new Uint8Array(remaining);
     }
-    let { nread, eof } = await this.reader.read(buf);
+    let result = await this.reader.read(buf);
     if (buf !== p) {
       p.set(buf);
     }
-    this.total += nread;
-    eof = eof || this.total === this.contentLength;
-    return { nread, eof };
+    let eof = result === EOF || this.total === this.contentLength;
+    if (result !== EOF) {
+      this.total += result;
+    }
+    return eof ? EOF : result;
   }
 }
 
@@ -56,27 +58,24 @@ export class ChunkedBodyReader implements Reader {
   crlfBuf = new Uint8Array(2);
   finished: boolean = false;
 
-  async read(p: Uint8Array): Promise<ReadResult> {
+  async read(p: Uint8Array): Promise<number | EOF> {
     if (this.finished) {
-      return { eof: true, nread: 0 };
+      return EOF;
     }
     const line = await this.tpReader.readLine();
     if (line === EOF) {
-      throw EOF;
+      return EOF;
     }
     const len = parseInt(line, 16);
     if (len === 0) {
       this.finished = true;
-      const res = await this.bufReader.readFull(this.crlfBuf);
-      if (res === EOF) {
-        throw res;
-      }
-      return { nread: 0, eof: true };
+      await this.bufReader.readFull(this.crlfBuf);
+      return EOF;
     } else {
       const buf = new Uint8Array(len + 2);
       const res = await this.bufReader.readFull(buf);
       if (res === EOF) {
-        throw res;
+        return EOF;
       }
       this.chunks.push(buf.slice(0, len));
     }
@@ -84,17 +83,17 @@ export class ChunkedBodyReader implements Reader {
     if (buf.byteLength <= p.byteLength) {
       p.set(buf);
       this.chunks.shift();
-      return { nread: buf.byteLength, eof: false };
+      return buf.byteLength;
     } else {
       p.set(buf.slice(0, p.byteLength));
       this.chunks[0] = buf.slice(p.byteLength, buf.byteLength);
-      return { nread: p.byteLength, eof: false };
+      return p.byteLength;
     }
   }
 }
 
 export class TimeoutReader implements Reader {
-  timeoutOrCancel: (p: Promise<ReadResult>) => Promise<ReadResult>;
+  timeoutOrCancel: (p: Promise<number | EOF>) => Promise<number | EOF>;
 
   constructor(
     private readonly r: Reader,
@@ -106,7 +105,7 @@ export class TimeoutReader implements Reader {
     this.timeoutOrCancel = promiseInterrupter(opts);
   }
 
-  async read(p: Uint8Array): Promise<ReadResult> {
+  async read(p: Uint8Array): Promise<number | EOF> {
     return await this.timeoutOrCancel(this.r.read(p));
   }
 }

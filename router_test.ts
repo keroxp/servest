@@ -1,12 +1,12 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { createRouter, findLongestAndNearestMatch } from "./router.ts";
-import { runIfMain, test } from "https://deno.land/std@v0.7.0/testing/mod.ts";
+import { runIfMain, test } from "https://deno.land/std@v0.12.0/testing/mod.ts";
 import { defer } from "./promises.ts";
 import {
   assert,
   assertEquals
-} from "https://deno.land/std@v0.7.0/testing/asserts.ts";
-import { StringReader } from "https://deno.land/std@v0.7.0/io/readers.ts";
+} from "https://deno.land/std@v0.12.0/testing/asserts.ts";
+import { StringReader } from "https://deno.land/std@v0.12.0/io/readers.ts";
 
 test(function httpMatchNearest() {
   assertEquals(

@@ -1,10 +1,9 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   BufReader,
-  BufWriter,
-  EOF
-} from "https://deno.land/std@v0.7.0/io/bufio.ts";
-import { TextProtoReader } from "https://deno.land/std@v0.7.0/textproto/mod.ts";
+  BufWriter
+} from "https://deno.land/std@v0.12.0/io/bufio.ts";
+import { TextProtoReader } from "https://deno.land/std@v0.12.0/textproto/mod.ts";
 import {
   BodyReader,
   ChunkedBodyReader,
@@ -12,7 +11,7 @@ import {
   TimeoutReader
 } from "./readers.ts";
 import { defer, promiseInterrupter } from "./promises.ts";
-import { assert } from "https://deno.land/std@v0.7.0/testing/asserts.ts";
+import { assert } from "https://deno.land/std@v0.12.0/testing/asserts.ts";
 import {
   ClientRequest,
   IncomingHttpRequest,
@@ -24,8 +23,9 @@ import {
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
-import { encode } from "https://deno.land/std@v0.7.0/strings/encode.ts";
-import { decode } from "https://deno.land/std@v0.7.0/strings/decode.ts";
+import { encode } from "https://deno.land/std@v0.12.0/strings/encode.ts";
+import { decode } from "https://deno.land/std@v0.12.0/strings/decode.ts";
+import EOF = Deno.EOF;
 
 function bufReader(r: Reader): BufReader {
   if (r instanceof BufReader) {
@@ -328,9 +328,15 @@ export async function writeBody(
   const reader = body instanceof Uint8Array ? new Buffer(body) : body;
   const hasContentLength = Number.isInteger(contentLength);
   while (true) {
-    const { nread, eof } = await reader.read(buf);
-    if (nread > 0) {
-      const chunk = buf.slice(0, nread);
+    const result = await reader.read(buf);
+    if (result === EOF) {
+      if (!hasContentLength) {
+        await writer.write(encode("0\r\n\r\n"));
+        await writer.flush();
+      }
+      break;
+    } else if (result > 0) {
+      const chunk = buf.slice(0, result);
       if (hasContentLength) {
         await writer.write(chunk);
       } else {
@@ -340,13 +346,6 @@ export async function writeBody(
         await writer.write(encode("\r\n"));
       }
       await writer.flush();
-    }
-    if (eof) {
-      if (!hasContentLength) {
-        await writer.write(encode("0\r\n\r\n"));
-        await writer.flush();
-      }
-      break;
     }
   }
 }

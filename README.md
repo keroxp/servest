@@ -3,8 +3,8 @@
 ![https://travis-ci.com/keroxp/servest](https://travis-ci.com/keroxp/servest.svg?branch=master)
 ![https://img.shields.io/github/tag/keroxp/servest.svg](https://img.shields.io/github/tag/keroxp/servest.svg)
 [![license](https://img.shields.io/github/license/keroxp/servest.svg)](https://github.com/keroxp/servest)
-[![tag](https://img.shields.io/badge/deno__std-v0.7.0-green.svg)](https://github.com/denoland/deno_std)
-[![tag](https://img.shields.io/badge/deno-v0.7.0-green.svg)](https://github.com/denoland/deno)
+[![tag](https://img.shields.io/badge/deno__std-v0.12.0-green.svg)](https://github.com/denoland/deno_std)
+[![tag](https://img.shields.io/badge/deno-v0.12.0-green.svg)](https://github.com/denoland/deno)
 
 🌾A progressive http server / router for deno🌾
 
@@ -12,7 +12,7 @@
 
 ### Serve API
 
-Serve API is similar to [deno_std@v0.7.0](https://github.com/denoland/deno_std/blob/master/http/server.ts) but has different implementation.
+Serve API is similar to [deno_std@v0.12.0](https://github.com/denoland/deno_std/blob/master/http/server.ts) but has different implementation.
 Some progressive features for HTTP/1.1 server are implemented.
 
 - Support Keep-Alive connection
@@ -25,13 +25,13 @@ Some progressive features for HTTP/1.1 server are implemented.
 import { listenAndServe } from "https://denopkg.com/keroxp/servest@v0.8.0/server.ts";
 listenAndServe(":8899", async req => {
   await req.respond({
-      status: 200,
-      headers: new Headers({
-        "Content-Type": "text/plain"
-      }),
-      body: new TextEncoder().encode("hello")
-    });
-})
+    status: 200,
+    headers: new Headers({
+      "Content-Type": "text/plain"
+    }),
+    body: new TextEncoder().encode("hello")
+  });
+});
 ```
 
 **NOTE: use listenAndServe instead of serve**
@@ -40,10 +40,10 @@ Generally `listenAndServe` has higher concurrency than `serve`
 because `serve` is built top of async iteration.
 `yield` in async iteration degrades concurrency of promises.
 
-Processing of requests from identical keep-alive connection should be handled in serial, but requests from different connections should be handled in concurrent. 
+Processing of requests from identical keep-alive connection should be handled in serial, but requests from different connections should be handled in concurrent.
 
 `listenAndServe` does it as it is built top of async callback.
- It is faster than `serve` about x2 in our benchmark test.
+It is faster than `serve` about x2 in our benchmark test.
 
 ### Router API
 
