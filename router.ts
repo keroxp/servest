@@ -1,6 +1,6 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { listenAndServe, ServeOptions, ServerRequest } from "./server.ts";
-import { encode } from "https://deno.land/std@v0.12.0/strings/encode.ts";
+import { encode } from "https://deno.land/std@v0.15.0/strings/encode.ts";
 
 export type RoutedServerRequest = ServerRequest & {
   match?: RegExpMatchArray;

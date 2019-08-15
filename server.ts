@@ -5,7 +5,7 @@ import Reader = Deno.Reader;
 import {
   BufReader,
   BufWriter
-} from "https://deno.land/std@v0.12.0/io/bufio.ts";
+} from "https://deno.land/std@v0.15.0/io/bufio.ts";
 import { defer, Deferred, promiseInterrupter } from "./promises.ts";
 import { initServeOptions, readRequest } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";

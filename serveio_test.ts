@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { runIfMain, test } from "https://deno.land/std@v0.12.0/testing/mod.ts";
+import { runIfMain, test } from "https://deno.land/std@v0.15.0/testing/mod.ts";
 import {
   parseKeepAlive,
   readRequest,
@@ -9,8 +9,8 @@ import {
 import {
   assert,
   assertEquals
-} from "https://deno.land/std@v0.12.0/testing/asserts.ts";
-import { encode } from "https://deno.land/std@v0.12.0/strings/encode.ts";
+} from "https://deno.land/std@v0.15.0/testing/asserts.ts";
+import { encode } from "https://deno.land/std@v0.15.0/strings/encode.ts";
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
