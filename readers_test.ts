@@ -1,12 +1,12 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { runIfMain, test } from "https://deno.land/std@v0.15.0/testing/mod.ts";
+import { runIfMain, test } from "https://deno.land/std@v0.17.0/testing/mod.ts";
 import { BodyReader, TimeoutReader } from "./readers.ts";
-import { assertThrowsAsync } from "https://deno.land/std@v0.15.0/testing/asserts.ts";
+import { assertThrowsAsync } from "https://deno.land/std@v0.17.0/testing/asserts.ts";
 import ReadResult = Deno.ReadResult;
-import { BufReader } from "https://deno.land/std@v0.15.0/io/bufio.ts";
-import { StringReader } from "https://deno.land/std@v0.15.0/io/readers.ts";
-import { assertEquals } from "https://deno.land/std@v0.15.0/testing/asserts.ts";
-import { decode } from "https://deno.land/std@v0.15.0/strings/decode.ts";
+import { BufReader } from "https://deno.land/std@v0.17.0/io/bufio.ts";
+import { StringReader } from "https://deno.land/std@v0.17.0/io/readers.ts";
+import { assertEquals } from "https://deno.land/std@v0.17.0/testing/asserts.ts";
+import { decode } from "https://deno.land/std@v0.17.0/strings/decode.ts";
 import { TimeoutError } from "./promises.ts";
 
 test(async function readersBodyReader() {

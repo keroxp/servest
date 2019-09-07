@@ -2,8 +2,8 @@
 import {
   BufReader,
   BufWriter
-} from "https://deno.land/std@v0.15.0/io/bufio.ts";
-import { TextProtoReader } from "https://deno.land/std@v0.15.0/textproto/mod.ts";
+} from "https://deno.land/std@v0.17.0/io/bufio.ts";
+import { TextProtoReader } from "https://deno.land/std@v0.17.0/textproto/mod.ts";
 import {
   BodyReader,
   ChunkedBodyReader,
@@ -11,7 +11,7 @@ import {
   TimeoutReader
 } from "./readers.ts";
 import { defer, promiseInterrupter } from "./promises.ts";
-import { assert } from "https://deno.land/std@v0.15.0/testing/asserts.ts";
+import { assert } from "https://deno.land/std@v0.17.0/testing/asserts.ts";
 import {
   ClientRequest,
   IncomingHttpRequest,
@@ -23,8 +23,8 @@ import {
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
-import { encode } from "https://deno.land/std@v0.15.0/strings/encode.ts";
-import { decode } from "https://deno.land/std@v0.15.0/strings/decode.ts";
+import { encode } from "https://deno.land/std@v0.17.0/strings/encode.ts";
+import { decode } from "https://deno.land/std@v0.17.0/strings/decode.ts";
 import EOF = Deno.EOF;
 
 function bufReader(r: Reader): BufReader {
