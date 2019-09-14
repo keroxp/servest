@@ -1,9 +1,6 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  BufReader,
-  BufWriter
-} from "https://deno.land/std@v0.17.0/io/bufio.ts";
-import { TextProtoReader } from "https://deno.land/std@v0.17.0/textproto/mod.ts";
+import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
+import { TextProtoReader } from "./vendor/https/deno.land/std/textproto/mod.ts";
 import {
   BodyReader,
   ChunkedBodyReader,
@@ -11,7 +8,7 @@ import {
   TimeoutReader
 } from "./readers.ts";
 import { defer, promiseInterrupter } from "./promises.ts";
-import { assert } from "https://deno.land/std@v0.17.0/testing/asserts.ts";
+import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import {
   ClientRequest,
   IncomingHttpRequest,
@@ -20,11 +17,11 @@ import {
   ServeOptions,
   ServerResponse
 } from "./server.ts";
+import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
+import { decode } from "./vendor/https/deno.land/std/strings/decode.ts";
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
-import { encode } from "https://deno.land/std@v0.17.0/strings/encode.ts";
-import { decode } from "https://deno.land/std@v0.17.0/strings/decode.ts";
 import EOF = Deno.EOF;
 
 function bufReader(r: Reader): BufReader {

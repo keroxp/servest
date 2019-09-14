@@ -1,17 +1,17 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { runIfMain, test } from "https://deno.land/std@v0.17.0/testing/mod.ts";
+import { runIfMain, test } from "./vendor/https/deno.land/std/testing/mod.ts";
 import { defer } from "./promises.ts";
 import { listenAndServe } from "./server.ts";
-import { StringReader } from "https://deno.land/std@v0.17.0/io/readers.ts";
-import { StringWriter } from "https://deno.land/std@v0.17.0/io/writers.ts";
+import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
+import { StringWriter } from "./vendor/https/deno.land/std/io/writers.ts";
 import {
   assertEquals,
   assertThrowsAsync
-} from "https://deno.land/std@v0.17.0/testing/asserts.ts";
-import { encode } from "https://deno.land/std@v0.17.0/strings/encode.ts";
+} from "./vendor/https/deno.land/std/testing/asserts.ts";
+import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
 import { createAgent } from "./agent.ts";
-import copy = Deno.copy;
 import { promiseTimeout } from "./test_util.ts";
+import copy = Deno.copy;
 
 let port = 8880;
 test(async function server() {
