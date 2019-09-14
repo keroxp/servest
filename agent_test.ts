@@ -1,13 +1,13 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { runIfMain, test } from "https://deno.land/std@v0.17.0/testing/mod.ts";
+import { runIfMain, test } from "./vendor/https/deno.land/std/testing/mod.ts";
 import { defer, Deferred } from "./promises.ts";
-import { encode } from "https://deno.land/std@v0.17.0/strings/encode.ts";
+import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
 import { createAgent } from "./agent.ts";
 import { createRouter } from "./router.ts";
 import {
   assertEquals,
   assertThrows
-} from "https://deno.land/std@v0.17.0/testing/asserts.ts";
+} from "./vendor/https/deno.land/std/testing/asserts.ts";
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;

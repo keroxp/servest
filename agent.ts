@@ -1,13 +1,10 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { ClientRequest, ClientResponse } from "./server.ts";
-import { assert } from "https://deno.land/std@v0.17.0/testing/asserts.ts";
-import { defer, Deferred } from "./promises.ts";
+import { ClientResponse } from "./server.ts";
+import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
+import { defer } from "./promises.ts";
 import { readResponse, writeRequest } from "./serveio.ts";
+import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import Conn = Deno.Conn;
-import {
-  BufReader,
-  BufWriter
-} from "https://deno.land/std@v0.17.0/io/bufio.ts";
 import Reader = Deno.Reader;
 
 /** keep-alive http agent for single host. each message will be sent in serial */
