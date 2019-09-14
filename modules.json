@@ -1,0 +1,15 @@
+{
+  "https://deno.land/std": {
+    "version": "@v0.17.0",
+    "modules": [
+      "/testing/mod.ts",
+      "/testing/asserts.ts",
+      "/textproto/mod.ts",
+      "/io/bufio.ts",
+      "/io/readers.ts",
+      "/io/writers.ts",
+      "/strings/decode.ts",
+      "/strings/encode.ts"
+    ]
+  }
+}
