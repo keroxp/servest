@@ -1,7 +1,6 @@
 import { HttpHandler } from "./router.ts";
 import * as path from "./vendor/https/deno.land/std/fs/path.ts";
 import * as media_types from "./vendor/https/deno.land/std/media_types/mod.ts";
-import { notFound } from "./responder.ts";
 
 export async function resolveFilepath(
   dir: string,
