@@ -23,6 +23,7 @@ import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
 import EOF = Deno.EOF;
+import { dateToDateHeader } from "./util.ts";
 
 function bufReader(r: Reader): BufReader {
   if (r instanceof BufReader) {
@@ -70,7 +71,9 @@ export async function readRequest(
   if (resLine === EOF) {
     throw EOF;
   }
-  const [m, method, url, proto] = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
+  let [_, method, url, proto] = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
+  method = method.toUpperCase();
+  url = url.toLowerCase();
   // read header
   const headers = await promiseInterrupter({
     timeout: opts.readTimeout,
@@ -149,13 +152,13 @@ export async function writeRequest(
     encode(`${method} ${url.pathname}${url.search || ""} HTTP/1.1\r\n`)
   );
   // header
-  if (!headers.has("Host")) {
-    headers.set("Host", url.host);
+  if (!headers.has("host")) {
+    headers.set("host", url.host);
   }
   let contentLength: number;
   if (body) {
-    if (headers.has("Content-Length")) {
-      const cl = headers.get("Content-Length");
+    if (headers.has("content-length")) {
+      const cl = headers.get("content-length");
       contentLength = parseInt(cl);
       assert(
         Number.isInteger(contentLength),
@@ -163,9 +166,9 @@ export async function writeRequest(
       );
     } else if (body instanceof Uint8Array) {
       contentLength = body.byteLength;
-      headers.set("Content-Length", `${body.byteLength}`);
+      headers.set("content-length", `${body.byteLength}`);
     } else {
-      headers.set("Transfer-Encoding", "chunked");
+      headers.set("transfer-encoding", "chunked");
     }
   }
   await writeHeaders(writer, headers);
@@ -252,7 +255,7 @@ function bufWriter(w: Writer) {
   }
 }
 
-const kHttpStatusCodes = {
+export const kHttpStatusMessages = {
   100: "Continue",
   101: "Switching Protocols",
   102: "Processing",
@@ -280,15 +283,19 @@ export async function writeResponse(
     res.headers = new Headers();
   }
   // status line
-  const statusText = kHttpStatusCodes[res.status];
+  const statusText = kHttpStatusMessages[res.status];
   assert(!!statusText, `unsupported status code: ${statusText}`);
   await writer.write(encode(`HTTP/1.1 ${res.status} ${statusText}\r\n`));
-  if (res.body && !res.headers.has("content-length")) {
-    if (res.body instanceof Uint8Array) {
-      res.headers.set("content-length", `${res.body.byteLength}`);
-    } else if (!res.headers.has("transfer-encoding")) {
-      res.headers.set("transfer-encoding", "chunked");
+  if (res.body) {
+    if (!res.headers.has("content-length")) {
+      if (res.body instanceof Uint8Array) {
+        res.headers.set("content-length", `${res.body.byteLength}`);
+      } else if (!res.headers.has("transfer-encoding")) {
+        res.headers.set("transfer-encoding", "chunked");
+      }
     }
+  } else if (!res.headers.has("content-length")) {
+    res.headers.set("content-length", "0");
   }
   await writeHeaders(writer, res.headers);
   if (res.body) {
@@ -304,9 +311,13 @@ export async function writeResponse(
 export async function writeHeaders(w: Writer, headers: Headers): Promise<void> {
   const lines = [];
   const writer = bufWriter(w);
-  for (const [key, value] of headers) {
-    lines.push(`${key}: ${value}`);
+  if (headers.has("date")) {
+    headers.set("date", dateToDateHeader());
   }
+  if (headers)
+    for (const [key, value] of headers) {
+      lines.push(`${key}: ${value}`);
+    }
   lines.push("\r\n");
   const headerText = lines.join("\r\n");
   await writer.write(encode(headerText));

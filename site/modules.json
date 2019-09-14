@@ -1,0 +1,6 @@
+{
+  "https://deno.land/std": {
+    "version": "@v0.17.0",
+    "modules": ["/fs/mod.ts", "/fs/path.ts", "/media_types/mod.ts"]
+  }
+}

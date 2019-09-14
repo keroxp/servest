@@ -1,6 +1,6 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { listenAndServe, ServeOptions, ServerRequest } from "./server.ts";
-import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
+import { internalServerError, notFound } from "./responder.ts";
 
 export type RoutedServerRequest = ServerRequest & {
   match?: RegExpMatchArray;
@@ -24,16 +24,26 @@ export function findLongestAndNearestMatch(
   let index = -1;
   for (let i = 0; i < patterns.length; i++) {
     const pattern = patterns[i];
-    const m = pathname.match(pattern);
-    if (!m) continue;
-    if (
-      m.index < lastMatchIndex ||
-      (m.index === lastMatchIndex && m[0].length > lastMatchLength)
+    if (pattern instanceof RegExp) {
+      const m = pathname.match(pattern);
+      if (!m) continue;
+      if (
+        m.index < lastMatchIndex ||
+        (m.index === lastMatchIndex && m[0].length > lastMatchLength)
+      ) {
+        index = i;
+        match = m;
+        lastMatchIndex = m.index;
+        lastMatchLength = m[0].length;
+      }
+    } else if (
+      pathname.startsWith(pattern) &&
+      pathname.length > lastMatchLength
     ) {
       index = i;
-      match = m;
-      lastMatchIndex = m.index;
-      lastMatchLength = m[0].length;
+      match = [pathname];
+      lastMatchIndex = 0;
+      lastMatchLength = pathname.length;
     }
   }
   return { index, match };
@@ -53,9 +63,8 @@ export function createRouter(): HttpRouter {
       routes.push({ pattern, handlers });
     },
     listen(addr: string, opts?: ServeOptions) {
-      listenAndServe(
-        addr,
-        async req => {
+      const handler = async req => {
+        try {
           let { pathname } = new URL(req.url, addr);
           const { index, match } = findLongestAndNearestMatch(
             pathname,
@@ -70,22 +79,17 @@ export function createRouter(): HttpRouter {
               }
             }
             if (!req.isResponded()) {
-              await req.respond({
-                status: 500,
-                headers: new Headers(),
-                body: encode("Not Responded")
-              });
+              return await req.respond(notFound());
             }
           } else {
-            await req.respond({
-              status: 404,
-              headers: new Headers(),
-              body: encode("Not Found")
-            });
+            return await req.respond(notFound());
           }
-        },
-        opts
-      );
+        } catch (e) {
+          console.error(e);
+          return await req.respond(internalServerError());
+        }
+      };
+      listenAndServe(addr, handler, opts);
     }
   };
 }

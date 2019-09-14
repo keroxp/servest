@@ -1,12 +1,18 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import Writer = Deno.Writer;
-import { writeResponse, writeTrailers } from "./serveio.ts";
+import {
+  kHttpStatusMessages,
+  writeResponse,
+  writeTrailers
+} from "./serveio.ts";
 import { ServerResponse } from "./server.ts";
 
 /** basic responder for http response */
 export interface ServerResponder {
   respond(response: ServerResponse): Promise<void>;
+
   writeTrailers(trailers: Headers): Promise<void>;
+
   isResponded(): boolean;
 }
 
@@ -33,4 +39,26 @@ export function createResponder(w: Writer): ServerResponder {
       return writeResponse(w, response);
     }
   };
+}
+
+const encoder = new TextEncoder();
+
+export function badRequest(): ServerResponse {
+  return { status: 400, body: encoder.encode(kHttpStatusMessages[400]) };
+}
+
+export function unauthorized(): ServerResponse {
+  return { status: 400, body: encoder.encode(kHttpStatusMessages[401]) };
+}
+
+export function forbidden(): ServerResponse {
+  return { status: 403, body: encoder.encode(kHttpStatusMessages[403]) };
+}
+
+export function notFound(): ServerResponse {
+  return { status: 404, body: encoder.encode(kHttpStatusMessages[404]) };
+}
+
+export function internalServerError(): ServerResponse {
+  return { status: 500, body: encoder.encode(kHttpStatusMessages[500]) };
 }
