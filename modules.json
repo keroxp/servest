@@ -5,11 +5,14 @@
       "/testing/mod.ts",
       "/testing/asserts.ts",
       "/textproto/mod.ts",
+      "/fs/path.ts",
       "/io/bufio.ts",
       "/io/readers.ts",
       "/io/writers.ts",
       "/strings/decode.ts",
-      "/strings/encode.ts"
+      "/strings/encode.ts",
+      "/fmt/sprintf.ts",
+      "/media_types/mod.ts"
     ]
   }
 }

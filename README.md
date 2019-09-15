@@ -75,6 +75,29 @@ router.handle(new RegExp("/foo/(?<id>.+)"), async req => {
 router.listen("127.0.0.1:8898");
 ```
 
+### Middleware API for Router
+
+Router can use common http handler
+
+```ts
+import { serveStatic } from "https://denopkg.com/keroxp/servest/serve_static.ts";
+// Files in ./public are served automatically (GET, HEAD)
+router.use(serveStatic("./public"));
+```
+
+### Global Error Handler for Router
+
+```ts
+// Called when unhandled error occurred while processing requests
+router.handleError((e, req) => {
+  console.error(e);
+  req.respond({
+    status: 500,
+    body: new TextEncoder().encode("Internal Server Error")
+  });
+});
+```
+
 ### Agent API
 
 Agent API is basic HTTP agent. It manages persistent connection to host. Each request will be sent in serial.
@@ -112,7 +135,6 @@ const { status, headers, body } = await agent.send({
 
 ## Loadmaps
 
-- Middleware API for Router
 - HTTP/2
 - HTTP testing api
 

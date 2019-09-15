@@ -212,15 +212,14 @@ function handleKeepAliveConn(
 
   async function processRequest(opts: ServeOptions): Promise<ServeOptions> {
     const req = await readRequest(bufReader, opts);
-    const nextReq = Object.assign(
-      req,
-      {
-        bufWriter,
-        bufReader,
-        conn
-      },
-      createResponder(bufWriter)
-    );
+    const responder = createResponder(bufWriter);
+    const nextReq: ServerRequest = {
+      ...req,
+      bufWriter,
+      bufReader,
+      conn,
+      ...responder
+    };
     await handler(nextReq);
     await req.finalize();
     let keepAliveTimeout = originalOpts.keepAliveTimeout;
