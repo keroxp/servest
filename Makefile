@@ -8,3 +8,5 @@ tsconfig.json:
 	./make.sh > tsconfig.json
 test:
 	deno run -A tests.ts
+build:
+	docker build -t servest/site .
