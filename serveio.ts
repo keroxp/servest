@@ -331,29 +331,29 @@ export async function writeBody(
   contentLength?: number
 ): Promise<void> {
   if (!body) return;
-  const buf = new Uint8Array(1024);
   let writer = bufWriter(w);
   const reader = body instanceof Uint8Array ? new Buffer(body) : body;
   const hasContentLength = Number.isInteger(contentLength);
-  while (true) {
-    const result = await reader.read(buf);
-    if (result === EOF) {
-      if (!hasContentLength) {
+  if (hasContentLength) {
+    await Deno.copy(writer, reader);
+    await writer.flush();
+  } else {
+    while (true) {
+      // TODO: add opts for buffer size
+      const buf = new Uint8Array(2048);
+      const result = await reader.read(buf);
+      if (result === EOF) {
         await writer.write(encode("0\r\n\r\n"));
         await writer.flush();
-      }
-      break;
-    } else if (result > 0) {
-      const chunk = buf.slice(0, result);
-      if (hasContentLength) {
-        await writer.write(chunk);
-      } else {
-        const size = chunk.byteLength.toString(16);
+        break;
+      } else if (result > 0) {
+        const chunk = buf.slice(0, result);
+        const size = result.toString(16);
         await writer.write(encode(`${size}\r\n`));
         await writer.write(chunk);
         await writer.write(encode("\r\n"));
+        await writer.flush();
       }
-      await writer.flush();
     }
   }
 }
