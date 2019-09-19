@@ -48,7 +48,7 @@ export function badRequest(): ServerResponse {
 }
 
 export function unauthorized(): ServerResponse {
-  return { status: 400, body: encoder.encode(kHttpStatusMessages[401]) };
+  return { status: 401, body: encoder.encode(kHttpStatusMessages[401]) };
 }
 
 export function forbidden(): ServerResponse {

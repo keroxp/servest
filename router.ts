@@ -86,7 +86,7 @@ export function createRouter(): HttpRouter {
   }
   function listen(addr: string, opts?: ServeOptions) {
     const handleInternal = async req => {
-      let { pathname } = new URL(req.url, addr);
+      let { pathname } = new URL(req.url, "http://localhost");
       for (const middleware of middlewares) {
         await middleware(req);
         if (req.isResponded()) {

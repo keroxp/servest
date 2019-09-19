@@ -26,7 +26,7 @@ export type ServerResponse = {
   /** HTTP headers */
   headers?: Headers;
   /** HTTP body */
-  body?: Uint8Array | Reader;
+  body?: string | Uint8Array | Reader;
 };
 
 /** Incoming http request for handling request from client */

@@ -156,25 +156,14 @@ export async function writeRequest(
     headers.set("host", url.host);
   }
   let contentLength: number;
+  let bodyReader: Reader;
   if (body) {
-    if (headers.has("content-length")) {
-      const cl = headers.get("content-length");
-      contentLength = parseInt(cl);
-      assert(
-        Number.isInteger(contentLength),
-        `content-length is not number: ${cl}`
-      );
-    } else if (body instanceof Uint8Array) {
-      contentLength = body.byteLength;
-      headers.set("content-length", `${body.byteLength}`);
-    } else {
-      headers.set("transfer-encoding", "chunked");
-    }
+    [bodyReader, contentLength] = setupBody(body, headers);
   }
   await writeHeaders(writer, headers);
   await writer.flush();
-  if (body) {
-    await writeBody(writer, body, contentLength);
+  if (bodyReader) {
+    await writeBody(writer, bodyReader, contentLength);
   }
 }
 
@@ -273,6 +262,33 @@ export const kHttpStatusMessages = {
   500: "Internal Server Error"
 };
 
+function setupBody(
+  body: string | Uint8Array | Reader,
+  headers: Headers
+): [Reader, number | undefined] {
+  let r: Reader;
+  let len: number | undefined;
+  if (body instanceof Uint8Array) {
+    headers.set("content-length", `${body.byteLength}`);
+    [r, len] = [new Buffer(body), body.byteLength];
+  } else if (typeof body === "string") {
+    const bin = encode(body);
+    headers.set("content-length", `${bin.byteLength}`);
+    [r, len] = [new Buffer(bin), bin.byteLength];
+    if (!headers.has("content-type")) {
+      headers.set("content-type", "text/plain; charset=UTF-8")
+    }
+  } else {
+    if (!headers.has("content-length") && !headers.has("transfer-encoding")) {
+      headers.set("transfer-encoding", "chunked");
+    }
+    [r, len] = [body, undefined];
+  }
+  if (!headers.has("content-type")) {
+    headers.set("content-type", "application/octet-stream");
+  }
+  return [r, len];
+}
 /** write http response to writer. Content-Length, Transfer-Encoding headers are set if needed */
 export async function writeResponse(
   w: Writer,
@@ -286,24 +302,16 @@ export async function writeResponse(
   const statusText = kHttpStatusMessages[res.status];
   assert(!!statusText, `unsupported status code: ${statusText}`);
   await writer.write(encode(`HTTP/1.1 ${res.status} ${statusText}\r\n`));
+  let bodyReader: Reader;
+  let contentLength: number | undefined;
   if (res.body) {
-    if (!res.headers.has("content-length")) {
-      if (res.body instanceof Uint8Array) {
-        res.headers.set("content-length", `${res.body.byteLength}`);
-      } else if (!res.headers.has("transfer-encoding")) {
-        res.headers.set("transfer-encoding", "chunked");
-      }
-    }
+    [bodyReader, contentLength] = setupBody(res.body, res.headers);
   } else if (!res.headers.has("content-length")) {
     res.headers.set("content-length", "0");
   }
   await writeHeaders(writer, res.headers);
-  if (res.body) {
-    let contentLength;
-    if (res.headers.has("content-length")) {
-      contentLength = parseInt(res.headers.get("content-length"));
-    }
-    await writeBody(writer, res.body, contentLength);
+  if (bodyReader) {
+    await writeBody(writer, bodyReader, contentLength);
   }
 }
 
@@ -327,21 +335,19 @@ export async function writeHeaders(w: Writer, headers: Headers): Promise<void> {
 /** write http body to writer. Reader without contentLength will be written by chunked encoding */
 export async function writeBody(
   w: Writer,
-  body: Uint8Array | Reader,
+  body: Reader,
   contentLength?: number
 ): Promise<void> {
-  if (!body) return;
   let writer = bufWriter(w);
-  const reader = body instanceof Uint8Array ? new Buffer(body) : body;
   const hasContentLength = Number.isInteger(contentLength);
   if (hasContentLength) {
-    await Deno.copy(writer, reader);
+    await Deno.copy(writer, body);
     await writer.flush();
   } else {
     while (true) {
       // TODO: add opts for buffer size
       const buf = new Uint8Array(2048);
-      const result = await reader.read(buf);
+      const result = await body.read(buf);
       if (result === EOF) {
         await writer.write(encode("0\r\n\r\n"));
         await writer.flush();
