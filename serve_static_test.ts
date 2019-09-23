@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { runIfMain, test } from "./vendor/https/deno.land/std/testing/mod.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { resolveFilepath } from "./serve_static.ts";

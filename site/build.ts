@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import hljs from "https://dev.jspm.io/highlight.js";
 // import ts from "https://dev.jspm.io/highlight.js/lib/languages/typescript.js"
 const ret = hljs.highlight("ts", "const a = 1;");
