@@ -1,4 +1,4 @@
-import {HttpHandler} from "./router.ts";
+import { HttpHandler } from "./router.ts";
 import * as path from "./vendor/https/deno.land/std/fs/path.ts";
 import * as media_types from "./vendor/https/deno.land/std/media_types/mod.ts";
 
@@ -28,23 +28,49 @@ export async function resolveFilepath(
   }
 }
 
-export function serveStatic(dir: string): HttpHandler {
+export type ServeStaticOptions = {
+  /**
+   * content type resolvers
+   * .ext -> application/some-type
+   * By default, .ts/.tsx will be resolved by application/typescript
+   */
+  contentTypeMap: Map<string, string>;
+  contentDispositionMap: Map<string, "inline" | "attachment">;
+};
+export function serveStatic(
+  dir: string,
+  opts: ServeStaticOptions = {
+    contentTypeMap: new Map<string, string>([
+      [".ts", "application/javascript"],
+      [".tsx", "application/javascript"]
+    ]),
+    contentDispositionMap: new Map([])
+  }
+): HttpHandler {
   return async req => {
     if (req.method === "GET" || req.method === "HEAD") {
       const url = new URL(req.url, "http://127.0.0.1");
       const filepath = await resolveFilepath(dir, url.pathname);
-      console.log(filepath);
       if (!filepath) {
         return;
       }
       const stat = await Deno.stat(filepath);
       const ext = path.extname(filepath);
-      const contentType =
-        media_types.contentType(ext) || "application/octet-stream";
+      const base = path.basename(filepath);
+      let contentType =
+        opts.contentTypeMap.get(ext) ||
+        media_types.contentType(ext) ||
+        "application/octet-stream";
       const headers = new Headers({
-        "Content-Length": stat.len + "",
-        "Content-Type": contentType
+        "content-length": stat.len + "",
+        "content-type": contentType
       });
+      const contentDisposition = opts.contentDispositionMap.get(ext);
+      if (contentDisposition === "attachment") {
+        headers.set("content-disposition", `attachment; filename="${base}"`);
+      } else if (contentDisposition === "inline") {
+        headers.set("content-disposition", "inline");
+      }
       if (req.method === "HEAD") {
         return req.respond({
           status: 200,
@@ -53,7 +79,7 @@ export function serveStatic(dir: string): HttpHandler {
       } else {
         const file = await Deno.open(filepath, "r");
         try {
-          await req.respond({status: 200, headers, body: file});
+          await req.respond({ status: 200, headers, body: file });
         } finally {
           file.close();
         }

@@ -41,24 +41,22 @@ export function createResponder(w: Writer): ServerResponder {
   };
 }
 
-const encoder = new TextEncoder();
-
 export function badRequest(): ServerResponse {
-  return { status: 400, body: encoder.encode(kHttpStatusMessages[400]) };
+  return { status: 400, body: kHttpStatusMessages[400] };
 }
 
 export function unauthorized(): ServerResponse {
-  return { status: 401, body: encoder.encode(kHttpStatusMessages[401]) };
+  return { status: 401, body: kHttpStatusMessages[401] };
 }
 
 export function forbidden(): ServerResponse {
-  return { status: 403, body: encoder.encode(kHttpStatusMessages[403]) };
+  return { status: 403, body: kHttpStatusMessages[403] };
 }
 
 export function notFound(): ServerResponse {
-  return { status: 404, body: encoder.encode(kHttpStatusMessages[404]) };
+  return { status: 404, body: kHttpStatusMessages[404] };
 }
 
 export function internalServerError(): ServerResponse {
-  return { status: 500, body: encoder.encode(kHttpStatusMessages[500]) };
+  return { status: 500, body: kHttpStatusMessages[500] };
 }

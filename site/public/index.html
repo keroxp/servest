@@ -1,29 +1,198 @@
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link href="./index.css" rel="stylesheet" />
-    <title>Servest: A progressive http server for Deno</title>
-    <link
-      rel="stylesheet"
-      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css"
-    />
-  </head>
-  <body>
-    <h1>Servest: A progressive http server for Deno</h1>
-    <pre>
-      <code>
-        import { listenAndServe } from "https://denopkg.com/keroxp/servest/server.ts";
-        listenAndServe(":8899", async req => {
-          await req.respond({
-            status: 200,
-            headers: new Headers({
-              "Content-Type": "text/plain"
-            }),
-            body: "hello"
-          });
-        });
+<head>
+  <meta charset="UTF-8"/>
+  <title>Servest: A progressive http server for Deno</title>
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
+  />
+  <link href="./reset.css" rel="stylesheet" />
+  <link href="./index.css" rel="stylesheet"/>
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/solarized-dark.min.css"
+  />
+</head>
+<body>
+<div class="root">
+  <div class="content">
+    <div class="sidebar">
+      <div class="heading">
+        <h1>Servest</h1>
+        <p>A progressive http server for Deno</p>
+      </div>
+      <hr />
+      <div class="sidebarLink">
+        <a href="#getting-started"> Getting Started </a>
+      </div>
+      <div class="sidebarSection">Examples</div>
+      <div class="sidebarLink">
+        <a href="#simple-server">Simple Server</a>
+      </div>
+      <div class="sidebarLink">
+        <a href="#routing-server">Routing Server</a>
+      </div>
+      <div class="sidebarLink">
+        <a href="#using-middleware">
+          Use Middleware for Router
+        </a>
+      </div>
+      <div class="sidebarLink">
+        <a href="#error-handler">
+          Error Handler for Router
+        </a>
+      </div>
+      <hr />
+      <div class="sidebarLink">
+        <a href="https://github.com/keroxp/servest" target="_blank">
+          Github
+        </a>
+      </div>
+    </div>
+    <div class="article">
+      <div id="getting-started">
+        <h2>Getting Started</h2>
+        <a href="./example/get_started.ts" target="_blank"
+        >get_started.ts</a
+        >
+        <pre>
+      <code class="ts">
+import { createRouter } from "https://denopkg.com/keroxp/servest/router.ts";
+const router = createRouter();
+router.handle("/", async req => {
+  await req.respond({
+    status: 200,
+    headers: new Headers({
+      "content-type": "text/plain"
+    }),
+    body: "Hello, Servest!"
+  });
+});
+router.listen(":8898");
       </code>
     </pre>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
-  </body>
+      </div>
+      <div id="simple-server">
+        <h2>Simple Server</h2>
+        <a href="./example/simple_server.ts" target="_blank"
+        >simple_server.ts</a
+        >
+        <pre>
+      <code class="ts">
+import { listenAndServe } from "https://denopkg.com/keroxp/servest/server.ts";
+listenAndServe(":8899", async req => {
+  await req.respond({
+    status: 200,
+    headers: new Headers({
+      "content-type": "text/plain"
+    }),
+    body: "hello"
+  });
+});
+      </code>
+    </pre>
+        <h3>
+          Running on you machine
+        </h3>
+        <pre>
+      <code class="bash">
+$ deno --allow-net https://servestjs.org/example/simple_server.ts
+      </code>
+    </pre>
+      </div>
+      <div id="routing-server">
+        <h2>Routing Server</h2>
+        <a href="./example/routing_server.ts" target="_blank"
+        >routing_server.ts</a
+        >
+        <pre>
+          <code class="ts">
+import { createRouter } from "https://denopkg.com/keroxp/servest/router.ts";
+const router = createRouter();
+router.handle("/", async req => {
+  await req.respond({
+    status: 200,
+    headers: new Headers({
+      "content-type": "text/plain"
+    }),
+    body: "Hello, Servest!"
+  });
+});
+router.handle(new RegExp("/foo/(.+)"), async req => {
+  const [id] = req.match.groups[0];
+  await req.respond({
+    status: 200,
+    headers: new Headers({
+      "content-type": "application/json"
+    }),
+    body: JSON.stringify({ id })
+  });
+});
+router.listen(":8898");
+          </code>
+        </pre>
+        <h3>
+          Running on you machine
+        </h3>
+      <pre>
+      <code class="bash">
+$ deno --allow-net https://servestjs.org/example/routing_server.ts
+      </code>
+      </pre>
+      </div>
+      <div id="using-middleware">
+        <h2>Use Middleware for Router</h2>
+        <pre>
+          <code class="ts">
+import { createRouter } from "https://denopkg.com/keroxp/servest/router.ts";
+import { serveStatic } from "https://denopkg.com/keroxp/servest/serve_static.ts";
+const router = createRouter();
+// All requests will be processed and matched files in "public" directory
+// are served automatically
+// Otherwise, request will be passed to next handler
+router.use(serveStatic("./public"));
+router.listen(":8899")
+          </code>
+        </pre>
+      </div>
+      <div id="error-handler">
+        <h2>Use Error Handler for Router</h2>
+        <pre>
+          <code class="ts">
+import { createRouter } from "https://denopkg.com/keroxp/servest/router.ts";
+const router = createRouter();
+router.handle("/", async req => {
+  throw new Error("error");
+})
+router.handle(e: unknown, async req => {
+  // All uncaught errors and unhandled promise rejections will be here.
+  // Do your custom request finalization.
+  if (e instanceof UnauthorizedError) {
+    await req.respond({
+      status: 401,
+      body: "Unauthorized"
+    })
+  } else {
+    await req.respond({
+      status: 500,
+      body: "Internal Server Error"
+    })
+  }
+});
+router.listen(":8899")
+          </code>
+        </pre>
+      </div>
+    </div>
+
+    <div class="footer">
+      (c) 2019 Yusuke Sakurai, MIT License, Powered by <a href="/">Servest</a>
+    </div>
+  </div>
+</div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
+<script>
+  hljs.initHighlightingOnLoad();
+</script>
+</body>
 </html>
