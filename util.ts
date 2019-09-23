@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { sprintf } from "./vendor/https/deno.land/std/fmt/sprintf.ts";
 
 const kDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];

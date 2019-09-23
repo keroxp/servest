@@ -186,6 +186,7 @@ export function listenAndServe(
       .catch(closeListener);
   };
   acceptRoutine();
+  console.log(`servest is running on port ${addr}...`);
 }
 
 /** Try to continually read and process requests from keep-alive connection. */
