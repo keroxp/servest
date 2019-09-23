@@ -28,10 +28,7 @@ const router = createRouter();
 router.handle("/index", async req => {
   await req.respond({
     status: 200,
-    headers: new Headers({
-      "content-type": "text/plain"
-    }),
-    body: new StringReader("ok")
+    body: "ok"
   });
 });
 router.handle(new RegExp("/foo/(?<id>.+)"), async req => {
@@ -41,7 +38,7 @@ router.handle(new RegExp("/foo/(?<id>.+)"), async req => {
     headers: new Headers({
       "content-type": "application/json"
     }),
-    body: new StringReader(JSON.stringify({ id }))
+    body: JSON.stringify({ id })
   });
 });
 router.handle("/no-response", async req => {});

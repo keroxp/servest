@@ -1,3 +1,84 @@
+
+a, a:active {
+  text-decoration: none;
+  color: inherit;
+}
+a {
+ color: rgb(72, 196, 200)
+}
+
 h1 {
+  font-size: 25px;
+  font-weight: bold;
+  padding: 20px 0;
+}
+h2 {
+  font-size: 20px;
+  font-weight: bold;
+  margin: 10px 0;
+}
+h3 {
   font-size: 15px;
+  font-weight: bold;
+  margin: 5px 0;
+}
+code {
+  font-size: 1em;
+  line-height: 1.1em;
+}
+body {
+  background-color: #F5F7F9;
+}
+.root {
+  width: 100%;
+}
+.content {
+  width: 1024px;
+  position: relative;
+}
+.sidebar {
+  padding: 15px ;
+  position: fixed;
+  left: 0
+}
+@media (max-width: 480px) and (orientation: portrait) {
+  .content {
+    width: 100vw;
+  }
+  .sidebar {
+    position: static;
+  }
+}
+
+.heading p{
+  color:  #9DAAB6;
+  margin-bottom: 15px;
+}
+.sidebarSection {
+  color: #9DAAB6;
+  font-weight: bold;
+  margin: 10px 0;
+}
+.sidebarLink {
+  padding: 5px;
+  list-style: none;
+}
+.article {
+  padding: 65px 15px 15px 15px;
+  box-sizing: border-box;
+  margin-left: 320px;
+  background-color: white;
+}
+@media (max-width: 480px) and (orientation: portrait) {
+  .article {
+    position: static;
+    margin-left: 0;
+  }
+}
+.footer {
+  text-align: center;
+  background-color:#E6ECF1;
+  padding: 15px 0;
+  color:  #9DAAB6;
+  width: 100%;
 }

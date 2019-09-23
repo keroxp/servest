@@ -22,8 +22,8 @@ test(async function server() {
       await req.respond({
         status: 200,
         headers: new Headers({
-          "Content-Type": "text/plain",
-          "Content-Length": "5"
+          "content-type": "text/plain",
+          "content-length": "5"
         }),
         body: new StringReader("hello")
       });

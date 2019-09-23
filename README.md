@@ -29,7 +29,7 @@ listenAndServe(":8899", async req => {
     headers: new Headers({
       "Content-Type": "text/plain"
     }),
-    body: new TextEncoder().encode("hello")
+    body: "hello"
   });
 });
 ```

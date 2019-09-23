@@ -10,10 +10,12 @@ import {
   assert,
   assertEquals
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
+import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
+import { ServerResponse } from "./server.ts";
 
 async function readString(r: Reader) {
   const buf = new Buffer();
@@ -122,21 +124,35 @@ test(async function serveioReadResponseChunked() {
 });
 
 test(async function serveioWriteResponse() {
-  const buf = new Buffer();
-  await writeResponse(buf, {
-    status: 200,
-    headers: new Headers({
-      "Content-Type": "text/plain"
-    }),
-    body: encode("ok")
-  });
-  const res = await readResponse(buf);
-  assertEquals(res.status, 200);
-  assertEquals(res.headers.get("content-type"), "text/plain");
-  assertEquals(res.headers.get("content-length"), "2");
-  const resBody = new Buffer();
-  await copy(resBody, res.body);
-  assertEquals(resBody.toString(), "ok");
+  const list: ([
+    ServerResponse["body"],
+    string | null,
+    string | undefined,
+    string
+  ])[] = [
+    ["ok", "2", undefined, "text/plain; charset=UTF-8"],
+    [encode("ok"), "2", "text/plain", "text/plain"],
+    [new StringReader("ok"), null, undefined, "application/octet-stream"]
+  ];
+  for (const [body, len, contentType, expContentType] of list) {
+    const buf = new Buffer();
+    const headers = new Headers();
+    if (contentType) {
+      headers.set("content-type", "text/plain");
+    }
+    await writeResponse(buf, {
+      status: 200,
+      headers,
+      body
+    });
+    const res = await readResponse(buf);
+    assertEquals(res.status, 200);
+    assertEquals(res.headers.get("content-type"), expContentType);
+    assertEquals(res.headers.get("content-length"), len);
+    const resBody = new Buffer();
+    await copy(resBody, res.body);
+    assertEquals(resBody.toString(), "ok");
+  }
 });
 
 test(async function serveioWriteResponseWithoutHeaders() {
