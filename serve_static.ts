@@ -1,4 +1,4 @@
-import { HttpHandler } from "./router.ts";
+import {HttpHandler} from "./router.ts";
 import * as path from "./vendor/https/deno.land/std/fs/path.ts";
 import * as media_types from "./vendor/https/deno.land/std/media_types/mod.ts";
 
@@ -18,9 +18,12 @@ export async function resolveFilepath(
   if (await fileExists(filepath)) {
     return filepath;
   }
-  if (filepath.endsWith("/") && (await fileExists(filepath + "index.html"))) {
+  if (
+    filepath.endsWith("/") &&
+    (await fileExists(path.resolve(dir, filepath + "index.html")))
+  ) {
     return filepath + "index.html";
-  } else if (await fileExists(filepath + ".html")) {
+  } else if (await fileExists(path.resolve(dir, filepath + ".html"))) {
     return filepath + ".html";
   }
 }
@@ -30,6 +33,7 @@ export function serveStatic(dir: string): HttpHandler {
     if (req.method === "GET" || req.method === "HEAD") {
       const url = new URL(req.url, "http://127.0.0.1");
       const filepath = await resolveFilepath(dir, url.pathname);
+      console.log(filepath);
       if (!filepath) {
         return;
       }
@@ -49,7 +53,7 @@ export function serveStatic(dir: string): HttpHandler {
       } else {
         const file = await Deno.open(filepath, "r");
         try {
-          await req.respond({ status: 200, headers, body: file });
+          await req.respond({status: 200, headers, body: file});
         } finally {
           file.close();
         }

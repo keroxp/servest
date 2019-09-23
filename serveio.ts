@@ -282,7 +282,11 @@ function setupBody(
     if (!headers.has("content-length") && !headers.has("transfer-encoding")) {
       headers.set("transfer-encoding", "chunked");
     }
-    [r, len] = [body, undefined];
+    const size = headers.get("content-length");
+    if (size) {
+      len = parseInt(size);
+    }
+    r = body;
   }
   if (!headers.has("content-type")) {
     headers.set("content-type", "application/octet-stream");
