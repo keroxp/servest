@@ -1,10 +1,29 @@
 <html lang="en">
   <head>
-    <meta charset="UTF-8">
-    <link href="./index.css" rel="stylesheet">
+    <meta charset="UTF-8" />
+    <link href="./index.css" rel="stylesheet" />
     <title>Servest: A progressive http server for Deno</title>
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/default.min.css"
+    />
   </head>
-  <body>    
+  <body>
     <h1>Servest: A progressive http server for Deno</h1>
+    <pre>
+      <code>
+        import { listenAndServe } from "https://denopkg.com/keroxp/servest/server.ts";
+        listenAndServe(":8899", async req => {
+          await req.respond({
+            status: 200,
+            headers: new Headers({
+              "Content-Type": "text/plain"
+            }),
+            body: "hello"
+          });
+        });
+      </code>
+    </pre>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js"></script>
   </body>
 </html>
