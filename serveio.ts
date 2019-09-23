@@ -276,7 +276,7 @@ function setupBody(
     headers.set("content-length", `${bin.byteLength}`);
     [r, len] = [new Buffer(bin), bin.byteLength];
     if (!headers.has("content-type")) {
-      headers.set("content-type", "text/plain; charset=UTF-8")
+      headers.set("content-type", "text/plain; charset=UTF-8");
     }
   } else {
     if (!headers.has("content-length") && !headers.has("transfer-encoding")) {
@@ -323,7 +323,7 @@ export async function writeResponse(
 export async function writeHeaders(w: Writer, headers: Headers): Promise<void> {
   const lines = [];
   const writer = bufWriter(w);
-  if (headers.has("date")) {
+  if (!headers.has("date")) {
     headers.set("date", dateToDateHeader());
   }
   if (headers)
