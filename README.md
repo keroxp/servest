@@ -23,7 +23,10 @@ Some progressive features for HTTP/1.1 server are implemented.
 
 ```ts
 import { listenAndServe } from "https://denopkg.com/keroxp/servest/server.ts";
-listenAndServe(":8899", async req => {
+listenAndServe({
+  hostname: "127.0.0.1",
+  port: 8899
+}, async req => {
   await req.respond({
     status: 200,
     headers: new Headers({
@@ -72,7 +75,10 @@ router.handle(new RegExp("/foo/(?<id>.+)"), async req => {
     body: new TextEncoder().encode(JSON.stringify({ id }))
   });
 });
-router.listen("127.0.0.1:8898");
+router.listen({
+  hostname: "127.0.0.1",
+  port: 8899
+);
 ```
 
 ### Middleware API for Router

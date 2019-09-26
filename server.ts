@@ -102,7 +102,7 @@ function createListener(listenOptions: string | ListenOptions): Listener {
   if (typeof listenOptions === "string") {
     console.warn(
       yellow(
-        "servest: serve(addr,opts)/listen(addr,opts) is now deprecated and will be removed in v0.13.0 (now v0.12.x). Use serve(listenOptions, opts)/listen(listenOptions, opts) for future use."
+        "servest: serve(addr,opts)/listen(addr,opts) is now deprecated and will be removed in future version. Use serve(listenOptions, opts)/listen(listenOptions, opts) for future use."
       )
     );
     const [h, p] = listenOptions.split(":");
