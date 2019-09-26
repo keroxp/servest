@@ -61,8 +61,7 @@ test(async function serverKeepAliveTimeout() {
     async req => {
       await req.respond({
         status: 200,
-        headers: new Headers(),
-        body: encode("ok")
+        body: "ok"
       });
     },
     {
@@ -78,7 +77,7 @@ test(async function serverKeepAliveTimeout() {
       headers: new Headers({
         host: "deno.land"
       }),
-      body: encode("hello")
+      body: "hello"
     };
     const { status, finalize } = await agent.send(req);
     await finalize();

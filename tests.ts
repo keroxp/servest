@@ -9,6 +9,5 @@ import "./agent_test.ts";
 import "./util_test.ts";
 import { runTests } from "./vendor/https/deno.land/std/testing/mod.ts";
 runTests({ exitOnFail: true }).then(() => {
-  console.log(Object.entries(Deno.resources()));
-  // Deno.exit(0);
+  Deno.exit(0);
 });

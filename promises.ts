@@ -31,19 +31,6 @@ export function defer<T = void>(): Deferred<T> {
   };
 }
 
-export async function rejectify<T>(promise: Promise<T>): Promise<never> {
-  return new Promise<never>((resolve, reject) => {
-    promise.then(reject).catch(reject);
-  });
-}
-
-export async function takeFirst<T>(promise: Promise<T>, ...racers): Promise<T> {
-  return new Promise((resolve, reject) => {
-    promise.then(resolve).catch(reject);
-    racers.forEach(r => r.then(reject).catch(reject));
-  });
-}
-
 export class TimeoutError extends Error {}
 
 /** returns curried promise factory that  */

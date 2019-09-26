@@ -4,11 +4,7 @@ import Conn = Deno.Conn;
 import Reader = Deno.Reader;
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { defer, Deferred, promiseInterrupter } from "./promises.ts";
-import {
-  initServeOptions,
-  kDefaultKeepAliveTimeout,
-  readRequest
-} from "./serveio.ts";
+import { initServeOptions, readRequest } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
 import ListenOptions = Deno.ListenOptions;
 import { yellow } from "./vendor/https/deno.land/std/fmt/colors.ts";
@@ -271,14 +267,14 @@ function handleKeepAliveConn(
     await req.finalize();
     let keepAliveTimeout = originalOpts.keepAliveTimeout;
     if (req.keepAlive && req.keepAlive.max <= 0) {
-      throw "EOF";
+      throw Deno.EOF;
     }
     if (req.headers.get("connection") === "close") {
-      throw "EOF";
+      throw Deno.EOF;
     }
-    if (req.keepAlive && Number.isInteger(req.keepAlive.timeout)) {
+    if (req.keepAlive) {
       keepAliveTimeout = Math.min(
-        keepAliveTimeout || kDefaultKeepAliveTimeout,
+        keepAliveTimeout!,
         req.keepAlive.timeout * 1000
       );
     }
