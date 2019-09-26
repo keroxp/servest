@@ -34,7 +34,7 @@ export type HttpAgentSendOptions = {
   /** http headers */
   headers?: Headers;
   /** http body */
-  body?: Uint8Array | Reader;
+  body?: string | Uint8Array | Reader;
 };
 
 const kPortMap = {
@@ -53,7 +53,6 @@ export function createAgent(
   let bufReader: BufReader;
   let bufWriter: BufWriter;
   const url = new URL(baseUrl);
-  assert(url.protocol !== "https:", "https is not supported yet");
   assert(
     url.protocol === "http:" || url.protocol === "https:",
     `scheme must be http or https: ${url.protocol}`
@@ -71,7 +70,11 @@ export function createAgent(
     if (url.hostname) {
       opts.hostname = url.hostname;
     }
-    _conn = await Deno.dial(opts);
+    if (url.protocol === "http:") {
+      _conn = await Deno.dial(opts);
+    } else {
+      _conn = await Deno.dialTLS(opts);
+    }
     bufReader = new BufReader(_conn);
     bufWriter = new BufWriter(_conn);
     connected = true;

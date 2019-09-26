@@ -68,6 +68,40 @@ test(async function agent() {
   }
 });
 
+test(async function agentTls() {
+  const agent = createAgent(`https://httpbin.org`);
+  try {
+    {
+      const res = await agent.send({
+        path: "/get?deno=land",
+        method: "GET"
+      });
+      assertEquals(res.status, 200);
+      const resp = JSON.parse(await readString(res.body));
+      assertEquals(resp["args"]["deno"], "land");
+    }
+    {
+      const res = await agent.send({
+        path: "/post",
+        method: "POST",
+        headers: new Headers({
+          "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+        }),
+        body: "deno=land"
+      });
+      assertEquals(res.status, 200);
+      const body = await readString(res.body);
+      const resp = JSON.parse(body);
+      assertEquals(resp["form"]["deno"], "land");
+    }
+  } catch (e) {
+    console.error(e);
+  } finally {
+    agent.conn.close();
+    // setup.resolve();
+  }
+});
+
 test(async function agentUnreadBody() {
   setupRouter(++_port);
   const agent = createAgent(`http://127.0.0.1:${_port}`);
@@ -85,15 +119,6 @@ test(async function agentUnreadBody() {
   } finally {
     agent.conn.close();
   }
-});
-
-test(async function agentHttps() {
-  assertThrows(() => {
-    createAgent("https://127.0.0.1");
-  });
-  assertThrows(() => {
-    createAgent("https://127.0.0.1:8888");
-  });
 });
 
 test(async function agentInvalidScheme() {
