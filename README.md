@@ -4,7 +4,7 @@
 ![https://img.shields.io/github/tag/keroxp/servest.svg](https://img.shields.io/github/tag/keroxp/servest.svg)
 [![license](https://img.shields.io/github/license/keroxp/servest.svg)](https://github.com/keroxp/servest)
 [![tag](https://img.shields.io/badge/deno__std-v0.18.0-green.svg)](https://github.com/denoland/deno_std)
-[![tag](https://img.shields.io/badge/deno-v0.18.0-green.svg)](https://github.com/denoland/deno)
+[![tag](https://img.shields.io/badge/deno-v0.19.0-green.svg)](https://github.com/denoland/deno)
 
 🌾A progressive http server / router for deno🌾
 
@@ -137,6 +137,8 @@ const { status, headers, body } = await agent.send({
 
 - HTTP/2
 - HTTP testing api
+- Session support
+- Body parsers (json, form, multipart)
 
 ## License
 
