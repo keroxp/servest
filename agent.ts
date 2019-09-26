@@ -6,6 +6,7 @@ import { readResponse, writeRequest } from "./serveio.ts";
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;
+import DialOptions = Deno.DialOptions;
 
 /** keep-alive http agent for single host. each message will be sent in serial */
 export interface HttpAgent {
@@ -33,7 +34,7 @@ export type HttpAgentSendOptions = {
   /** http headers */
   headers?: Headers;
   /** http body */
-  body?: Uint8Array | Reader;
+  body?: string | Uint8Array | Reader;
 };
 
 const kPortMap = {
@@ -43,7 +44,7 @@ const kPortMap = {
 
 export function createAgent(
   baseUrl: string,
-  opts?: HttpAgentOptions
+  opts: HttpAgentOptions = {}
 ): HttpAgent {
   let connected = false;
   let connecting = false;
@@ -52,7 +53,6 @@ export function createAgent(
   let bufReader: BufReader;
   let bufWriter: BufWriter;
   const url = new URL(baseUrl);
-  assert(url.protocol !== "https:", "https is not supported yet");
   assert(
     url.protocol === "http:" || url.protocol === "https:",
     `scheme must be http or https: ${url.protocol}`
@@ -63,8 +63,18 @@ export function createAgent(
     if (connected) return;
     if (connecting) return connectDeferred.promise;
     connecting = true;
-    const host = url.hostname;
-    _conn = await Deno.dial("tcp", `${host}:${port}`);
+    const opts: DialOptions = {
+      port: parseInt(port),
+      transport: "tcp"
+    };
+    if (url.hostname) {
+      opts.hostname = url.hostname;
+    }
+    if (url.protocol === "http:") {
+      _conn = await Deno.dial(opts);
+    } else {
+      _conn = await Deno.dialTLS(opts);
+    }
     bufReader = new BufReader(_conn);
     bufWriter = new BufWriter(_conn);
     connected = true;
@@ -73,9 +83,9 @@ export function createAgent(
   };
   let prevResponse: ClientResponse;
   let sending = false;
-  const send = async (
-    sendOptions?: HttpAgentSendOptions
-  ): Promise<ClientResponse> => {
+  async function send(
+    sendOptions: HttpAgentSendOptions
+  ): Promise<ClientResponse> {
     if (sending) {
       throw new Error("It is not able to send http request concurrently");
     }
@@ -89,20 +99,20 @@ export function createAgent(
       if (prevResponse) {
         await prevResponse.finalize();
       }
-      await writeRequest(_conn, {
+      await writeRequest(bufWriter, {
         url: destUrl.toString(),
         method,
         headers,
         body
       });
-      const res = await readResponse(_conn, opts);
+      const res = await readResponse(bufReader, opts);
       return (prevResponse = Object.assign(res, {
         bufWriter,
         bufReader,
         conn: _conn
       }));
     } catch (e) {
-      if (e === "EOF") {
+      if (e === Deno.EOF) {
         throw new ConnectionClosedError();
       } else {
         throw new Error(`${e}`);
@@ -110,7 +120,7 @@ export function createAgent(
     } finally {
       sending = false;
     }
-  };
+  }
   return {
     send,
     get conn() {

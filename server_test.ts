@@ -10,14 +10,16 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
 import { createAgent } from "./agent.ts";
-import { promiseTimeout } from "./test_util.ts";
 import copy = Deno.copy;
 
 let port = 8880;
 test(async function server() {
   const d = defer();
   listenAndServe(
-    `0.0.0.0:${port}`,
+    {
+      hostname: "0.0.0.0",
+      port
+    },
     async req => {
       await req.respond({
         status: 200,
@@ -44,7 +46,6 @@ test(async function server() {
     assertEquals(dest.toString(), "hello");
   } finally {
     agent.conn.close();
-    await promiseTimeout(100);
     d.resolve();
   }
 });
@@ -53,12 +54,14 @@ test(async function serverKeepAliveTimeout() {
   port++;
   const d = defer();
   listenAndServe(
-    `0.0.0.0:${port}`,
+    {
+      hostname: "0.0.0.0",
+      port
+    },
     async req => {
       await req.respond({
         status: 200,
-        headers: new Headers(),
-        body: encode("ok")
+        body: "ok"
       });
     },
     {
@@ -74,7 +77,7 @@ test(async function serverKeepAliveTimeout() {
       headers: new Headers({
         host: "deno.land"
       }),
-      body: encode("hello")
+      body: "hello"
     };
     const { status, finalize } = await agent.send(req);
     await finalize();
@@ -92,7 +95,10 @@ test(async function serverKeepAliveTimeoutMax() {
   const d = defer();
   port++;
   listenAndServe(
-    `0.0.0.0:${port}`,
+    {
+      hostname: "0.0.0.0",
+      port
+    },
     async req => {
       await req.respond({
         status: 200,
@@ -129,7 +135,10 @@ test(async function serverConnectionClose() {
   const d = defer();
   port++;
   listenAndServe(
-    `0.0.0.0:${port}`,
+    {
+      hostname: "0.0.0.0",
+      port
+    },
     async req => {
       await req.respond({
         status: 200,

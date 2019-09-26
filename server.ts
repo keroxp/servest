@@ -6,6 +6,9 @@ import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { defer, Deferred, promiseInterrupter } from "./promises.ts";
 import { initServeOptions, readRequest } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
+import ListenOptions = Deno.ListenOptions;
+import { yellow } from "./vendor/https/deno.land/std/fmt/colors.ts";
+import Listener = Deno.Listener;
 
 /** request data for building http request to server */
 export type ClientRequest = {
@@ -16,7 +19,7 @@ export type ClientRequest = {
   /** HTTP Headers */
   headers?: Headers;
   /** HTTP Body */
-  body?: Uint8Array | Reader;
+  body?: string | Uint8Array | Reader;
 };
 
 /** response data for building http response to client */
@@ -95,12 +98,35 @@ export type ServeOptions = {
   readTimeout?: number;
 };
 
-export async function* serve(
+function createListener(listenOptions: string | ListenOptions): Listener {
+  if (typeof listenOptions === "string") {
+    const [h, p] = listenOptions.split(":");
+    if (!p) {
+      throw new Error("redis: port must be specified");
+    }
+    listenOptions = { port: parseInt(p) };
+    if (h) {
+      listenOptions.hostname = h;
+    }
+    return listen(listenOptions);
+  } else {
+    return listen(listenOptions);
+  }
+}
+export function serve(
   addr: string,
+  opts?: ServeOptions
+): AsyncIterableIterator<ServerRequest>;
+export function serve(
+  listenOpts: ListenOptions,
+  opts?: ServeOptions
+): AsyncIterableIterator<ServerRequest>;
+export async function* serve(
+  listenOptions: string | ListenOptions,
   opts: ServeOptions = {}
 ): AsyncIterableIterator<ServerRequest> {
   opts = initServeOptions(opts);
-  const listener = listen("tcp", addr);
+  let listener = createListener(listenOptions);
   let onRequestDeferred = defer();
   let requestQueue: ServerRequest[] = [];
   const yieldingPromises: WeakMap<ServerRequest, Deferred> = new WeakMap();
@@ -162,10 +188,20 @@ export async function* serve(
 export function listenAndServe(
   addr: string,
   handler: (req: ServerRequest) => Promise<void>,
+  opts?: ServeOptions
+): void;
+export function listenAndServe(
+  listenOptions: ListenOptions,
+  handler: (req: ServerRequest) => Promise<void>,
+  opts?: ServeOptions
+): void;
+export function listenAndServe(
+  listenOptions: string | ListenOptions,
+  handler: (req: ServerRequest) => Promise<void>,
   opts: ServeOptions = {}
 ): void {
   opts = initServeOptions(opts);
-  const listener = listen("tcp", addr);
+  let listener = createListener(listenOptions);
   const throwIfCancelled = promiseInterrupter({
     cancel: opts.cancel
   });
@@ -186,7 +222,6 @@ export function listenAndServe(
       .catch(closeListener);
   };
   acceptRoutine();
-  console.log(`servest is running on port ${addr}...`);
 }
 
 /** Try to continually read and process requests from keep-alive connection. */
@@ -225,14 +260,14 @@ function handleKeepAliveConn(
     await req.finalize();
     let keepAliveTimeout = originalOpts.keepAliveTimeout;
     if (req.keepAlive && req.keepAlive.max <= 0) {
-      throw "EOF";
+      throw Deno.EOF;
     }
     if (req.headers.get("connection") === "close") {
-      throw "EOF";
+      throw Deno.EOF;
     }
-    if (req.keepAlive && Number.isInteger(req.keepAlive.timeout)) {
+    if (req.keepAlive) {
       keepAliveTimeout = Math.min(
-        keepAliveTimeout,
+        keepAliveTimeout!,
         req.keepAlive.timeout * 1000
       );
     }
