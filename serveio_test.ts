@@ -33,6 +33,7 @@ test(async function serveioReadRequestGet() {
   assertEquals(req.headers.get("content-type"), "text/plain");
   assert(req.body === void 0);
   assert(req.trailers === void 0);
+  f.close();
 });
 
 test(async function serveioReadRequestPost() {
@@ -49,6 +50,7 @@ test(async function serveioReadRequestPost() {
     "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
   );
   assert(req.trailers === void 0);
+  f.close();
 });
 
 test(async function serveioReadRequestPostChunked() {
@@ -65,6 +67,7 @@ test(async function serveioReadRequestPostChunked() {
     "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
   );
   assertEquals(req.trailers, void 0);
+  f.close();
 });
 
 test(async function serveioReadRequestPostChunkedWithTrailers() {
@@ -86,6 +89,7 @@ test(async function serveioReadRequestPostChunkedWithTrailers() {
   assertEquals(req.trailers.constructor, Headers);
   assertEquals(req.trailers.get("x-deno"), "land");
   assertEquals(req.trailers.get("x-node"), "js");
+  f.close();
 });
 
 test(async function serveioReadResponse() {
@@ -102,6 +106,7 @@ test(async function serveioReadResponse() {
   );
   assertEquals(res.trailers, void 0);
   assertEquals(typeof res.finalize, "function");
+  f.close();
 });
 
 test(async function serveioReadResponseChunked() {
@@ -121,6 +126,7 @@ test(async function serveioReadResponseChunked() {
   assertEquals(res.trailers.get("x-deno"), "land");
   assertEquals(res.trailers.get("x-node"), "js");
   assert(typeof res.finalize === "function");
+  f.close();
 });
 
 test(async function serveioWriteResponse() {

@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "target": "esnext",
+    "module": "esnext",
+    "noResolve": true,
+    "baseUrl": "/Users/keroxp/Library/Caches",
+    "strictNullChecks": true,
+    "paths": {
+      "deno": ["./deno.d.ts"],
+      "https://*": ["./deno/deps/https/*"],
+      "http://*": ["./deno/deps/http/*"]
+    }
+  }
+}

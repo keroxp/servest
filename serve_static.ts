@@ -14,6 +14,7 @@ export async function resolveFilepath(
       return stat.isFile();
     } catch (e) {
       return false;
+    } finally {
     }
   };
   if (await fileExists(filepath)) {
@@ -21,10 +22,10 @@ export async function resolveFilepath(
   }
   if (
     filepath.endsWith("/") &&
-    (await fileExists(path.resolve(dir, filepath + "index.html")))
+    (await fileExists(path.resolve(filepath + "index.html")))
   ) {
     return filepath + "index.html";
-  } else if (await fileExists(path.resolve(dir, filepath + ".html"))) {
+  } else if (await fileExists(path.resolve(filepath + ".html"))) {
     return filepath + ".html";
   }
 }

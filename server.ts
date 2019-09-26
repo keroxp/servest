@@ -4,10 +4,15 @@ import Conn = Deno.Conn;
 import Reader = Deno.Reader;
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { defer, Deferred, promiseInterrupter } from "./promises.ts";
-import { initServeOptions, readRequest } from "./serveio.ts";
+import {
+  initServeOptions,
+  kDefaultKeepAliveTimeout,
+  readRequest
+} from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
-import { parseAddr } from "./util.ts";
 import ListenOptions = Deno.ListenOptions;
+import { yellow } from "./vendor/https/deno.land/std/fmt/colors.ts";
+import Listener = Deno.Listener;
 
 /** request data for building http request to server */
 export type ClientRequest = {
@@ -97,20 +102,41 @@ export type ServeOptions = {
   readTimeout?: number;
 };
 
-export async function* serve(
+function createListener(listenOptions: string | ListenOptions): Listener {
+  if (typeof listenOptions === "string") {
+    console.warn(
+      yellow(
+        "servest: serve(addr,opts)/listen(addr,opts) is now deprecated and will be removed in v0.13.0 (now v0.12.x). Use serve(listenOptions, opts)/listen(listenOptions, opts) for future use."
+      )
+    );
+    const [h, p] = listenOptions.split(":");
+    if (!p) {
+      throw new Error("redis: port must be specified");
+    }
+    listenOptions = { port: parseInt(p) };
+    if (h) {
+      listenOptions.hostname = h;
+    }
+    return listen(listenOptions);
+  } else {
+    return listen(listenOptions);
+  }
+}
+/** @deprecated use serve(listenOpts: ListenOptions, opts?: ServeOptions) instead.  */
+export function serve(
   addr: string,
+  opts?: ServeOptions
+): AsyncIterableIterator<ServerRequest>;
+export function serve(
+  listenOpts: ListenOptions,
+  opts?: ServeOptions
+): AsyncIterableIterator<ServerRequest>;
+export async function* serve(
+  listenOptions: string | ListenOptions,
   opts: ServeOptions = {}
 ): AsyncIterableIterator<ServerRequest> {
   opts = initServeOptions(opts);
-  const [hostname, port] = parseAddr(addr);
-  const listenOptions: ListenOptions = {
-    port,
-    transport: "tcp"
-  };
-  if (hostname) {
-    listenOptions.hostname = hostname;
-  }
-  const listener = listen(listenOptions);
+  let listener = createListener(listenOptions);
   let onRequestDeferred = defer();
   let requestQueue: ServerRequest[] = [];
   const yieldingPromises: WeakMap<ServerRequest, Deferred> = new WeakMap();
@@ -169,21 +195,24 @@ export async function* serve(
   closeListener();
 }
 
+/** @deprecated use listenAndServe(listenOptions, handler, opts) instead */
 export function listenAndServe(
   addr: string,
+  handler: (req: ServerRequest) => Promise<void>,
+  opts?: ServeOptions
+): void;
+export function listenAndServe(
+  listenOptions: ListenOptions,
+  handler: (req: ServerRequest) => Promise<void>,
+  opts?: ServeOptions
+): void;
+export function listenAndServe(
+  listenOptions: string | ListenOptions,
   handler: (req: ServerRequest) => Promise<void>,
   opts: ServeOptions = {}
 ): void {
   opts = initServeOptions(opts);
-  const [hostname, port] = parseAddr(addr);
-  const listenOptions: ListenOptions = {
-    port,
-    transport: "tcp"
-  };
-  if (hostname) {
-    listenOptions.hostname = hostname;
-  }
-  const listener = listen(listenOptions);
+  let listener = createListener(listenOptions);
   const throwIfCancelled = promiseInterrupter({
     cancel: opts.cancel
   });
@@ -249,7 +278,7 @@ function handleKeepAliveConn(
     }
     if (req.keepAlive && Number.isInteger(req.keepAlive.timeout)) {
       keepAliveTimeout = Math.min(
-        keepAliveTimeout,
+        keepAliveTimeout || kDefaultKeepAliveTimeout,
         req.keepAlive.timeout * 1000
       );
     }

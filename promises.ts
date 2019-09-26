@@ -47,11 +47,13 @@ export async function takeFirst<T>(promise: Promise<T>, ...racers): Promise<T> {
 export class TimeoutError extends Error {}
 
 /** returns curried promise factory that  */
-export function promiseInterrupter(opts: {
+export function promiseInterrupter({
+  timeout = -1,
+  cancel
+}: {
   timeout?: number;
   cancel?: Promise<void>;
 }): <T>(p: Promise<T>) => Promise<T> {
-  let { timeout, cancel } = opts;
   timeout = Number.isInteger(timeout) ? timeout : -1;
   return <T>(p) =>
     new Promise<T>((resolve, reject) => {

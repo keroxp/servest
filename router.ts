@@ -1,6 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { listenAndServe, ServeOptions, ServerRequest } from "./server.ts";
 import { internalServerError, notFound } from "./responder.ts";
+import ListenOptions = Deno.ListenOptions;
 
 export type RoutedServerRequest = ServerRequest & {
   match?: RegExpMatchArray;
@@ -23,7 +24,7 @@ export function findLongestAndNearestMatch(
 ): { index: number; match: RegExpMatchArray } {
   let lastMatchIndex = pathname.length;
   let lastMatchLength = 0;
-  let match: RegExpMatchArray = null;
+  let match: RegExpMatchArray | null = null;
   let index = -1;
   for (let i = 0; i < patterns.length; i++) {
     const pattern = patterns[i];
@@ -61,7 +62,7 @@ export interface HttpRouter {
   /** Set global error handler. Only one handler can be set at same time */
   handleError(handler: ErrorHandler);
 
-  listen(addr: string, opts?: ServeOptions): void;
+  listen(addr: string | ListenOptions, opts?: ServeOptions): void;
 }
 
 /** create HttpRouter object */
