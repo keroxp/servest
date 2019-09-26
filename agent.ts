@@ -6,6 +6,7 @@ import { readResponse, writeRequest } from "./serveio.ts";
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;
+import DialOptions = Deno.DialOptions;
 
 /** keep-alive http agent for single host. each message will be sent in serial */
 export interface HttpAgent {
@@ -63,8 +64,14 @@ export function createAgent(
     if (connected) return;
     if (connecting) return connectDeferred.promise;
     connecting = true;
-    const host = url.hostname;
-    _conn = await Deno.dial("tcp", `${host}:${port}`);
+    const opts: DialOptions = {
+      port: parseInt(port),
+      transport: "tcp"
+    };
+    if (url.hostname) {
+      opts.hostname = url.hostname;
+    }
+    _conn = await Deno.dial(opts);
     bufReader = new BufReader(_conn);
     bufWriter = new BufWriter(_conn);
     connected = true;

@@ -6,6 +6,8 @@ import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { defer, Deferred, promiseInterrupter } from "./promises.ts";
 import { initServeOptions, readRequest } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
+import { parseAddr } from "./util.ts";
+import ListenOptions = Deno.ListenOptions;
 
 /** request data for building http request to server */
 export type ClientRequest = {
@@ -100,7 +102,15 @@ export async function* serve(
   opts: ServeOptions = {}
 ): AsyncIterableIterator<ServerRequest> {
   opts = initServeOptions(opts);
-  const listener = listen("tcp", addr);
+  const [hostname, port] = parseAddr(addr);
+  const listenOptions: ListenOptions = {
+    port,
+    transport: "tcp"
+  };
+  if (hostname) {
+    listenOptions.hostname = hostname;
+  }
+  const listener = listen(listenOptions);
   let onRequestDeferred = defer();
   let requestQueue: ServerRequest[] = [];
   const yieldingPromises: WeakMap<ServerRequest, Deferred> = new WeakMap();
@@ -165,7 +175,15 @@ export function listenAndServe(
   opts: ServeOptions = {}
 ): void {
   opts = initServeOptions(opts);
-  const listener = listen("tcp", addr);
+  const [hostname, port] = parseAddr(addr);
+  const listenOptions: ListenOptions = {
+    port,
+    transport: "tcp"
+  };
+  if (hostname) {
+    listenOptions.hostname = hostname;
+  }
+  const listener = listen(listenOptions);
   const throwIfCancelled = promiseInterrupter({
     cancel: opts.cancel
   });
@@ -186,7 +204,6 @@ export function listenAndServe(
       .catch(closeListener);
   };
   acceptRoutine();
-  console.log(`servest is running on port ${addr}...`);
 }
 
 /** Try to continually read and process requests from keep-alive connection. */

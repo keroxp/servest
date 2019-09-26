@@ -37,3 +37,12 @@ export function dateToDateHeader(time: Date = new Date()): string {
     sec
   );
 }
+export function parseAddr(addr: string): [string | undefined, number] {
+  const m = addr.match(/^(.+?)?:(\d+?)$/);
+  if (m) {
+    const host = m[1];
+    const port = parseInt(m[2]);
+    return [host, port];
+  }
+  throw new Error("addr is invalid format");
+}
