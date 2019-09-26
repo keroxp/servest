@@ -100,11 +100,6 @@ export type ServeOptions = {
 
 function createListener(listenOptions: string | ListenOptions): Listener {
   if (typeof listenOptions === "string") {
-    console.warn(
-      yellow(
-        "servest: serve(addr,opts)/listen(addr,opts) is now deprecated and will be removed in future version. Use serve(listenOptions, opts)/listen(listenOptions, opts) for future use."
-      )
-    );
     const [h, p] = listenOptions.split(":");
     if (!p) {
       throw new Error("redis: port must be specified");
@@ -118,7 +113,6 @@ function createListener(listenOptions: string | ListenOptions): Listener {
     return listen(listenOptions);
   }
 }
-/** @deprecated use serve(listenOpts: ListenOptions, opts?: ServeOptions) instead.  */
 export function serve(
   addr: string,
   opts?: ServeOptions
@@ -191,7 +185,6 @@ export async function* serve(
   closeListener();
 }
 
-/** @deprecated use listenAndServe(listenOptions, handler, opts) instead */
 export function listenAndServe(
   addr: string,
   handler: (req: ServerRequest) => Promise<void>,
