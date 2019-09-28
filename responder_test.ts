@@ -54,4 +54,14 @@ test(async function httpServerResponderShouldThrow() {
     );
   }
 });
+
+test("responder redirect should set Location header", async () => {
+  const w = new Buffer();
+  const res = createResponder(w);
+  await res.redirect("/index.html");
+  const { status, headers } = await readResponse(w);
+  assertEquals(status, 302);
+  assertEquals(headers.get("location"), "/index.html");
+});
+
 runIfMain(import.meta);

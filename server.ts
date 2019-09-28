@@ -7,7 +7,6 @@ import { defer, Deferred, promiseInterrupter } from "./promises.ts";
 import { initServeOptions, readRequest } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
 import ListenOptions = Deno.ListenOptions;
-import { yellow } from "./vendor/https/deno.land/std/fmt/colors.ts";
 import Listener = Deno.Listener;
 
 /** request data for building http request to server */

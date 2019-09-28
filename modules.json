@@ -6,6 +6,7 @@
       "/testing/asserts.ts",
       "/textproto/mod.ts",
       "/fs/path.ts",
+      "/fs/mod.ts",
       "/io/bufio.ts",
       "/io/readers.ts",
       "/io/writers.ts",
@@ -13,7 +14,9 @@
       "/strings/encode.ts",
       "/fmt/sprintf.ts",
       "/fmt/colors.ts",
-      "/media_types/mod.ts"
+      "/media_types/mod.ts",
+      "/mime/multipart.ts",
+      "/multipart/formfile.ts"
     ]
   }
 }
