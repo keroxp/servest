@@ -3,7 +3,7 @@
 [![CircleCI](https://circleci.com/gh/keroxp/servest.svg?style=svg)](https://circleci.com/gh/keroxp/servest)
 ![https://img.shields.io/github/tag/keroxp/servest.svg](https://img.shields.io/github/tag/keroxp/servest.svg)
 [![license](https://img.shields.io/github/license/keroxp/servest.svg)](https://github.com/keroxp/servest)
-[![tag](https://img.shields.io/badge/deno__std-v0.18.0-green.svg)](https://github.com/denoland/deno_std)
+[![tag](https://img.shields.io/badge/deno__std-v0.19.0-green.svg)](https://github.com/denoland/deno_std)
 [![tag](https://img.shields.io/badge/deno-v0.19.0-green.svg)](https://github.com/denoland/deno)
 
 🌾A progressive http server / router for deno🌾
