@@ -57,7 +57,7 @@ export interface HttpRouter {
   /** Set global middleware */
   use(handler: HttpHandler);
 
-  handle(pattern: string | RegExp, handlers: HttpHandler);
+  handle(pattern: string | RegExp, ...handlers: HttpHandler[]);
 
   /** Set global error handler. Only one handler can be set at same time */
   handleError(handler: ErrorHandler);
