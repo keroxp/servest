@@ -3,6 +3,7 @@ import { createRouter, findLongestAndNearestMatch } from "./router.ts";
 import { runIfMain, test } from "./vendor/https/deno.land/std/testing/mod.ts";
 import { defer } from "./promises.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
+import { it } from "./testing.ts";
 
 ([
   ["/foo", ["/foo", "/bar", "/f"], 0],
@@ -20,53 +21,45 @@ import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
   });
 });
 
-(function() {
-  const router = createRouter();
-  router.handle("/index", async req => {
-    await req.respond({
-      status: 200,
-      body: "ok"
-    });
-  });
-  router.handle(new RegExp("/foo/(?<id>.+)"), async req => {
-    const { id } = req.match.groups;
-    await req.respond({
-      status: 200,
-      headers: new Headers({
-        "content-type": "application/json"
-      }),
-      body: JSON.stringify({ id })
-    });
-  });
-  router.handle("/no-response", async req => {});
-  router.handle("/throw", async req => {
-    throw new Error("throw");
-  });
+it("router", t => {
   let errorHandled = false;
-  router.handleError((e, req) => {
-    errorHandled = true;
-  });
-  const cancel = defer<void>();
-  router.listen(
-    {
-      hostname: "127.0.0.1",
-      port: 8898
-    },
-    { cancel: cancel.promise }
-  );
-  const suiteDefer = defer();
-  let testCnt = 0;
-  function _test(str: string, func: () => Promise<void>) {
-    testCnt++;
-    func().finally(() => {
-      testCnt--;
-      test(str, func);
-      if (testCnt === 0) {
-        suiteDefer.resolve();
-      }
+  t.beforeAfterAll(() => {
+    const cancel = defer<void>();
+    const router = createRouter();
+    router.handle("/index", async req => {
+      await req.respond({
+        status: 200,
+        body: "ok"
+      });
     });
-  }
-  _test("router should respond string path", async () => {
+    router.handle(new RegExp("/foo/(?<id>.+)"), async req => {
+      const { id } = req.match.groups;
+      await req.respond({
+        status: 200,
+        headers: new Headers({
+          "content-type": "application/json"
+        }),
+        body: JSON.stringify({ id })
+      });
+    });
+    router.handle("/no-response", async req => {});
+    router.handle("/throw", async req => {
+      throw new Error("throw");
+    });
+    router.handle("/redirect", req => req.redirect("/index"));
+    router.handleError((e, req) => {
+      errorHandled = true;
+    });
+    router.listen(
+      {
+        hostname: "127.0.0.1",
+        port: 8898
+      },
+      { cancel: cancel.promise }
+    );
+    return () => cancel.resolve();
+  });
+  t.run("should respond string path", async () => {
     {
       const res1 = await fetch("http://127.0.0.1:8898/index");
       const text = await res1.body.text();
@@ -74,34 +67,36 @@ import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
       assertEquals(text, "ok");
     }
   });
-  _test("router should respond regexp path", async () => {
+  t.run("should respond regexp path", async () => {
     const res2 = await fetch("http://127.0.0.1:8898/foo/123");
     const json = await res2.body.json();
     assertEquals(res2.status, 200);
     assertEquals(res2.headers.get("content-type"), "application/json");
     assertEquals(json["id"], "123");
   });
-  _test("router should respond even if req.respond wasn't called", async () => {
+  t.run("should respond even if req.respond wasn't called", async () => {
     const res = await fetch("http://127.0.0.1:8898/no-response");
     // assertEquals(res.status, 404);
     const text = await res.body.text();
     assertEquals(text, "Not Found");
   });
-  _test("router should respond for unknown path", async () => {
+  t.run("should respond for unknown path", async () => {
     const res = await fetch("http://127.0.0.1:8898/not-found");
     const text = await res.body.text();
     assertEquals(res.status, 404);
     assertEquals(text, "Not Found");
   });
-  _test("router should handle global error", async () => {
+  t.run("should handle global error", async () => {
     const res = await fetch("http://127.0.0.1:8898/throw");
     const text = await res.body.text();
     assertEquals(res.status, 500);
     assertEquals(text, "Internal Server Error");
     assertEquals(errorHandled, true);
   });
-  suiteDefer.promise.finally(() => {
-    cancel.resolve();
+  t.run("should redirect", async () => {
+    const res = await fetch("http://127.0.0.1:8898/redirect");
+    assertEquals(res.status, 200);
+    assertEquals(await res.body.text(), "ok");
   });
-})();
+});
 runIfMain(import.meta);
