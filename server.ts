@@ -97,6 +97,8 @@ export type ServeOptions = {
   readTimeout?: number;
 };
 
+export type ServeListener = Deno.Closer;
+
 function createListener(listenOptions: string | ListenOptions): Listener {
   if (typeof listenOptions === "string") {
     const [h, p] = listenOptions.split(":");
@@ -112,101 +114,38 @@ function createListener(listenOptions: string | ListenOptions): Listener {
     return listen(listenOptions);
   }
 }
-export function serve(
-  addr: string,
-  opts?: ServeOptions
-): AsyncIterableIterator<ServerRequest>;
-export function serve(
-  listenOpts: ListenOptions,
-  opts?: ServeOptions
-): AsyncIterableIterator<ServerRequest>;
-export async function* serve(
-  listenOptions: string | ListenOptions,
-  opts: ServeOptions = {}
-): AsyncIterableIterator<ServerRequest> {
-  opts = initServeOptions(opts);
-  let listener = createListener(listenOptions);
-  let onRequestDeferred = defer();
-  let requestQueue: ServerRequest[] = [];
-  const yieldingPromises: WeakMap<ServerRequest, Deferred> = new WeakMap();
-  const throwIfCancelled = promiseInterrupter({
-    cancel: opts.cancel
-  });
-  const enqueueRequest = (req: ServerRequest): Promise<void> => {
-    requestQueue.push(req);
-    const d = defer();
-    yieldingPromises.set(req, d);
-    onRequestDeferred.resolve();
-    return d.promise;
-  };
-  let closed = false;
-  const closeListener = () => {
-    if (!closed) {
-      listener.close();
-      closed = true;
-    }
-  };
-  // start accept routine
-  // it continually accept new tcp socket
-  const acceptRoutine = () => {
-    if (closed) return;
-    listener
-      .accept()
-      .then(conn => {
-        handleKeepAliveConn(conn, enqueueRequest, opts);
-        acceptRoutine();
-      })
-      .catch(closeListener);
-  };
-  acceptRoutine();
-  while (true) {
-    try {
-      // break loop if canceller is called
-      await throwIfCancelled(onRequestDeferred.promise);
-      onRequestDeferred = defer();
-      const list = requestQueue;
-      requestQueue = [];
-      for (const req of list) {
-        const d = yieldingPromises.get(req);
-        try {
-          yield req;
-          d.resolve();
-        } catch (e) {
-          d.reject();
-        } finally {
-          yieldingPromises.delete(req);
-        }
-      }
-    } catch (unused) {
-      break;
-    }
-  }
-  closeListener();
-}
 
 export function listenAndServe(
   addr: string,
   handler: (req: ServerRequest) => Promise<void>,
   opts?: ServeOptions
-): void;
+): ServeListener;
 export function listenAndServe(
   listenOptions: ListenOptions,
   handler: (req: ServerRequest) => Promise<void>,
   opts?: ServeOptions
-): void;
+): ServeListener;
 export function listenAndServe(
   listenOptions: string | ListenOptions,
   handler: (req: ServerRequest) => Promise<void>,
   opts: ServeOptions = {}
-): void {
+): ServeListener {
   opts = initServeOptions(opts);
   let listener = createListener(listenOptions);
+  let cancel: Promise<void>;
+  let d = defer();
+  if (opts.cancel) {
+    cancel = Promise.race([opts.cancel, d.promise]);
+  } else {
+    cancel = d.promise;
+  }
   const throwIfCancelled = promiseInterrupter({
-    cancel: opts.cancel
+    cancel
   });
   let closed = false;
-  const closeListener = () => {
+  const close = () => {
     if (!closed) {
+      d.resolve();
       listener.close();
       closed = true;
     }
@@ -218,9 +157,10 @@ export function listenAndServe(
         handleKeepAliveConn(conn, handler, opts);
         acceptRoutine();
       })
-      .catch(closeListener);
+      .catch(close);
   };
   acceptRoutine();
+  return { close };
 }
 
 /** Try to continually read and process requests from keep-alive connection. */

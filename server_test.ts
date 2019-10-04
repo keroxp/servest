@@ -1,6 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { runIfMain, test } from "./vendor/https/deno.land/std/testing/mod.ts";
-import { defer } from "./promises.ts";
 import { listenAndServe } from "./server.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { StringWriter } from "./vendor/https/deno.land/std/io/writers.ts";
@@ -14,8 +13,7 @@ import copy = Deno.copy;
 
 let port = 8880;
 test(async function server() {
-  const d = defer();
-  listenAndServe(
+  const listener = listenAndServe(
     {
       hostname: "0.0.0.0",
       port
@@ -29,8 +27,7 @@ test(async function server() {
         }),
         body: new StringReader("hello")
       });
-    },
-    { cancel: d.promise }
+    }
   );
   const agent = createAgent("http://127.0.0.1:" + port);
   try {
@@ -46,14 +43,13 @@ test(async function server() {
     assertEquals(dest.toString(), "hello");
   } finally {
     agent.conn.close();
-    d.resolve();
+    listener.close();
   }
 });
 
 test(async function serverKeepAliveTimeout() {
   port++;
-  const d = defer();
-  listenAndServe(
+  const listener = listenAndServe(
     {
       hostname: "0.0.0.0",
       port
@@ -65,7 +61,6 @@ test(async function serverKeepAliveTimeout() {
       });
     },
     {
-      cancel: d.promise,
       keepAliveTimeout: 0
     }
   );
@@ -87,14 +82,13 @@ test(async function serverKeepAliveTimeout() {
     });
   } finally {
     agent.conn.close();
-    d.resolve();
+    listener.close();
   }
 });
 
 test(async function serverKeepAliveTimeoutMax() {
-  const d = defer();
   port++;
-  listenAndServe(
+  const listener = listenAndServe(
     {
       hostname: "0.0.0.0",
       port
@@ -105,8 +99,7 @@ test(async function serverKeepAliveTimeoutMax() {
         headers: new Headers(),
         body: encode("ok")
       });
-    },
-    { cancel: d.promise }
+    }
   );
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
@@ -127,14 +120,13 @@ test(async function serverKeepAliveTimeoutMax() {
     });
   } finally {
     agent.conn.close();
-    d.resolve();
+    listener.close();
   }
 });
 
 test(async function serverConnectionClose() {
-  const d = defer();
   port++;
-  listenAndServe(
+  const listener = listenAndServe(
     {
       hostname: "0.0.0.0",
       port
@@ -145,8 +137,7 @@ test(async function serverConnectionClose() {
         headers: new Headers(),
         body: encode("ok")
       });
-    },
-    { cancel: d.promise }
+    }
   );
   const agent = createAgent(`http://127.0.0.1:${port}`);
   try {
@@ -167,7 +158,7 @@ test(async function serverConnectionClose() {
     });
   } finally {
     agent.conn.close();
-    d.resolve();
+    listener.close();
   }
 });
 

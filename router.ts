@@ -1,57 +1,13 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { listenAndServe, ServeOptions, ServerRequest } from "./server.ts";
+import {
+  listenAndServe,
+  ServeOptions,
+  ServerRequest,
+  ServeListener
+} from "./server.ts";
 import { internalServerError, notFound } from "./responder.ts";
 import ListenOptions = Deno.ListenOptions;
-
-export type RoutedServerRequest = ServerRequest & {
-  match?: RegExpMatchArray;
-};
-
-/** Basic handler for http request */
-export type HttpHandler = (req: RoutedServerRequest) => unknown;
-
-/** Global error handler for requests */
-export type ErrorHandler = (e: unknown, req: RoutedServerRequest) => unknown;
-
-/**
- * Find the match that appeared in the nearest position to the beginning of word.
- * If positions are same, the longest one will be picked.
- * Return -1 and null if no match found.
- * */
-export function findLongestAndNearestMatch(
-  pathname: string,
-  patterns: (string | RegExp)[]
-): { index: number; match: RegExpMatchArray } {
-  let lastMatchIndex = pathname.length;
-  let lastMatchLength = 0;
-  let match: RegExpMatchArray | null = null;
-  let index = -1;
-  for (let i = 0; i < patterns.length; i++) {
-    const pattern = patterns[i];
-    if (pattern instanceof RegExp) {
-      const m = pathname.match(pattern);
-      if (!m) continue;
-      if (
-        m.index < lastMatchIndex ||
-        (m.index === lastMatchIndex && m[0].length > lastMatchLength)
-      ) {
-        index = i;
-        match = m;
-        lastMatchIndex = m.index;
-        lastMatchLength = m[0].length;
-      }
-    } else if (
-      pathname.startsWith(pattern) &&
-      pattern.length > lastMatchLength
-    ) {
-      index = i;
-      match = [pattern];
-      lastMatchIndex = 0;
-      lastMatchLength = pattern.length;
-    }
-  }
-  return { index, match };
-}
+import { findLongestAndNearestMatch } from "./router_util.ts";
 
 export interface HttpRouter {
   /** Set global middleware */
@@ -62,8 +18,18 @@ export interface HttpRouter {
   /** Set global error handler. Only one handler can be set at same time */
   handleError(handler: ErrorHandler);
 
-  listen(addr: string | ListenOptions, opts?: ServeOptions): void;
+  listen(addr: string | ListenOptions, opts?: ServeOptions): ServeListener;
 }
+
+export type RoutedServerRequest = ServerRequest & {
+  match?: RegExpMatchArray;
+};
+
+/** Basic handler for http request */
+export type HttpHandler = (req: RoutedServerRequest) => unknown;
+
+/** Global error handler for requests */
+export type ErrorHandler = (e: unknown, req: RoutedServerRequest) => unknown;
 
 /** create HttpRouter object */
 export function createRouter(): HttpRouter {
@@ -85,7 +51,7 @@ export function createRouter(): HttpRouter {
   function handleError(handler: ErrorHandler) {
     errorHandler = handler;
   }
-  function listen(addr: string, opts?: ServeOptions) {
+  function listen(addr: string, opts?: ServeOptions): ServeListener {
     const handleInternal = async req => {
       let { pathname } = new URL(req.url, "http://localhost");
       for (const middleware of middlewares) {
@@ -129,7 +95,7 @@ export function createRouter(): HttpRouter {
       };
       return handleInternal(req).catch(onError);
     };
-    listenAndServe(addr, handler, opts);
+    return listenAndServe(addr, handler, opts);
   }
   return { handle, use, handleError, listen };
 }
