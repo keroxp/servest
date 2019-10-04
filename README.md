@@ -12,8 +12,7 @@
 
 ### Serve API
 
-Serve API is similar to [deno_std](https://github.com/denoland/deno_std/blob/master/http/server.ts) but has different implementation.
-Some progressive features for HTTP/1.1 server are implemented.
+Serve API is low-level API for handling http requests. `servest` has its own serving implementation based on `Deno.listen()`. It doesn't depend on deno_std's `http` module.
 
 - Support Keep-Alive connection
 - Support trailer headers
@@ -23,7 +22,7 @@ Some progressive features for HTTP/1.1 server are implemented.
 
 ```ts
 import { listenAndServe } from "https://denopkg.com/keroxp/servest/server.ts";
-listenAndServe("127.0.0.1:8899", async req => {
+const listener = listenAndServe("127.0.0.1:8899", async req => {
   await req.respond({
     status: 200,
     headers: new Headers({

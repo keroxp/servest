@@ -1,9 +1,13 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { createRouter } from "./router.ts";
 import { runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
-import { defer } from "./promises.ts";
-import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
+import {
+  assertEquals,
+  assertMatch
+} from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { it } from "./testing.ts";
+import { Loglevel, setLevel } from "./logger.ts";
+setLevel(Loglevel.NONE);
 
 it("router", t => {
   let errorHandled = false;
@@ -70,7 +74,7 @@ it("router", t => {
     const res = await fetch("http://127.0.0.1:8898/throw");
     const text = await res.body.text();
     assertEquals(res.status, 500);
-    assertEquals(text, "Internal Server Error");
+    assertMatch(text, /Error: throw/);
     assertEquals(errorHandled, true);
   });
   t.run("should redirect", async () => {

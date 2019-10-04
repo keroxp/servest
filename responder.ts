@@ -22,17 +22,19 @@ export interface ServerResponder {
   writeTrailers(trailers: Headers): Promise<void>;
 
   isResponded(): boolean;
+
+  respondedStatus(): number | undefined;
 }
 
 /** create ServerResponder object */
 export function createResponder(w: Writer): ServerResponder {
-  let responded = false;
   let headers: Headers;
+  let status: number | undefined;
   function isResponded() {
-    return responded;
+    return status !== undefined;
   }
   async function writeTrailers(trailers: Headers): Promise<void> {
-    if (!isResponded) {
+    if (!isResponded()) {
       throw new Error("trailer headers can't be written before responding");
     }
     await serveio.writeTrailers(w, headers, trailers);
@@ -45,24 +47,24 @@ export function createResponder(w: Writer): ServerResponder {
     }: { headers?: Headers; body?: ServerResponse["body"] } = {}
   ) {
     headers.set("location", url);
-    await respond({
-      status: 302,
-      headers,
-      body
-    });
+    await respond({ status: 302, headers, body });
   }
   async function respond(response: ServerResponse): Promise<void> {
-    if (responded) {
+    if (isResponded()) {
       throw new Error("http: already responded");
     }
+    status = response.status;
     headers = response.headers;
-    responded = true;
     await serveio.writeResponse(w, response);
+  }
+  function respondedStatus() {
+    return status;
   }
   return {
     respond,
     redirect,
     isResponded,
+    respondedStatus,
     writeTrailers
   };
 }

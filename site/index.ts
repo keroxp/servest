@@ -1,9 +1,13 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { createRouter } from "../router.ts";
 import { serveStatic } from "../serve_static.ts";
-const router = createRouter();
+import { Loglevel } from "../logger.ts";
+
+const router = createRouter({ logLevel: Loglevel.INFO });
 const port = Deno.env()["PORT"] || "8899";
 const { pathname } = new URL("./public", import.meta.url);
-router.use(serveStatic(pathname));
+router.handle("/", serveStatic(pathname));
+router.get("/throw", () => {
+  throw new Error("error");
+});
 router.listen(":" + port);
-console.log("servest-site: running on :" + port);

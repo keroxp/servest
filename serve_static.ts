@@ -49,7 +49,7 @@ export function serveStatic(
     contentDispositionMap: new Map([])
   }
 ): HttpHandler {
-  return async req => {
+  return async function serveStatic(req) {
     if (req.method === "GET" || req.method === "HEAD") {
       const url = new URL(req.url, "http://127.0.0.1");
       const filepath = await resolveFilepath(dir, url.pathname);

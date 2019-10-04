@@ -3,7 +3,7 @@ import listen = Deno.listen;
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { defer, Deferred, promiseInterrupter } from "./promises.ts";
+import { defer, promiseInterrupter } from "./promises.ts";
 import { initServeOptions, readRequest } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
 import ListenOptions = Deno.ListenOptions;
