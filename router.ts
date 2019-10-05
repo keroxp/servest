@@ -1,96 +1,127 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { listenAndServe, ServeOptions, ServerRequest } from "./server.ts";
-import { internalServerError, notFound } from "./responder.ts";
+import {
+  listenAndServe,
+  ServeListener,
+  ServeOptions,
+  ServerRequest
+} from "./server.ts";
+import { internalServerError } from "./responder.ts";
+import { findLongestAndNearestMatch } from "./router_util.ts";
+import { methodFilter } from "./middlewares.ts";
+import { RoutingError } from "./error.ts";
+import { kHttpStatusMessages } from "./serveio.ts";
+import { createLogger, Logger, Loglevel, namedLogger } from "./logger.ts";
 import ListenOptions = Deno.ListenOptions;
+
+export interface HttpRouter {
+  /** Set global middleware */
+  use(handler: HttpHandler);
+
+  /** Register route for any http method */
+  handle(pattern: string | RegExp, ...handlers: HttpHandler[]);
+
+  /** Register GET route */
+  get(pattern: string | RegExp, ...handlers: HttpHandler[]);
+
+  /** Register POST route */
+  post(patter: string | RegExp, ...handlers: HttpHandler[]);
+
+  /** Set global error handler. Only one handler can be set at same time */
+  handleError(handler: ErrorHandler);
+
+  /** Start listening with given addr */
+  listen(addr: string | ListenOptions, opts?: ServeOptions): ServeListener;
+}
 
 export type RoutedServerRequest = ServerRequest & {
   match?: RegExpMatchArray;
 };
 
 /** Basic handler for http request */
-export type HttpHandler = (req: RoutedServerRequest) => unknown;
+export type HttpHandler = (req: RoutedServerRequest) => any | Promise<any>;
 
 /** Global error handler for requests */
-export type ErrorHandler = (e: unknown, req: RoutedServerRequest) => unknown;
+export type ErrorHandler = (
+  e: any,
+  req: RoutedServerRequest
+) => any | Promise<any>;
 
-/**
- * Find the match that appeared in the nearest position to the beginning of word.
- * If positions are same, the longest one will be picked.
- * Return -1 and null if no match found.
- * */
-export function findLongestAndNearestMatch(
-  pathname: string,
-  patterns: (string | RegExp)[]
-): { index: number; match: RegExpMatchArray } {
-  let lastMatchIndex = pathname.length;
-  let lastMatchLength = 0;
-  let match: RegExpMatchArray | null = null;
-  let index = -1;
-  for (let i = 0; i < patterns.length; i++) {
-    const pattern = patterns[i];
-    if (pattern instanceof RegExp) {
-      const m = pathname.match(pattern);
-      if (!m) continue;
-      if (
-        m.index < lastMatchIndex ||
-        (m.index === lastMatchIndex && m[0].length > lastMatchLength)
-      ) {
-        index = i;
-        match = m;
-        lastMatchIndex = m.index;
-        lastMatchLength = m[0].length;
-      }
-    } else if (
-      pathname.startsWith(pattern) &&
-      pattern.length > lastMatchLength
-    ) {
-      index = i;
-      match = [pattern];
-      lastMatchIndex = 0;
-      lastMatchLength = pattern.length;
-    }
-  }
-  return { index, match };
-}
-
-export interface HttpRouter {
-  /** Set global middleware */
-  use(handler: HttpHandler);
-
-  handle(pattern: string | RegExp, ...handlers: HttpHandler[]);
-
-  /** Set global error handler. Only one handler can be set at same time */
-  handleError(handler: ErrorHandler);
-
-  listen(addr: string | ListenOptions, opts?: ServeOptions): void;
-}
+export type RouterOptions = {
+  logger?: Logger;
+  logLevel?: Loglevel;
+};
 
 /** create HttpRouter object */
-export function createRouter(): HttpRouter {
+export function createRouter(
+  opts: RouterOptions = {
+    logger: createLogger()
+  }
+): HttpRouter {
   const middlewares: HttpHandler[] = [];
-  const finalErrorHandler = async (e: unknown, req: RoutedServerRequest) => {
-    if (e) {
-      console.error(e);
+  const { info, error } = namedLogger("servest:router", opts.logger);
+  const finalErrorHandler = async (e: any, req: RoutedServerRequest) => {
+    if (e instanceof RoutingError) {
+      logRouteStatus(req, e.status);
+      await req.respond({
+        status: e.status,
+        body: e.message
+      });
+    } else {
+      logRouteStatus(req, 500);
+      if (e instanceof Error) {
+        await req.respond({
+          status: 500,
+          body: e.stack
+        });
+        error(e.stack);
+      } else {
+        await req.respond(internalServerError());
+        error(e);
+      }
     }
-    await req.respond(internalServerError());
+  };
+  const logRouteStatus = (req: ServerRequest, status: number) => {
+    info(`${status} ${req.method} ${req.url}`);
   };
   let errorHandler: ErrorHandler = finalErrorHandler;
   const routes: { pattern: string | RegExp; handlers: HttpHandler[] }[] = [];
+  function handlerToString(handlers: HttpHandler[]): string {
+    return handlers.map(v => v.name).join(" ");
+  }
   function handle(pattern: string | RegExp, ...handlers: HttpHandler[]) {
+    info(`route: * ${pattern} ${handlerToString(handlers)}`);
     routes.push({ pattern, handlers });
   }
+
+  function get(pattern: string | RegExp, ...handlers: HttpHandler[]) {
+    info(`route: GET ${pattern} ${handlerToString(handlers)}`);
+    routes.push({
+      pattern,
+      handlers: [methodFilter("GET", "HEAD"), ...handlers]
+    });
+  }
+
+  function post(pattern: string | RegExp, ...handlers: HttpHandler[]) {
+    info(`route: POST ${pattern} ${handlerToString(handlers)}`);
+    routes.push({ pattern, handlers: [methodFilter("POST"), ...handlers] });
+  }
+
   function use(middleware: HttpHandler) {
+    info(`use: ${handlerToString([middleware])}`);
     middlewares.push(middleware);
   }
+
   function handleError(handler: ErrorHandler) {
     errorHandler = handler;
   }
-  function listen(addr: string, opts?: ServeOptions) {
+
+  function listen(addr: string, opts?: ServeOptions): ServeListener {
     const handleInternal = async req => {
       let { pathname } = new URL(req.url, "http://localhost");
       for (const middleware of middlewares) {
         await middleware(req);
         if (req.isResponded()) {
+          logRouteStatus(req, req.respondedStatus());
           return;
         }
       }
@@ -101,20 +132,21 @@ export function createRouter(): HttpRouter {
       if (index > -1) {
         const { handlers } = routes[index];
         for (const handler of handlers) {
-          await handler(Object.assign(req, { match }));
+          await handler({ ...req, match });
           if (req.isResponded()) {
+            logRouteStatus(req, req.respondedStatus());
             break;
           }
         }
         if (!req.isResponded()) {
-          return await req.respond(notFound());
+          throw new RoutingError(404, kHttpStatusMessages[404]);
         }
       } else {
-        return await req.respond(notFound());
+        throw new RoutingError(404, kHttpStatusMessages[404]);
       }
     };
     const handler = async req => {
-      const onError = async (e: unknown) => {
+      const onError = async (e: any) => {
         try {
           await errorHandler(e, req);
         } catch (e) {
@@ -123,13 +155,15 @@ export function createRouter(): HttpRouter {
           }
         } finally {
           if (!req.isResponded()) {
-            await finalErrorHandler(undefined, req);
+            await finalErrorHandler(e, req);
           }
         }
       };
       return handleInternal(req).catch(onError);
     };
-    listenAndServe(addr, handler, opts);
+    const listener = listenAndServe(addr, handler, opts);
+    info(`listening on ${addr}`);
+    return listener;
   }
-  return { handle, use, handleError, listen };
+  return { handle, use, get, post, handleError, listen };
 }

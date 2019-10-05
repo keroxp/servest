@@ -1,8 +1,11 @@
 #! deno --allow-net
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
+import { Loglevel, setLevel } from "./logger.ts";
+setLevel(Loglevel.NONE);
 import "./server_test.ts";
 import "./responder_test.ts";
 import "./router_test.ts";
+import "./router_util_test.ts";
 import "./body_parser_test.ts";
 import "./readers_test.ts";
 import "./serveio_test.ts";
