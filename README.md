@@ -33,17 +33,6 @@ const listener = listenAndServe("127.0.0.1:8899", async req => {
 });
 ```
 
-**NOTE: use listenAndServe instead of serve**
-
-Generally `listenAndServe` has higher concurrency than `serve`
-because `serve` is built top of async iteration.
-`yield` in async iteration degrades concurrency of promises.
-
-Processing of requests from identical keep-alive connection should be handled in serial, but requests from different connections should be handled in concurrent.
-
-`listenAndServe` does it as it is built top of async callback.
-It is faster than `serve` about x2 in our benchmark test.
-
 ### Router API
 
 Router API is minimal routing system on top of `listenAndServe()`
