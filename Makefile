@@ -10,3 +10,9 @@ test:
 	deno run -A tests.ts
 build:
 	docker build -t servest/site .
+bench:
+	docker build -t servest/bench -f benchmark/Dockerfile .
+do-bench: bench
+	docker run -t servest/bench
+do-std-bench: bench
+	docker run -e TARGET=/servest/benchmark/std_bench.ts -t servest/bench
