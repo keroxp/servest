@@ -143,7 +143,7 @@ export async function writeRequest(
   w: Writer,
   req: ClientRequest
 ): Promise<void> {
-  const writer = bufWriter(w);
+  const writer = BufWriter.create(w);
   let { method, body, headers } = req;
   method = method.toUpperCase();
   const url = new URL(req.url);
@@ -234,14 +234,6 @@ export async function readResponse(
   };
 }
 
-function bufWriter(w: Writer) {
-  if (w instanceof BufWriter) {
-    return w;
-  } else {
-    return new BufWriter(w);
-  }
-}
-
 export const kHttpStatusMessages = {
   100: "Continue",
   101: "Switching Protocols",
@@ -296,7 +288,7 @@ export async function writeResponse(
   w: Writer,
   res: ServerResponse
 ): Promise<void> {
-  const writer = bufWriter(w);
+  const writer = BufWriter.create(w);
   if (res.headers === void 0) {
     res.headers = new Headers();
   }
@@ -320,7 +312,7 @@ export async function writeResponse(
 /** write headers to writer */
 export async function writeHeaders(w: Writer, headers: Headers): Promise<void> {
   const lines: string[] = [];
-  const writer = bufWriter(w);
+  const writer = BufWriter.create(w);
   if (!headers.has("date")) {
     headers.set("date", dateToDateHeader());
   }
@@ -340,7 +332,7 @@ export async function writeBody(
   body: Reader,
   contentLength?: number
 ): Promise<void> {
-  let writer = bufWriter(w);
+  let writer = BufWriter.create(w);
   const hasContentLength =
     typeof contentLength === "number" && Number.isInteger(contentLength);
   if (hasContentLength) {
@@ -391,7 +383,7 @@ export async function writeTrailers(
       `trailer headers is only allowed for "transfer-encoding: chunked": got "${transferEncoding}"`
     );
   }
-  const writer = bufWriter(w);
+  const writer = BufWriter.create(w);
   const trailerHeaderFields = trailer
     .split(",")
     .map(s => s.trim().toLowerCase());

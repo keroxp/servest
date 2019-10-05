@@ -38,7 +38,7 @@ export type RoutedServerRequest = ServerRequest & {
 };
 
 /** Basic handler for http request */
-export type HttpHandler = (req: RoutedServerRequest) => any | Promise<any>;
+export type HttpHandler = (req: RoutedServerRequest) => Promise<any>;
 
 /** Global error handler for requests */
 export type ErrorHandler = (
