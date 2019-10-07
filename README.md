@@ -17,7 +17,7 @@ Serve API is low-level API for handling http requests. `servest` has its own ser
 - Support Keep-Alive connection
 - Support trailer headers
 - Support keep-alive timeout and read timeout
-- `serve` and `listenAndServe` is cancellable by cancel promise
+- `listenAndServe` is cancellable by `listener.close()`
 - Fully interface based type definition
 
 ```ts
