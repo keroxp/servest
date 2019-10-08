@@ -4,6 +4,7 @@
     "module": "esnext",
     "noResolve": true,
     "baseUrl": "/Users/keroxp/Library/Caches",
+    "jsx": "react",
     "strictNullChecks": true,
     "paths": {
       "deno": ["./deno.d.ts"],

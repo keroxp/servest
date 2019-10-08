@@ -8,9 +8,18 @@ jobs:
       - run:
           name: Install Deno
           command: |
-            curl -fsSL https://deno.land/x/install/install.sh | bash -s -- v0.19.0
+            curl -fsSL https://deno.land/x/install/install.sh | bash -s -- v0.20.0
+            export PATH=$HOME/.deno/bin:$PATH
       - run:
           name: Run Tests
           command: |
-            export PATH=$HOME/.deno/bin:$PATH
             deno -A tests.ts
+      - run:
+          nam: Check Examples
+          command: |
+            deno fetch site/public/examples/error_handler.ts
+            deno fetch site/public/examples/get_started.ts
+            deno fetch site/public/examples/routing_server.ts
+            deno fetch site/public/examples/simple_server.ts
+            deno fetch site/public/examples/use_middleware.ts
+            deno fetch site/public/examples/use_jsx.tsx
