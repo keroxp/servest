@@ -50,6 +50,7 @@ body {
   }
 }
 
+
 .heading p{
   color:  #9DAAB6;
   margin-bottom: 15px;
@@ -64,10 +65,13 @@ body {
   list-style: none;
 }
 .article {
-  padding: 65px 15px 15px 15px;
+  padding:  15px;
   box-sizing: border-box;
   margin-left: 320px;
   background-color: white;
+}
+.codeLink {
+  padding: 5px 0;
 }
 @media (max-width: 480px) and (orientation: portrait) {
   .article {
