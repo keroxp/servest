@@ -47,7 +47,7 @@ router.handle("/", async req => {
     headers: new Headers({
       "content-type": "text/plain"
     }),
-    body: new TextEncoder().encode("ok")
+    body: "ok"
   });
 });
 router.handle(new RegExp("/foo/(?<id>.+)"), async req => {
@@ -57,7 +57,7 @@ router.handle(new RegExp("/foo/(?<id>.+)"), async req => {
     headers: new Headers({
       "content-type": "application/json"
     }),
-    body: new TextEncoder().encode(JSON.stringify({ id }))
+    body: JSON.stringify({ id })
   });
 });
 router.listen("127.0.0.1:8899");
@@ -119,12 +119,13 @@ const { status, headers, body } = await agent.send({
 });
 ```
 
-## Loadmaps
+## Loadmaps for v1
 
-- HTTP/2
-- HTTP testing api
-- Session support
-- Body parsers (json, form, multipart)
+- [ ] HTTP/2
+- [ ] Security Middlewares
+- [ ] HTTP testing api
+- [ ] Cookie and Session support
+- [x] Body parsers (json, form, multipart)
 
 ## License
 
