@@ -3,7 +3,7 @@ const router = createRouter();
 router.handle("/", async req => {
   throw new Error("error");
 });
-router.handle(async (e, req) => {
+router.handleError(async (e, req) => {
   // All uncaught errors and unhandled promise rejections will be here.
   // Do your custom request finalization.
   await req.respond({

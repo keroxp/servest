@@ -18,9 +18,4 @@ jobs:
           nam: Check Examples
           command: |
             export PATH=$HOME/.deno/bin:$PATH
-            deno fetch site/public/example/error_handler.ts
-            deno fetch site/public/example/get_started.ts
-            deno fetch site/public/example/routing_server.ts
-            deno fetch site/public/example/simple_server.ts
-            deno fetch site/public/example/use_middleware.ts
-            deno fetch site/public/example/use_jsx.tsx
+            ./site/check.sh
