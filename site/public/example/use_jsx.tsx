@@ -2,17 +2,6 @@ import React from "https://dev.jspm.io/react"
 import ReactDOMServer from "https://dev.jspm.io/react-dom/server"
 import { createRouter } from "https://denopkg.com/keroxp/servest/router.ts";
 
-const View = ({title, children}: {title: string, children?: any[]}) => (
-  <html>
-  <head>
-    <title>{title}</title>
-  </head>
-  <body>
-  {children}
-  </body>
-  </html>
-);
-
 const router = createRouter();
 router.handle("/", async req => {
   await req.respond({
@@ -21,9 +10,15 @@ router.handle("/", async req => {
       "content-type": "text/html; charset=UTF-8"
     }),
     body: ReactDOMServer.renderToString(
-      <View title={"servest"}>
+      <html>
+      <head>
+        <meta charSet="utf-8" />
+        <title>servest</title>
+      </head>
+      <body>
         Hello Servest!
-      </View>
+      </body>
+      </html>
     )
   });
 });
