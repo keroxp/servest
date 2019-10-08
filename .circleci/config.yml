@@ -3,13 +3,14 @@ jobs:
   build:
     docker:
       - image: circleci/node:stretch
+    environment:
+      PATH: $HOME/.deno/bin:$PATH
     steps:
       - checkout
       - run:
           name: Install Deno
           command: |
             curl -fsSL https://deno.land/x/install/install.sh | bash -s -- v0.20.0
-            export PATH=$HOME/.deno/bin:$PATH
       - run:
           name: Run Tests
           command: |
