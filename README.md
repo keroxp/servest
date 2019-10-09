@@ -81,18 +81,16 @@ router.handleError((e, req) => {
   console.error(e);
   req.respond({
     status: 500,
-    body: new TextEncoder().encode("Internal Server Error")
+    body: "Internal Server Error"
   });
 });
 ```
 
 ### Agent API
 
-Agent API is basic HTTP/HTTPS agent. It manages persistent connection to host. Each request will be sent in serial.
+Agent API is basic HTTP/HTTPS agent. It manages persistent connection to the host. Each request will be sent in serial.
 
-`fetch` is enough for most cases. It is useful if you want to manage keep-alive connection to host.
-
-Use `fetch` for https request.
+`fetch` is enough for most cases. It is useful if you want to manage keep-alive connection to the host.
 
 #### GET
 
@@ -115,14 +113,14 @@ const { status, headers, body } = await agent.send({
   headers: new Headers({
     "Content-Type": "text/plain"
   }),
-  body: new TextEncoder().encode("deno=land")
+  body: "deno=land"
 });
 ```
 
 ## Loadmaps for v1
 
 - [ ] HTTP/2
-- [ ] Security Middlewares
+- [ ] Security Middleware
 - [ ] HTTP testing api
 - [ ] Cookie and Session support
 - [x] Body parsers (json, form, multipart)
