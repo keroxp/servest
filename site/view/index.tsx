@@ -13,6 +13,7 @@ export const Index = ({codes}: {
       content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
     />
     <link rel="icon" href="/favicon.ico" />
+    <link rel="shortcut icon" type="image/x-icon" href="/favicon.ico" />
     <meta name="description"
           content="Servest is simple, stable, and progressive http module for Deno" />
     <meta name="keywords" content="Deno,TypeScript,JavaScript,Framework,HTTP,Server,Servest" />
