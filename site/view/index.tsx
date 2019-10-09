@@ -12,6 +12,9 @@ export const Index = ({codes}: {
       name="viewport"
       content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover"
     />
+    <meta name="description"
+          content="Servest is simple, stable, and progressive http module for Deno" />
+    <meta name="keywords" content="Deno,TypeScript,JavaScript,Framework,HTTP,Server,Servest" />
     <link href="./reset.css" rel="stylesheet" />
     <link href="./index.css" rel="stylesheet"/>
     <link
