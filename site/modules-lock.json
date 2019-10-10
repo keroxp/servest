@@ -9,6 +9,6 @@
   },
   "https://dev.jspm.io/react-dom": {
     "version": "@16.10.2",
-    "modules": ["/server.js"]
+    "modules": ["/index.js", "/server.js"]
   }
 }
