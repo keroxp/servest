@@ -1,6 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { runIfMain, test } from "./vendor/https/deno.land/std/testing/mod.ts";
-import { defer, Deferred } from "./promises.ts";
 import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
 import { createAgent } from "./agent.ts";
 import { createRouter } from "./router.ts";
@@ -11,6 +10,8 @@ import {
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
+import { it } from "./testing.ts";
+import { ServeListener } from "./server.ts";
 
 async function readString(r: Reader) {
   const buf = new Buffer();
@@ -18,9 +19,7 @@ async function readString(r: Reader) {
   return buf.toString();
 }
 
-let _port = 8700;
-function setupRouter(port: number): Deferred {
-  const d = defer();
+function setupRouter(port: number): ServeListener {
   const router = createRouter();
   router.handle("/get", async req => {
     return req.respond({
@@ -35,103 +34,97 @@ function setupRouter(port: number): Deferred {
       body: req.body
     });
   });
-  router.listen(
-    {
-      hostname: "127.0.0.1",
-      port
-    },
-    { cancel: d.promise }
-  );
-  return d;
+  return router.listen({
+    hostname: "127.0.0.1",
+    port
+  });
 }
 
-test(async function agent() {
-  const router = setupRouter(++_port);
-  const agent = createAgent(`http://127.0.0.1:${_port}`);
-  try {
-    {
-      const res = await agent.send({
-        path: "/get",
-        method: "GET"
-      });
-      assertEquals(res.status, 200);
-      assertEquals(await readString(res.body), "ok");
+it("agent", t => {
+  let port = 8700;
+  t.beforeAfterAll(() => {
+    const listener = setupRouter(port);
+    return () => listener.close();
+  });
+  t.run("agent", async () => {
+    const agent = createAgent(`http://127.0.0.1:${port}`);
+    try {
+      {
+        const res = await agent.send({
+          path: "/get",
+          method: "GET"
+        });
+        assertEquals(res.status, 200);
+        assertEquals(await readString(res.body), "ok");
+      }
+      {
+        const res = await agent.send({
+          path: "/post",
+          method: "POST",
+          body: encode("denoland")
+        });
+        assertEquals(res.status, 200);
+        assertEquals(await readString(res.body), "denoland");
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      agent.conn.close();
     }
-    {
-      const res = await agent.send({
+  });
+  t.run("agentTls", async () => {
+    const agent = createAgent(`https://httpbin.org`);
+    try {
+      {
+        const res = await agent.send({
+          path: "/get?deno=land",
+          method: "GET"
+        });
+        assertEquals(res.status, 200);
+        const resp = JSON.parse(await readString(res.body));
+        assertEquals(resp["args"]["deno"], "land");
+      }
+      {
+        const res = await agent.send({
+          path: "/post",
+          method: "POST",
+          headers: new Headers({
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+          }),
+          body: "deno=land"
+        });
+        assertEquals(res.status, 200);
+        const body = await readString(res.body);
+        const resp = JSON.parse(body);
+        assertEquals(resp["form"]["deno"], "land");
+      }
+    } catch (e) {
+      console.error(e);
+    } finally {
+      agent.conn.close();
+    }
+  });
+  t.run("agent unread body", async () => {
+    const agent = createAgent(`http://127.0.0.1:${port}`);
+    try {
+      await agent.send({ path: "/get", method: "GET" });
+      await agent.send({ path: "/post", method: "POST", body: encode("ko") });
+      const { body } = await agent.send({
         path: "/post",
         method: "POST",
         body: encode("denoland")
       });
-      assertEquals(res.status, 200);
-      assertEquals(await readString(res.body), "denoland");
+      assertEquals(await readString(body), "denoland");
+    } catch (e) {
+      console.error(e);
+    } finally {
+      agent.conn.close();
     }
-  } catch (e) {
-    console.error(e);
-  } finally {
-    agent.conn.close();
-    router.resolve();
-  }
-});
-
-test(async function agentTls() {
-  const router = setupRouter(++_port);
-  const agent = createAgent(`https://httpbin.org`);
-  try {
-    {
-      const res = await agent.send({
-        path: "/get?deno=land",
-        method: "GET"
-      });
-      assertEquals(res.status, 200);
-      const resp = JSON.parse(await readString(res.body));
-      assertEquals(resp["args"]["deno"], "land");
-    }
-    {
-      const res = await agent.send({
-        path: "/post",
-        method: "POST",
-        headers: new Headers({
-          "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
-        }),
-        body: "deno=land"
-      });
-      assertEquals(res.status, 200);
-      const body = await readString(res.body);
-      const resp = JSON.parse(body);
-      assertEquals(resp["form"]["deno"], "land");
-    }
-  } catch (e) {
-    console.error(e);
-  } finally {
-    agent.conn.close();
-    router.resolve();
-  }
-});
-
-test(async function agentUnreadBody() {
-  const router = setupRouter(++_port);
-  const agent = createAgent(`http://127.0.0.1:${_port}`);
-  try {
-    await agent.send({ path: "/get", method: "GET" });
-    await agent.send({ path: "/post", method: "POST", body: encode("ko") });
-    const { body } = await agent.send({
-      path: "/post",
-      method: "POST",
-      body: encode("denoland")
+  });
+  t.run("agent invalid scheme", async () => {
+    assertThrows(() => {
+      createAgent("ftp://127.0.0.1");
     });
-    assertEquals(await readString(body), "denoland");
-  } catch (e) {
-    console.error(e);
-  } finally {
-    agent.conn.close();
-    router.resolve();
-  }
-});
-
-test(async function agentInvalidScheme() {
-  assertThrows(() => {
-    createAgent("ftp://127.0.0.1");
   });
 });
 

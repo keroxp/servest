@@ -58,6 +58,7 @@ export function createRouter(
   }
 ): HttpRouter {
   const middlewares: HttpHandler[] = [];
+  const routes: { pattern: string | RegExp; handlers: HttpHandler[] }[] = [];
   const { info, error } = namedLogger("servest:router", opts.logger);
   const finalErrorHandler = async (e: any, req: RoutedServerRequest) => {
     if (e instanceof RoutingError) {
@@ -80,11 +81,10 @@ export function createRouter(
       }
     }
   };
+  let errorHandler: ErrorHandler = finalErrorHandler;
   const logRouteStatus = (req: ServerRequest, status: number) => {
     info(`${status} ${req.method} ${req.url}`);
   };
-  let errorHandler: ErrorHandler = finalErrorHandler;
-  const routes: { pattern: string | RegExp; handlers: HttpHandler[] }[] = [];
   function handlerToString(handlers: HttpHandler[]): string {
     return handlers.map(v => v.name).join(" ");
   }

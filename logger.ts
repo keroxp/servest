@@ -12,6 +12,7 @@ export enum Loglevel {
   ERROR,
   NONE
 }
+
 export type Logger = (level: Loglevel, msg: string, ...args: any[]) => void;
 let logLevel = Loglevel.INFO;
 export function setLevel(level: Loglevel) {

@@ -6,7 +6,7 @@
 export function findLongestAndNearestMatch(
   pathname: string,
   patterns: (string | RegExp)[]
-): { index: number; match: RegExpMatchArray } {
+): { index: number; match: RegExpMatchArray | null } {
   let lastMatchIndex = pathname.length;
   let lastMatchLength = 0;
   let match: RegExpMatchArray | null = null;
@@ -15,7 +15,9 @@ export function findLongestAndNearestMatch(
     const pattern = patterns[i];
     if (pattern instanceof RegExp) {
       const m = pathname.match(pattern);
-      if (!m) continue;
+      if (!m || m.index === undefined) {
+        continue;
+      }
       if (
         m.index < lastMatchIndex ||
         (m.index === lastMatchIndex && m[0].length > lastMatchLength)
@@ -25,10 +27,7 @@ export function findLongestAndNearestMatch(
         lastMatchIndex = m.index;
         lastMatchLength = m[0].length;
       }
-    } else if (
-      pathname.startsWith(pattern) &&
-      pattern.length > lastMatchLength
-    ) {
+    } else if (pathname === pattern && pattern.length > lastMatchLength) {
       index = i;
       match = [pattern];
       lastMatchIndex = 0;
