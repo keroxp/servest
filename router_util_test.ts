@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { findLongestAndNearestMatch } from "./router_util.ts";
+import { findLongestAndNearestMatch, resolveIndexPath } from "./router_util.ts";
 import { runIfMain, test } from "./vendor/https/deno.land/std/testing/mod.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
@@ -17,6 +17,18 @@ import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
   test("findLongestAndNearestMatch:" + path, () => {
     assertEquals(findLongestAndNearestMatch(path, pat).index, idx);
   });
+});
+
+test("resolveIndexPath", async () => {
+  for (const [dir, fp, exp] of [
+    [".", "/README.md", "README.md"],
+    ["./fixtures/public", "/", "fixtures/public/index.html"],
+    ["./fixtures/public", "/index", "fixtures/public/index.html"],
+    ["./fixtures/public", "/index.html", "fixtures/public/index.html"],
+    ["./fixtures/public", "/nofile", undefined]
+  ]) {
+    assertEquals(await resolveIndexPath(dir, fp), exp);
+  }
 });
 
 runIfMain(import.meta);

@@ -43,7 +43,7 @@ export function findLongestAndNearestMatch(
 export async function resolveIndexPath(
   dir: string,
   pathname: string,
-  ext: string = ".html"
+  extensions: string[] = [".html"]
 ): Promise<string | undefined> {
   let filepath = path.join(dir, pathname);
   const fileExists = async (s: string): Promise<boolean> => {
@@ -58,13 +58,15 @@ export async function resolveIndexPath(
   if (await fileExists(filepath)) {
     return filepath;
   }
-  if (
-    filepath.endsWith("/") &&
-    (await fileExists(path.resolve(filepath + "index" + ext)))
-  ) {
-    return filepath + "index" + ext;
-  } else if (await fileExists(path.resolve(filepath + ext))) {
-    return filepath + ext;
+  for (const ext of extensions) {
+    if (
+      filepath.endsWith("/") &&
+      (await fileExists(path.resolve(filepath + "index" + ext)))
+    ) {
+      return filepath + "index" + ext;
+    } else if (await fileExists(path.resolve(filepath + ext))) {
+      return filepath + ext;
+    }
   }
 }
 

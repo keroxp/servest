@@ -121,7 +121,7 @@ const { status, headers, body } = await agent.send({
 
 - [ ] HTTP/2
 - [ ] Security Middleware
-- [ ] HTTP testing api
+- [x] HTTP testing api
 - [ ] Cookie and Session support
 - [x] Body parsers (json, form, multipart)
 

@@ -1,23 +1,16 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { test, runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
+import { runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
 import {
-  assertMatch,
-  assertEquals
+  assertEquals,
+  assertMatch
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { it } from "./testing.ts";
-import { createRouter } from "./router.ts";
+import { createRecorder } from "./testing.ts";
 import { serveStatic } from "./serve_static.ts";
+import { it } from "./test_util.ts";
 
 it("serveStatic", t => {
-  t.beforeAfterAll(() => {
-    const app = createRouter();
-    app.use(
-      serveStatic("./fixtures/public", {
-        contentTypeMap: new Map([[".vue", "application/vue"]])
-      })
-    );
-    const l = app.listen(":8886");
-    return () => l.close();
+  const func = serveStatic("./fixtures/public", {
+    contentTypeMap: new Map([[".vue", "application/vue"]])
   });
   const data: [string, string][] = [
     ["/", "text/html"],
@@ -31,7 +24,9 @@ it("serveStatic", t => {
   ];
   data.forEach(([path, type]) => {
     t.run(path, async () => {
-      const resp = await fetch("http://127.0.0.1:8886" + path);
+      const rec = createRecorder({ url: path });
+      await func(rec);
+      const resp = await rec.response();
       assertEquals(resp.status, 200);
       const contentType = resp.headers.get("content-type");
       assertMatch(contentType, new RegExp(type));

@@ -9,6 +9,7 @@
       "/fs/mod.ts",
       "/io/bufio.ts",
       "/io/readers.ts",
+      "/io/readers.ts",
       "/io/writers.ts",
       "/strings/decode.ts",
       "/strings/encode.ts",
@@ -18,5 +19,13 @@
       "/mime/multipart.ts",
       "/multipart/formfile.ts"
     ]
+  },
+  "https://dev.jspm.io/react": {
+    "version": "@16.10.2",
+    "modules": ["/index.js"]
+  },
+  "https://dev.jspm.io/react-dom": {
+    "version": "@16.10.2",
+    "modules": ["/server.js"]
   }
 }

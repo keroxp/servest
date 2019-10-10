@@ -42,3 +42,9 @@ export function pathResolver(base: string): (path: string) => URL {
     return new URL(p, base);
   };
 }
+
+export async function readString(r: Deno.Reader): Promise<string> {
+  const buf = new Deno.Buffer();
+  await Deno.copy(buf, r);
+  return buf.toString();
+}

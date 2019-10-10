@@ -37,7 +37,6 @@ function Index({ codes }: { codes: CodeState[] }) {
           <a href="/">Servest</a>
         </div>
       </div>
-      <script src={"/index.js"} />
     </>
   );
 }
