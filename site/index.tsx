@@ -11,7 +11,8 @@ import content from "./content.ts";
 const router = createRouter({ logLevel: Loglevel.INFO });
 const port = Deno.env()["PORT"] || "8899";
 const { pathname } = new URL("./public", import.meta.url);
-router.get("/", serveStatic(pathname), async req => {
+router.use(serveStatic(pathname));
+router.get("/", async req => {
   return req.respond({
     status: 200,
     headers: new Headers({
