@@ -10,7 +10,7 @@ import {
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
-import { it } from "./testing.ts";
+import { it } from "./test_util.ts";
 import { ServeListener } from "./server.ts";
 
 async function readString(r: Reader) {

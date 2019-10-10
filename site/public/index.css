@@ -1,4 +1,9 @@
-
+html {
+  font-family: Arial serif;
+}
+code {
+  font-family: Menlo, Monaco, serif;
+}
 a, a:active {
   text-decoration: none;
   color: inherit;

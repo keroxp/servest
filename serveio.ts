@@ -252,7 +252,7 @@ export const kHttpStatusMessages = {
   500: "Internal Server Error"
 };
 
-function setupBody(
+export function setupBody(
   body: string | Uint8Array | Reader,
   headers: Headers
 ): [Reader, number | undefined] {

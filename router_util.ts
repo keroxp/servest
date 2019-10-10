@@ -1,3 +1,6 @@
+import * as path from "./vendor/https/deno.land/std/fs/path.ts";
+import { runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
+
 /**
  * Find the match that appeared in the nearest position to the beginning of word.
  * If positions are same, the longest one will be picked.
@@ -36,3 +39,35 @@ export function findLongestAndNearestMatch(
   }
   return { index, match };
 }
+
+export async function resolveIndexPath(
+  dir: string,
+  pathname: string,
+  extensions: string[] = [".html"]
+): Promise<string | undefined> {
+  let filepath = path.join(dir, pathname);
+  const fileExists = async (s: string): Promise<boolean> => {
+    try {
+      const stat = await Deno.stat(s);
+      return stat.isFile();
+    } catch (e) {
+      return false;
+    } finally {
+    }
+  };
+  if (await fileExists(filepath)) {
+    return filepath;
+  }
+  for (const ext of extensions) {
+    if (
+      filepath.endsWith("/") &&
+      (await fileExists(path.resolve(filepath + "index" + ext)))
+    ) {
+      return filepath + "index" + ext;
+    } else if (await fileExists(path.resolve(filepath + ext))) {
+      return filepath + ext;
+    }
+  }
+}
+
+runIfMain(import.meta);

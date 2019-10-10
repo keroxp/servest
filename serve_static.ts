@@ -2,33 +2,7 @@
 import { HttpHandler } from "./router.ts";
 import * as path from "./vendor/https/deno.land/std/fs/path.ts";
 import * as media_types from "./vendor/https/deno.land/std/media_types/mod.ts";
-
-export async function resolveFilepath(
-  dir: string,
-  pathname: string
-): Promise<string | undefined> {
-  let filepath = path.join(dir, pathname);
-  const fileExists = async (s: string): Promise<boolean> => {
-    try {
-      const stat = await Deno.stat(s);
-      return stat.isFile();
-    } catch (e) {
-      return false;
-    } finally {
-    }
-  };
-  if (await fileExists(filepath)) {
-    return filepath;
-  }
-  if (
-    filepath.endsWith("/") &&
-    (await fileExists(path.resolve(filepath + "index.html")))
-  ) {
-    return filepath + "index.html";
-  } else if (await fileExists(path.resolve(filepath + ".html"))) {
-    return filepath + ".html";
-  }
-}
+import { resolveIndexPath } from "./router_util.ts";
 
 export type ServeStaticOptions = {
   /**
@@ -36,23 +10,24 @@ export type ServeStaticOptions = {
    * .ext -> application/some-type
    * By default, .ts/.tsx will be resolved by application/typescript
    */
-  contentTypeMap: Map<string, string>;
-  contentDispositionMap: Map<string, "inline" | "attachment">;
+  contentTypeMap?: Map<string, string>;
+  contentDispositionMap?: Map<string, "inline" | "attachment">;
 };
 export function serveStatic(
-  dir: string,
-  opts: ServeStaticOptions = {
-    contentTypeMap: new Map<string, string>([
-      [".ts", "application/javascript"],
-      [".tsx", "application/javascript"]
-    ]),
-    contentDispositionMap: new Map([])
-  }
+  dirOrUrl: string | URL,
+  opts: ServeStaticOptions = {}
 ): HttpHandler {
+  const contentTypeMap = new Map<string, string>([
+    [".ts", "application/javascript"],
+    [".tsx", "application/javascript"],
+    ...(opts.contentTypeMap || new Map<string, string>()).entries()
+  ]);
+  const contentDispositionMap = opts.contentDispositionMap || new Map([]);
+  const dir = dirOrUrl instanceof URL ? dirOrUrl.pathname : dirOrUrl;
   return async function serveStatic(req) {
     if (req.method === "GET" || req.method === "HEAD") {
-      const url = new URL(req.url, "http://127.0.0.1");
-      const filepath = await resolveFilepath(dir, url.pathname);
+      const url = new URL(req.url, "http://dummy");
+      const filepath = await resolveIndexPath(dir, url.pathname);
       if (!filepath) {
         return;
       }
@@ -60,14 +35,14 @@ export function serveStatic(
       const ext = path.extname(filepath);
       const base = path.basename(filepath);
       let contentType =
-        opts.contentTypeMap.get(ext) ||
+        contentTypeMap.get(ext) ||
         media_types.contentType(ext) ||
         "application/octet-stream";
       const headers = new Headers({
         "content-length": stat.len + "",
         "content-type": contentType
       });
-      const contentDisposition = opts.contentDispositionMap.get(ext);
+      const contentDisposition = contentDispositionMap.get(ext);
       if (contentDisposition === "attachment") {
         headers.set("content-disposition", `attachment; filename="${base}"`);
       } else if (contentDisposition === "inline") {

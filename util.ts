@@ -1,6 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { sprintf } from "./vendor/https/deno.land/std/fmt/sprintf.ts";
-
 const kDays = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const kMonths = [
   "Jan",
@@ -36,4 +35,16 @@ export function dateToDateHeader(time: Date = new Date()): string {
     min,
     sec
   );
+}
+
+export function pathResolver(base: string): (path: string) => URL {
+  return p => {
+    return new URL(p, base);
+  };
+}
+
+export async function readString(r: Deno.Reader): Promise<string> {
+  const buf = new Deno.Buffer();
+  await Deno.copy(buf, r);
+  return buf.toString();
 }

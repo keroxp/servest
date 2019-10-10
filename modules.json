@@ -1,6 +1,6 @@
 {
   "https://deno.land/std": {
-    "version": "@v0.19.0",
+    "version": "@v0.20.0",
     "modules": [
       "/testing/mod.ts",
       "/testing/asserts.ts",
@@ -18,5 +18,13 @@
       "/mime/multipart.ts",
       "/multipart/formfile.ts"
     ]
+  },
+  "https://dev.jspm.io/react": {
+    "version": "@16.10.2",
+    "modules": ["/index.js"]
+  },
+  "https://dev.jspm.io/react-dom": {
+    "version": "@16.10.2",
+    "modules": ["/server.js"]
   }
 }

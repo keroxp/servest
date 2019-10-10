@@ -5,7 +5,7 @@ import {
   assertEquals,
   assertMatch
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { it } from "./testing.ts";
+import { it } from "./test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 setLevel(Loglevel.NONE);
 

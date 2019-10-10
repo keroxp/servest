@@ -16,12 +16,7 @@ import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
 import { ServerResponse } from "./server.ts";
-
-async function readString(r: Reader) {
-  const buf = new Buffer();
-  await Deno.copy(buf, r);
-  return buf.toString();
-}
+import { readString } from "./util.ts";
 
 test(async function serveioReadRequestGet() {
   const f = await Deno.open("./fixtures/request_get.txt");

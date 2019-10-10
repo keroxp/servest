@@ -15,7 +15,7 @@ import ListenOptions = Deno.ListenOptions;
 
 export interface HttpRouter {
   /** Set global middleware */
-  use(handler: HttpHandler);
+  use(...handlers: HttpHandler[]);
 
   /** Register route for any http method */
   handle(pattern: string | RegExp, ...handlers: HttpHandler[]);
@@ -106,9 +106,9 @@ export function createRouter(
     routes.push({ pattern, handlers: [methodFilter("POST"), ...handlers] });
   }
 
-  function use(middleware: HttpHandler) {
-    info(`use: ${handlerToString([middleware])}`);
-    middlewares.push(middleware);
+  function use(...middleware: HttpHandler[]) {
+    info(`use: ${handlerToString(middleware)}`);
+    middlewares.push(...middleware);
   }
 
   function handleError(handler: ErrorHandler) {

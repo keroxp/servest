@@ -1,49 +1,68 @@
-import {
-  test,
-  TestFunction
-} from "./vendor/https/deno.land/std/testing/mod.ts";
+import { RoutedServerRequest } from "./router.ts";
+import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
+import { IncomingHttpResponse } from "./server.ts";
+import { readResponse, setupBody } from "./serveio.ts";
+import Reader = Deno.Reader;
+import { createResponder } from "./responder.ts";
 
-type SetupFunc = () => any | Promise<any>;
-interface Testing {
-  run(desc: string, body: TestFunction): void;
-  beforeAfterAll(func: () => SetupFunc): SetupFunc | void;
-  beforeAfterEach(func: () => SetupFunc): SetupFunc | void;
-}
-export function it(desc: string, func: (t: Testing) => void) {
-  let testCnt = 0;
-  let beforeAllFunc: SetupFunc | undefined;
-  let afterAllFunc: SetupFunc | undefined;
-  let beforeEachFunc: SetupFunc | undefined;
-  let afterEachFunc: SetupFunc | undefined;
-  function beforeAfterAll(func) {
-    beforeAllFunc = func;
+export type RequestRecorder = RoutedServerRequest & {
+  /** Obtain recorded response */
+  response(): Promise<IncomingHttpResponse>;
+};
+
+/** Create dummy request & responder that records a response from HTTPHandler  */
+export function createRecorder({
+  url,
+  method = "GET",
+  headers = new Headers(),
+  body,
+  proto = "http",
+  match
+}: {
+  url: string;
+  method?: string;
+  proto?: string;
+  headers?: Headers;
+  body?: string | Uint8Array | Reader;
+  match?: RegExpMatchArray | null;
+}): RequestRecorder {
+  const conn: Deno.Conn = {
+    localAddr: "",
+    remoteAddr: "",
+    rid: 0,
+    close(): void {},
+    closeRead(): void {},
+    closeWrite(): void {},
+    async read(p: Uint8Array): Promise<number | Deno.EOF> {
+      return 0;
+    },
+    async write(p: Uint8Array): Promise<number> {
+      return 0;
+    }
+  };
+  const buf = new Deno.Buffer();
+  const bufReader = new BufReader(buf);
+  const bufWriter = new BufWriter(buf);
+  let bodyReader: Reader | undefined;
+  if (body) {
+    bodyReader = setupBody(body, headers)[0];
   }
-  function beforeAfterEach(func) {
-    beforeEachFunc = func;
+  async function response(): Promise<IncomingHttpResponse> {
+    return readResponse(bufReader);
   }
-  function run(desc2: string, func2: () => any | Promise<any>) {
-    test(`${desc} ${desc2}`, async () => {
-      if (testCnt === 0 && beforeAllFunc) {
-        afterAllFunc = await beforeAllFunc();
-      }
-      testCnt++;
-      try {
-        if (beforeEachFunc) {
-          afterEachFunc = await beforeEachFunc();
-        }
-        await func2();
-      } finally {
-        if (afterEachFunc) {
-          await afterEachFunc();
-        }
-        setTimeout(async () => {
-          testCnt--;
-          if (testCnt === 0 && afterAllFunc) {
-            await afterAllFunc();
-          }
-        }, 0);
-      }
-    });
-  }
-  func({ beforeAfterAll, beforeAfterEach, run });
+  const responder = createResponder(bufWriter);
+  return {
+    url,
+    method,
+    headers,
+    proto,
+    finalize: async () => {},
+    body: bodyReader,
+    response,
+    bufWriter,
+    bufReader,
+    conn,
+    match,
+    ...responder
+  };
 }

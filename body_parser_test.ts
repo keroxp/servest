@@ -8,7 +8,7 @@ import {
 import { parserMultipartRequest } from "./body_parser.ts";
 import * as fs from "./vendor/https/deno.land/std/fs/mod.ts";
 import Buffer = Deno.Buffer;
-import { it } from "./testing.ts";
+import { it } from "./test_util.ts";
 
 it("multipart", t => {
   t.run("basic", async () => {
