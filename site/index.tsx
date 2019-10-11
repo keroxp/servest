@@ -12,14 +12,12 @@ const port = Deno.env()["PORT"] || "8899";
 const router = createRouter({ logLevel: Loglevel.INFO });
 const resolve = pathResolver(import.meta.url);
 router.use(serveStatic(resolve("./public")));
-router.use(
-  serveStatic(resolve("../"), {
-    filter: file => file.endsWith(".ts")
-  })
-);
 router.use(serveJsx(resolve("./pages"), Layout));
-router.get(new RegExp("/@(?<version>.+?)/(?<pathname>.+?)$"), async req => {
-  const { version, pathname } = req.match.groups;
+router.get(new RegExp("/@(?<version>.*?)/(?<pathname>.+?)$"), async req => {
+  let { version, pathname } = req.match.groups;
+  if (!version) {
+    version = "master"
+  }
   const u = `https://raw.githubusercontent.com/keroxp/servest/${version}/${pathname}`;
   await fetch(u).then(req.respond);
 });
