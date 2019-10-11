@@ -4,12 +4,13 @@ html {
 code {
   font-family: Menlo, Monaco, serif;
 }
-a, a:active {
+a,
+a:active {
   text-decoration: none;
   color: inherit;
 }
 a {
- color: rgb(72, 196, 200)
+  color: rgb(72, 196, 200);
 }
 
 h1 {
@@ -32,7 +33,7 @@ code {
   line-height: 1.1em;
 }
 body {
-  background-color: #F5F7F9;
+  background-color: #f5f7f9;
 }
 .root {
   width: 100%;
@@ -42,9 +43,9 @@ body {
   position: relative;
 }
 .sidebar {
-  padding: 15px ;
+  padding: 15px;
   position: fixed;
-  left: 0
+  left: 0;
 }
 @media (max-width: 480px) and (orientation: portrait) {
   .content {
@@ -55,13 +56,12 @@ body {
   }
 }
 
-
-.heading p{
-  color:  #9DAAB6;
+.heading p {
+  color: #9daab6;
   margin-bottom: 15px;
 }
 .sidebarSection {
-  color: #9DAAB6;
+  color: #9daab6;
   font-weight: bold;
   margin: 10px 0;
 }
@@ -70,7 +70,7 @@ body {
   list-style: none;
 }
 .article {
-  padding:  15px;
+  padding: 15px;
   box-sizing: border-box;
   margin-left: 320px;
   background-color: white;
@@ -86,8 +86,8 @@ body {
 }
 .footer {
   text-align: center;
-  background-color:#E6ECF1;
+  background-color: #e6ecf1;
   padding: 15px 0;
-  color:  #9DAAB6;
+  color: #9daab6;
   width: 100%;
 }

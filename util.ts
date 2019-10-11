@@ -37,10 +37,8 @@ export function dateToDateHeader(time: Date = new Date()): string {
   );
 }
 
-export function pathResolver(base: string): (path: string) => URL {
-  return p => {
-    return new URL(p, base);
-  };
+export function pathResolver(meta: ImportMeta): (p: string) => string {
+  return p => new URL(p, meta.url).pathname;
 }
 
 export async function readString(r: Deno.Reader): Promise<string> {

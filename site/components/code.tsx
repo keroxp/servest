@@ -1,4 +1,4 @@
-import React from "../../vendor/https/dev.jspm.io/react/index.js";
+import { React } from "../react.ts";
 
 export type CodeState = {
   title: string;
@@ -8,7 +8,7 @@ export type CodeState = {
 };
 
 export const Code = ({ id, title, code, href }: CodeState) => {
-  const {pathname} = new URL(href, "https://dummy");
+  const { pathname } = new URL(href, "https://dummy");
   const basename = pathname.split("/").pop();
   return (
     <div id={id}>

@@ -10,12 +10,12 @@ test("dateToDateHeader", () => {
 });
 it("pathResolver", t => {
   [
-    ["file://src/deno/index.js", "./other.js", "file://src/deno/other.js"],
-    ["file://src/deno/", "./other.js", "file://src/deno/other.js"]
+    ["file:///src/deno/index.js", "./other.js", "/src/deno/other.js"],
+    ["file:///src/deno/index.js", "../other.js", "/src/other.js"]
   ].forEach(([base, path, exp]) => {
     t.run(`${base} + ${path}`, () => {
-      const u = pathResolver(base)(path);
-      assertEquals(u.toString(), exp);
+      const u = pathResolver({ url: base, main: false })(path);
+      assertEquals(u, exp);
     });
   });
 });

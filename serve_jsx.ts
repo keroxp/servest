@@ -5,11 +5,10 @@ import { resolveIndexPath } from "./router_util.ts";
 
 /** Serve jsx/tsx by dynamic import */
 export function serveJsx(
-  dirOrUrl: string | URL,
+  dir: string,
   parentComponent: any = React.Fragment
 ): HttpHandler {
-  const dir = dirOrUrl instanceof URL ? dirOrUrl.pathname : dirOrUrl;
-  return async req => {
+  return async function serveJsx(req) {
     const { pathname } = new URL(req.url, "http://dummy");
     const p = await resolveIndexPath(dir, pathname, [".tsx", ".jsx"]);
     if (p) {
