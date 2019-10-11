@@ -34,7 +34,7 @@ export interface HttpRouter {
 }
 
 export type RoutedServerRequest = ServerRequest & {
-  match?: RegExpMatchArray;
+  match: RegExpMatchArray;
 };
 
 /** Basic handler for http request */
@@ -129,7 +129,7 @@ export function createRouter(
         pathname,
         routes.map(v => v.pattern)
       );
-      if (index > -1) {
+      if (index > -1 && match) {
         const { handlers } = routes[index];
         for (const handler of handlers) {
           await handler({ ...req, match });

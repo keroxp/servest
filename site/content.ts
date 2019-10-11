@@ -1,5 +1,5 @@
 import { CodeState } from "./components/code.tsx";
-import * as path from "./vendor/https/deno.land/std/fs/path.ts";
+import * as path from "../vendor/https/deno.land/std/fs/path.ts";
 
 export async function loadContents(): Promise<CodeState[]> {
   const decoder = new TextDecoder();

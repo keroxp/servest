@@ -10,7 +10,7 @@ router.handle("/", async req => {
   });
 });
 router.handle(new RegExp("/foo/(.+)"), async req => {
-  const [id] = req.match.groups[0];
+  const [_, id] = req.match;
   await req.respond({
     status: 200,
     headers: new Headers({

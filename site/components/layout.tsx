@@ -1,4 +1,4 @@
-import React from "../vendor/https/dev.jspm.io/react/index.js";
+import React from "../../vendor/https/dev.jspm.io/react/index.js";
 
 export const Layout = ({children}: {
   children?: any

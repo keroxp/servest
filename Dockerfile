@@ -9,5 +9,4 @@ RUN deno fetch /servest/site/index.tsx
 WORKDIR /servest/site
 ENV PORT=${PORT}
 EXPOSE ${PORT}
-RUN cp *.ts /servest/site/public
 CMD ["deno", "--allow-net", "--allow-read", "--allow-env", "/servest/site/main.ts"]
