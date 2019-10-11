@@ -19,7 +19,7 @@ router.use(
 );
 router.use(serveJsx(resolve("./pages"), Layout));
 router.get(new RegExp("/@(?<version>.+?)/(?<pathname>.+?)$"), async req => {
-  const { version, pathname } = req.match!.groups;
+  const { version, pathname } = req.match.groups;
   const u = `https://raw.githubusercontent.com/keroxp/servest/${version}/${pathname}`;
   await fetch(u).then(req.respond);
 });
