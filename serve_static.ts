@@ -12,6 +12,8 @@ export type ServeStaticOptions = {
    */
   contentTypeMap?: Map<string, string>;
   contentDispositionMap?: Map<string, "inline" | "attachment">;
+  /** Custom filter function for files */
+  filter?: (file: string) => boolean | Promise<boolean>;
 };
 export function serveStatic(
   dirOrUrl: string | URL,
@@ -23,12 +25,13 @@ export function serveStatic(
     ...(opts.contentTypeMap || new Map<string, string>()).entries()
   ]);
   const contentDispositionMap = opts.contentDispositionMap || new Map([]);
+  const filter = opts.filter || (() => true);
   const dir = dirOrUrl instanceof URL ? dirOrUrl.pathname : dirOrUrl;
   return async function serveStatic(req) {
     if (req.method === "GET" || req.method === "HEAD") {
       const url = new URL(req.url, "http://dummy");
       const filepath = await resolveIndexPath(dir, url.pathname);
-      if (!filepath) {
+      if (!filepath || !(await filter(filepath))) {
         return;
       }
       const stat = await Deno.stat(filepath);

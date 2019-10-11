@@ -1,5 +1,5 @@
-import React from "./site/vendor/https/dev.jspm.io/react/index.js";
-import ReactDOMServer from "./site/vendor/https/dev.jspm.io/react-dom/server.js";
+import React from "./vendor/https/dev.jspm.io/react/index.js";
+import ReactDOMServer from "./vendor/https/dev.jspm.io/react-dom/server.js";
 import { HttpHandler } from "./router.ts";
 import { resolveIndexPath } from "./router_util.ts";
 

@@ -1,4 +1,4 @@
-import { createRouter } from "https://denopkg.com/keroxp/servest/router.ts";
+import { createRouter } from "https://servesjs.org/router.ts";
 const router = createRouter();
 router.handle("/", async req => {
   await req.respond({
@@ -10,7 +10,7 @@ router.handle("/", async req => {
   });
 });
 router.handle(new RegExp("/foo/(.+)"), async req => {
-  const [id] = req.match.groups[0];
+  const [_, id] = req.match;
   await req.respond({
     status: 200,
     headers: new Headers({
