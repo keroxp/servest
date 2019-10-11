@@ -1,4 +1,4 @@
-import { createRouter } from "https://servestjs.org/router.ts";
+import { createRouter } from "https://denopkg.com/keroxp/servest/router.ts";
 const router = createRouter();
 router.handle("/", async req => {
   await req.respond({
