@@ -1,6 +1,6 @@
 import React from "https://dev.jspm.io/react"
 import ReactDOMServer from "https://dev.jspm.io/react-dom/server"
-import { createRouter } from "https://servestjs.org/router.ts";
+import { createRouter } from "https://servestjs.org/@/router.ts";
 
 const router = createRouter();
 router.handle("/", async req => {

@@ -21,7 +21,7 @@ Serve API is low-level API for handling http requests. `servest` has its own ser
 - Fully interface based type definition
 
 ```ts
-import { listenAndServe } from "https://servestjs.org/server.ts";
+import { listenAndServe } from "https://servestjs.org/@/server.ts";
 const listener = listenAndServe("127.0.0.1:8899", async req => {
   await req.respond({
     status: 200,
@@ -38,7 +38,7 @@ const listener = listenAndServe("127.0.0.1:8899", async req => {
 Router API is minimal routing system on top of `listenAndServe()`
 
 ```ts
-import { createRouter } from "https://servestjs.org/router.ts";
+import { createRouter } from "https://servestjs.org/@/router.ts";
 
 const router = createRouter();
 router.handle("/", async req => {
@@ -68,7 +68,7 @@ router.listen("127.0.0.1:8899");
 Router can use common http handler
 
 ```ts
-import { serveStatic } from "https://servestjs.org/serve_static.ts";
+import { serveStatic } from "https://servestjs.org/@/serve_static.ts";
 // Files in ./public are served automatically (GET, HEAD)
 router.use(serveStatic("./public"));
 ```
@@ -95,7 +95,7 @@ Agent API is basic HTTP/HTTPS agent. It manages persistent connection to the hos
 #### GET
 
 ```ts
-import { createAgent } from "https://servestjs.org/agent.ts";
+import { createAgent } from "https://servestjs.org/@/agent.ts";
 const agent = createAgent("http://127.0.0.1:8700");
 const { status, body } = await agent.send({
   path: "/get?deno=land",
@@ -106,7 +106,7 @@ const { status, body } = await agent.send({
 #### POST
 
 ```ts
-import { createAgent } from "https://servestjs.org/agent.ts";
+import { createAgent } from "https://servestjs.org/@/agent.ts";
 const { status, headers, body } = await agent.send({
   path: "/post",
   method: "POST",
