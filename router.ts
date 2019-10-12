@@ -55,13 +55,13 @@ export type RoutedServerRequest = ServerRequest & {
 };
 
 /** Basic handler for http request */
-export type HttpHandler = (req: RoutedServerRequest) => Promise<any>;
+export type HttpHandler = (req: RoutedServerRequest) => void | Promise<void>;
 
 /** Global error handler for requests */
 export type ErrorHandler = (
   e: any | RoutingError,
   req: RoutedServerRequest
-) => Promise<any>;
+) => void | Promise<void>;
 
 export type RouterOptions = {
   logger?: Logger;
