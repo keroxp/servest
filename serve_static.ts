@@ -6,17 +6,26 @@ import { resolveIndexPath } from "./router_util.ts";
 
 export type ServeStaticOptions = {
   /**
-   * content type resolvers
+   * Custom Content-Type mapper.
    * .ext -> application/some-type
-   * By default, .ts/.tsx will be resolved by application/typescript
+   * By default, .ts/.tsx will be resolved by application/typescript.
    */
   contentTypeMap?: Map<string, string>;
+  /**
+   * Custom Content-Disposition mapper.
+   * .ext -> "inline" | "attachment"
+   * By default, Content-Disposition header won't be set for any files.
+   */
   contentDispositionMap?: Map<string, "inline" | "attachment">;
   /** Custom filter function for files */
   filter?: (file: string) => boolean | Promise<boolean>;
 };
+
+/**
+ * Serve static files in specified directory.
+ * */
 export function serveStatic(
-  dirOrUrl: string | URL,
+  dir: string,
   opts: ServeStaticOptions = {}
 ): HttpHandler {
   const contentTypeMap = new Map<string, string>([
@@ -26,7 +35,6 @@ export function serveStatic(
   ]);
   const contentDispositionMap = opts.contentDispositionMap || new Map([]);
   const filter = opts.filter || (() => true);
-  const dir = dirOrUrl instanceof URL ? dirOrUrl.pathname : dirOrUrl;
   return async function serveStatic(req) {
     if (req.method === "GET" || req.method === "HEAD") {
       const url = new URL(req.url, "http://dummy");

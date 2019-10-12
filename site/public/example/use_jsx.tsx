@@ -1,5 +1,5 @@
-import React from "https://dev.jspm.io/react"
-import ReactDOMServer from "https://dev.jspm.io/react-dom/server"
+import React from "https://dev.jspm.io/react";
+import ReactDOMServer from "https://dev.jspm.io/react-dom/server";
 import { createRouter } from "https://servestjs.org/@/router.ts";
 
 const router = createRouter();
@@ -11,13 +11,11 @@ router.handle("/", async req => {
     }),
     body: ReactDOMServer.renderToString(
       <html>
-      <head>
-        <meta charSet="utf-8" />
-        <title>servest</title>
-      </head>
-      <body>
-        Hello Servest!
-      </body>
+        <head>
+          <meta charSet="utf-8" />
+          <title>servest</title>
+        </head>
+        <body>Hello Servest!</body>
       </html>
     )
   });

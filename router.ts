@@ -14,19 +14,35 @@ import { createLogger, Logger, Loglevel, namedLogger } from "./logger.ts";
 import ListenOptions = Deno.ListenOptions;
 
 export interface HttpRouter {
-  /** Set global middleware */
+  /**
+   * Set global middleware.
+   * It will be called for each request on any routes.
+   * */
   use(...handlers: HttpHandler[]);
 
-  /** Register route for any http method */
+  /**
+   * Register route with given pattern.
+   * It will be called for every http method,
+   * Examples:
+   *   router.handle("/", ...)   => Called if request path exactly matches "/".
+   *   router.handle(/^\//, ...) => Called if request path matches given regexp.
+   * */
   handle(pattern: string | RegExp, ...handlers: HttpHandler[]);
 
-  /** Register GET route */
+  /**
+   * Register GET route.
+   * Handlers will be called on GET and HEAD method.
+   * */
   get(pattern: string | RegExp, ...handlers: HttpHandler[]);
 
   /** Register POST route */
   post(patter: string | RegExp, ...handlers: HttpHandler[]);
 
-  /** Set global error handler. Only one handler can be set at same time */
+  /**
+   * Set global error handler.
+   * All unhandled promise rejections while processing requests will be passed into this handler.
+   * If error is ignored, it will be handled by built-in final error handler.
+   * Only one handler can be set for one router. */
   handleError(handler: ErrorHandler);
 
   /** Start listening with given addr */
@@ -34,24 +50,25 @@ export interface HttpRouter {
 }
 
 export type RoutedServerRequest = ServerRequest & {
+  /** Match object for route with regexp pattern. */
   match: RegExpMatchArray;
 };
 
 /** Basic handler for http request */
-export type HttpHandler = (req: RoutedServerRequest) => Promise<any>;
+export type HttpHandler = (req: RoutedServerRequest) => void | Promise<void>;
 
 /** Global error handler for requests */
 export type ErrorHandler = (
-  e: any,
+  e: any | RoutingError,
   req: RoutedServerRequest
-) => any | Promise<any>;
+) => void | Promise<void>;
 
 export type RouterOptions = {
   logger?: Logger;
   logLevel?: Loglevel;
 };
 
-/** create HttpRouter object */
+/** Create HttpRouter */
 export function createRouter(
   opts: RouterOptions = {
     logger: createLogger()
