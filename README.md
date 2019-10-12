@@ -6,7 +6,7 @@
 [![tag](https://img.shields.io/badge/deno-v0.20.0-green.svg)](https://github.com/denoland/deno)
 [![tag](https://img.shields.io/badge/deno__std-v0.20.0-green.svg)](https://github.com/denoland/deno_std)
 
-🌾A progressive http server / router for deno🌾
+🌾A progressive http server for Deno🌾
 
 ## Usage
 
