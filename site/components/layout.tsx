@@ -1,4 +1,6 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
+import { Header } from "./header.tsx";
+import {Footer} from "./footer.tsx";
 
 export const Layout: React.FC = ({ children }) => (
   <html lang="en">
@@ -27,7 +29,11 @@ export const Layout: React.FC = ({ children }) => (
       />
     </head>
     <body>
-      {children}
+      <div id="root">
+        <Header />
+        {children}
+        <Footer/>
+      </div>
       <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js" />
       <script>hljs.initHighlightingOnLoad();</script>
     </body>

@@ -1,6 +1,6 @@
 import { createRouter } from "https://servestjs.org/@/router.ts";
 const router = createRouter();
-router.handle("/", async req => {
+router.get("/", async req => {
   await req.respond({
     status: 200,
     headers: new Headers({
@@ -9,7 +9,7 @@ router.handle("/", async req => {
     body: "Hello, Servest!"
   });
 });
-router.handle(new RegExp("/foo/(.+)"), async req => {
+router.get(new RegExp("^/foo/(.+)"), async req => {
   const [_, id] = req.match;
   await req.respond({
     status: 200,

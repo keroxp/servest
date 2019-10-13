@@ -1,5 +1,25 @@
+
+:root {
+  --contentWidth: 1024px;
+  --colorPrimary: #ffd600;
+  --colorPrimaryLight: #ffff52;
+  --colorPrimaryDark: #c7a500;
+  --colorSecondary:#aeea00;
+  --colorSecondaryLight: #e4ff54;
+  --colorSecondaryDark: #79b700;
+  --colorGrayDark: #DDDEDD;
+  --colorGrayLight:#F3F3F5;
+}
+@media (max-width: 480px) and (orientation: portrait),
+(max-width: 480px) and (orientation: landscape)
+{
+  :root {
+    --contentWidth: 100vw;
+  }
+}
+
 html {
-  font-family: Arial serif;
+  font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;;
 }
 code {
   font-family: Menlo, Monaco, serif;
@@ -10,9 +30,60 @@ a:active {
   color: inherit;
 }
 a {
-  color: rgb(72, 196, 200);
+  color: var(--colorSecondaryDark)
+}
+b {
+  font-weight: bold;
+}
+.header {
+  width: 100%;
+  padding: 10px 0;
+  height: 40px;
+  position: fixed;
+  z-index: 1;
+  top: 0;
+  left: 0;
+  background-color: var(--colorPrimary);
+}
+.header a {
+  padding: 0 15px;
+  color: black;
+  font-size: 16px;
+  font-weight: bold;
 }
 
+.brand {
+  font-size: 22px!important;
+}
+
+.inner {
+  width: var(--contentWidth);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin: auto;
+}
+
+.headerItem {
+  padding-left: 15px;
+}
+
+.spacer {
+  flex: 1
+}
+
+.githubLogo {
+  background-image: url("/img/GitHub-Mark-32px.png");
+  background-size: 32px;
+  background-position: center;
+  width: 32px;
+  height: 32px;
+}
+@media (min-resolution: 2dppx) {
+  .githubLogo {
+    background-image: url("/img/GitHub-Mark-64px.png");;
+  }
+}
 h1 {
   font-size: 25px;
   font-weight: bold;
@@ -36,21 +107,50 @@ body {
   background-color: #f5f7f9;
 }
 .root {
-  width: 100%;
+  width: 100vw;
 }
 .content {
-  width: 1024px;
+  width: var(--contentWidth);
   position: relative;
+  padding-top: 60px;
+  margin: auto;
+}
+.content {
+}
+.article {
+  margin-left: 240px;
+}
+.article p {
+  padding: 15px 0;
+  line-height: 1.2;
+}
+.article a {
+  text-decoration: underline;
+}
+.article ul {
+  padding-left: 15px;
+}
+.article li {
+  list-style: inside;
+  padding: 5px 0;
+}
+.article blockquote {
+  background-color: var(--colorGrayLight);
+  padding: 15px 0;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 15px 0;
+  font-size: 22px;
+  font-family: "Times New Roman", serif;
 }
 .sidebar {
-  padding: 15px;
-  position: fixed;
+  position: absolute;
+  top: 60px;
   left: 0;
+  padding: 15px;
 }
 @media (max-width: 480px) and (orientation: portrait) {
-  .content {
-    width: 100vw;
-  }
   .sidebar {
     position: static;
   }
@@ -61,18 +161,22 @@ body {
   margin-bottom: 15px;
 }
 .sidebarSection {
-  color: #9daab6;
-  font-weight: bold;
   margin: 10px 0;
 }
+.sidebarSectionTitle {
+  font-weight: bold;
+  font-size: 22px;
+  margin: 10px 0;
+}
+.sidebarSectionInner {
+  padding-left: 15px;
+}
 .sidebarLink {
-  padding: 5px;
-  list-style: none;
+  padding: 5px 0;
 }
 .article {
   padding: 15px;
   box-sizing: border-box;
-  margin-left: 320px;
   background-color: white;
 }
 .codeLink {

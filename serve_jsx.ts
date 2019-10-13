@@ -3,6 +3,10 @@ import ReactDOMServer from "./vendor/https/dev.jspm.io/react-dom/server.js";
 import { HttpHandler } from "./router.ts";
 import { resolveIndexPath } from "./router_util.ts";
 
+export type DFC<P = {}> = React.FC<P> & {
+  getInitialProps?: () => Promise<P>;
+};
+
 /** Serve jsx/tsx by dynamic import */
 export function serveJsx(
   dir: string,
@@ -13,7 +17,7 @@ export function serveJsx(
     const p = await resolveIndexPath(dir, pathname, [".tsx", ".jsx"]);
     if (p) {
       const jsx = await import(p);
-      const el = jsx.default;
+      const el = jsx.default as DFC;
       if (!el) {
         throw new Error(
           "jsx: jsx/tsx files served by serveJsx must has default export!"
