@@ -42,9 +42,15 @@ async function main() {
   setInterval(async () => {
     const files = await watch(glob);
     if (files.length > 0) {
-      const compile = Deno.run({args: [Deno.execPath(), "fetch", ...files]});
-      const {code} = await compile.status();
-      if (code === 0) {
+      let errored = false;
+      for (const file of files) {
+        const compile = Deno.run({args: [Deno.execPath(), "fetch", file]});
+        const {code} = await compile.status();
+        if (code !== 0) {
+          errored = true;
+        }
+      }
+      if (!errored) {
         replaceProcess();
       }
     }
