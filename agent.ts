@@ -10,8 +10,8 @@ import DialOptions = Deno.DialOptions;
 
 /** keep-alive http agent for single host. each message will be sent in serial */
 export interface HttpAgent {
-  hostname: string
-  port: number
+  hostname: string;
+  port: number;
   /** send request to host. it throws EOF if conn is closed */
   send(opts: HttpAgentSendOptions): Promise<ClientResponse>;
 

@@ -64,7 +64,7 @@ declare namespace React {
     | {
         [K in keyof JSX.IntrinsicElements]: P extends JSX.IntrinsicElements[K]
           ? K
-          : never;
+          : never
       }[keyof JSX.IntrinsicElements]
     | ComponentType<P>;
   /**
@@ -3070,7 +3070,7 @@ declare namespace React {
       ? Validator<T[K] | null | undefined>
       : undefined extends T[K]
       ? Validator<T[K] | null | undefined>
-      : Validator<T[K]>;
+      : Validator<T[K]>
   };
 
   interface ReactPropTypes {
@@ -3150,7 +3150,7 @@ type IsExactlyAny<T> = boolean extends (T extends never ? true : false)
   : false;
 
 type ExactlyAnyPropertyKeys<T> = {
-  [K in keyof T]: IsExactlyAny<T[K]> extends true ? K : never;
+  [K in keyof T]: IsExactlyAny<T[K]> extends true ? K : never
 }[keyof T];
 type NotExactlyAnyPropertyKeys<T> = Exclude<keyof T, ExactlyAnyPropertyKeys<T>>;
 

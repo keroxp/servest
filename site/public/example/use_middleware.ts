@@ -1,8 +1,14 @@
 import { createRouter } from "https://servestjs.org/@/router.ts";
-import { serveStatic } from "https://servestjs.org/@/serve_static.ts";
 const router = createRouter();
-// All requests will be processed and matched files in "public" directory
-// are served automatically
-// Otherwise, request will be passed to next handler
-router.use(serveStatic("./public"));
+// Called for every request
+router.use(async req => {
+  // Do authentication before handling request on routes
+  const q = new URL(req.url, "http://dummy").searchParams;
+  const token = q.get("auth_token");
+  if (token !== "valid_token") {
+    // Responded request won't be passed to the next middleware
+    await req.respond({ status: 401, body: "Unauthorized" });
+  }
+  // Go through the next middleware
+});
 router.listen(":8899");

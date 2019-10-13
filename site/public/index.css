@@ -37,12 +37,10 @@ b {
 }
 .header {
   width: 100%;
-  padding: 10px 0;
-  height: 40px;
-  position: fixed;
+  position: sticky;
   z-index: 1;
+  height: 50px;
   top: 0;
-  left: 0;
   background-color: var(--colorPrimary);
 }
 .header a {
@@ -93,6 +91,7 @@ h2 {
   font-size: 20px;
   font-weight: bold;
   padding: 10px 0;
+  margin-top: 10px;
 }
 h3 {
   font-size: 15px;
@@ -111,12 +110,64 @@ body {
 }
 .content {
   width: var(--contentWidth);
-  min-height: calc(100vh - 60px);
+  min-height: calc(100vh - 50px);
   position: relative;
   display: grid;
   grid-template-columns: 240px 1fr;
   margin: auto;
-  padding-top: 60px;
+  /*padding-top: 50px;*/
+}
+
+.indexHead {
+  padding-top: 50px;
+  background-color: #282C33;
+}
+.indexHeadInner {
+  width: var(--contentWidth);
+  position: relative;
+  margin: auto;
+  padding: 30px 0;
+  text-align: center;
+}
+.indexHead h1 {
+  font-size: 45px;
+  color: var(--colorPrimary);
+}
+.indexHead .subTitle {
+  color: white;
+  font-size: 24px;
+  padding-bottom: 15px;
+}
+.indexHead .subButtons {
+  padding: 15px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.indexHead .startButton {
+  background-color: var(--colorSecondary);
+  color: black;
+  font-weight: bold;
+  height: 44px;
+  width: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+}
+.indexHead .startButton:active {
+  background-color: white;
+  color: var(--colorSecondary);
+}
+.index {
+  padding: 30px 0;
+  width: var(--contentWidth);
+  margin: auto;
+  background: white;
+}
+.index .welcomeCode {
+  width: calc(var(--contentWidth) - 240px);
+  margin: auto;
 }
 .article {
   padding: 15px;
@@ -124,11 +175,15 @@ body {
   background-color: white;
 }
 .article section {
-  padding-top: 60px;
+  /*padding-top: 50px;*/
 }
 .article p {
-  padding: 15px 0;
-  line-height: 1.2;
+  margin-bottom: 15px;
+  line-height: 1.7;
+}
+.article code.q {
+  padding: 2px;
+  background-color: var(--colorGrayLight);
 }
 .article a {
   text-decoration: underline;
@@ -142,7 +197,7 @@ body {
 }
 .article section h2 {
   position: sticky;
-  top: 60px;
+  top: 50px;
   background-color: white;
 }
 .article blockquote {
@@ -158,8 +213,8 @@ body {
 .sidebar {
   position: sticky;
   width: 240px;
-  height: calc(100vh - 60px);
-  top: 60px;
+  height: calc(100vh - 50px);
+  top: 50px;
 }
 .sidebarInner {
   padding: 15px;
@@ -190,7 +245,50 @@ body {
 }
 .codeLink {
   padding: 5px 0;
+  display: flex;
+  align-items:center;
+  justify-content: center;
 }
+.codeWindowHeader {
+  background-color: #F6F6F6;
+  height: 40px;
+  display: grid;
+  grid-template-columns: 100px 1fr 100px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  justify-content: flex-start;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+.codeWindowButtonWrapper {
+  display: flex;
+  align-items: center;
+}
+.codeWindowButton {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.codeWindowRedButton {
+  background-color: #EA6459
+}
+.codeWindowYellowButton {
+  background-color: #E0C04C;
+}
+.codeWindowGreenButton {
+  background-color: #72BF46;
+}
+.codeWrapper {
+  margin-top: 0!important;
+
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+.codeInner {
+  /*padding: 1em!important;*/
+}
+
 @media (max-width: 480px) and (orientation: portrait) {
   .article {
     position: static;

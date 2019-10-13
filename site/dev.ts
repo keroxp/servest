@@ -21,7 +21,7 @@ async function watch(glob: string): Promise<string[]> {
         changed.push(filename);
       }
     } else if (!prevInfo) {
-      changed.push(filename)
+      changed.push(filename);
     }
   }
   return changed;
@@ -44,8 +44,8 @@ async function main() {
     if (files.length > 0) {
       let errored = false;
       for (const file of files) {
-        const compile = Deno.run({args: [Deno.execPath(), "fetch", file]});
-        const {code} = await compile.status();
+        const compile = Deno.run({ args: [Deno.execPath(), "fetch", file] });
+        const { code } = await compile.status();
         if (code !== 0) {
           errored = true;
         }

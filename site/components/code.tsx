@@ -5,18 +5,32 @@ export type CodeState = {
   code: string;
 };
 
-export const Code: React.FC<CodeState> = ({ code, href }) => {
+export const Code: React.FC<
+  CodeState & {
+    lang?: string;
+  }
+> = ({ code, href, lang }) => {
   const { pathname } = new URL(href, "https://dummy");
-  const basename = pathname.split("/").pop();
+  const basename = pathname.split("/").pop()!;
+  const cls =
+    basename.endsWith("jsx") || basename.endsWith("tsx") ? "jsx" : "ts";
   return (
-    <div className="code">
-      <div className="codeLink">
-        <a href={href} target="_blank">
-          {basename}
-        </a>
+    <div className="codeWindow">
+      <div className="codeWindowHeader">
+        <div className="codeWindowButtonWrapper">
+          <div className="codeWindowButton codeWindowRedButton" />
+          <div className="codeWindowButton codeWindowYellowButton" />
+          <div className="codeWindowButton codeWindowGreenButton" />
+        </div>
+        <div className="codeLink">
+          <a href={href} target="_blank">
+            {basename}
+          </a>
+        </div>
+        <div />
       </div>
-      <pre>
-        <code className="ts">{code}</code>
+      <pre className="codeWrapper">
+        <code className={`codeInner language-${lang || cls}`}>{code}</code>
       </pre>
     </div>
   );

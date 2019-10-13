@@ -1,9 +1,9 @@
-import {createAgent} from "../../../agent.ts"
+import { createAgent } from "https://servestjs.org/@/agent.ts";
 
-async function main () {
+async function main() {
   const agent = createAgent("https://servestjs.org");
-  const res1 = await agent.send({method: "GET", path: "/@/server.ts"});
-  const res2 = await agent.send({method: "GET", path: "/@/router.ts"});
+  const res1 = await agent.send({ method: "GET", path: "/@/server.ts" });
+  const res2 = await agent.send({ method: "GET", path: "/@/router.ts" });
   console.log(res1);
   console.log(res2);
 }
