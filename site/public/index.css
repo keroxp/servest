@@ -92,7 +92,7 @@ h1 {
 h2 {
   font-size: 20px;
   font-weight: bold;
-  margin: 10px 0;
+  padding: 10px 0;
 }
 h3 {
   font-size: 15px;
@@ -111,14 +111,20 @@ body {
 }
 .content {
   width: var(--contentWidth);
+  min-height: calc(100vh - 60px);
   position: relative;
-  padding-top: 60px;
+  display: grid;
+  grid-template-columns: 240px 1fr;
   margin: auto;
-}
-.content {
+  padding-top: 60px;
 }
 .article {
-  margin-left: 240px;
+  padding: 15px;
+  box-sizing: border-box;
+  background-color: white;
+}
+.article section {
+  padding-top: 60px;
 }
 .article p {
   padding: 15px 0;
@@ -134,6 +140,11 @@ body {
   list-style: inside;
   padding: 5px 0;
 }
+.article section h2 {
+  position: sticky;
+  top: 60px;
+  background-color: white;
+}
 .article blockquote {
   background-color: var(--colorGrayLight);
   padding: 15px 0;
@@ -145,9 +156,12 @@ body {
   font-family: "Times New Roman", serif;
 }
 .sidebar {
-  position: absolute;
+  position: sticky;
+  width: 240px;
+  height: calc(100vh - 60px);
   top: 60px;
-  left: 0;
+}
+.sidebarInner {
   padding: 15px;
 }
 @media (max-width: 480px) and (orientation: portrait) {
@@ -173,11 +187,6 @@ body {
 }
 .sidebarLink {
   padding: 5px 0;
-}
-.article {
-  padding: 15px;
-  box-sizing: border-box;
-  background-color: white;
 }
 .codeLink {
   padding: 5px 0;

@@ -3,25 +3,25 @@ import FileInfo = Deno.FileInfo;
 
 let fileStates = new Map<string, FileInfo>();
 let watching = false;
-async function watch(glob: string): Promise<boolean> {
+async function watch(glob: string): Promise<string[]> {
   if (!watching) {
     for await (const { filename, info } of fs.expandGlob(glob)) {
       fileStates.set(filename, info);
     }
     watching = true;
-    return false;
+    return [];
   }
-  let changed = false;
+  let changed: string[] = [];
   for await (const { filename, info } of fs.expandGlob(glob)) {
     const prevInfo = fileStates.get(filename);
     fileStates.set(filename, info);
     if (prevInfo && info.modified && prevInfo.modified) {
       if (info.modified > prevInfo.modified) {
         console.log(`${filename} changed.`);
-        changed = true;
+        changed.push(filename);
       }
     } else if (!prevInfo) {
-      changed = true;
+      changed.push(filename)
     }
   }
   return changed;
@@ -40,8 +40,13 @@ async function main() {
     proc = Deno.run({ args });
   }
   setInterval(async () => {
-    if (await watch(glob)) {
-      replaceProcess();
+    const files = await watch(glob);
+    if (files.length > 0) {
+      const compile = Deno.run({args: [Deno.execPath(), "fetch", ...files]});
+      const {code} = await compile.status();
+      if (code === 0) {
+        replaceProcess();
+      }
     }
   }, 1000);
   console.log(`Starting...`);

@@ -1,6 +1,10 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
 export const SideBar: React.FC = ({ children }) => (
-  <div className="sidebar">{children}</div>
+  <div className="sidebar">
+    <nav className="sidebarInner">
+      {children}
+    </nav>
+  </div>
 );
 
 export const SideBarSection: React.FC<{

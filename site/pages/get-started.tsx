@@ -4,7 +4,7 @@ import { Article } from "../components/article.tsx";
 import { Code } from "../components/code.tsx";
 import { DFC } from "../../serve_jsx.ts";
 import { fetchExaple } from "../content.ts";
-import {ServestVersion} from "../../version.ts";
+import { ServestVersion } from "../../version.ts";
 
 const GetStarted: DFC<{
   codes: {[key: string]: string}
@@ -27,6 +27,23 @@ const GetStarted: DFC<{
         </p>
         <Code href={"/examples/routing_server.ts"} code={codes["routing_server.ts"]} />
       </section>
+      <section id={"serve-api"}>
+        <h2>Serve API</h2>
+        <p>
+          Serve API is low level HTTP interface for building customized HTTP server.
+        </p>
+        <p>
+          All HTTP requests connected to the address will be passed to callback function.
+          Serve API automatically manages Keep-Alive connection and process requests from same connection serially.
+        </p>
+        <Code href={"/examples/simple_server.ts"} code={codes["simple_server.ts"]} />
+      </section>
+      <section id={"agent-api"}>
+        <h2>Agent API</h2>
+        <p>
+        </p>
+        <Code href={"/examples/agent"} code={codes["create_agent.ts"]} />
+      </section>
       <section id={"installation"}>
         <h2>Installation</h2>
         <p>
@@ -45,15 +62,11 @@ const GetStarted: DFC<{
   </Content>
 );
 GetStarted.getInitialProps = async () => {
-  const [getStarted, routingServer] = await Promise.all([
-    fetchExaple("get_started.ts"),
-    fetchExaple("routing_server.ts")
-  ]);
-  return {
-    codes: {
-      "get_started.ts": getStarted,
-      "routing_server.ts": routingServer
-    }
-  };
+  const codes = Object.fromEntries(
+    await Promise.all(["get_started.ts", "routing_server.ts", "simple_server.ts"].map(async v => {
+      return [v, await fetchExaple("get_started.ts")]
+    }))
+  );
+  return { codes };
 };
 export default GetStarted;
