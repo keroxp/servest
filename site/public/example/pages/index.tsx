@@ -15,11 +15,11 @@ const Index: DFC<{ title: string; text: string }> = ({ title, text }) => {
   );
 };
 
-// getDefaultProps is asynchronous data fetcher
+// getInitialProps is an asynchronous data fetcher
 // for rendering components in server side.
 // This is identical methodology to Next.js
 // It will be called exactly once for each request.
-Index.getDefaultProps = async () => {
+Index.getInitialProps = async () => {
   const resp = await fetch("https://some-api.com");
   return { title: "Index Page", text: resp.body.text() };
 };

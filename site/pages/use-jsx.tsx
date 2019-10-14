@@ -30,7 +30,7 @@ const UseJsx: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
         <p>
           React is written by pure JavaScript and has no type definition by
           default. Optionally, you can use type definitions for React by
-          annotating import statement with
+          annotating import statement with{" "}
           <code className="q">@deno-types</code>. This is Deno's extension
           method for mapping JavaScript file and type definition. You can find
           more detail information on{" "}

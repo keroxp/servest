@@ -16,7 +16,26 @@ const GetStarted: DFC<{
           Servest is a suite of HTTP/1.1 modules. There are three major API for
           handling HTTP stuffs.
         </p>
+        <p>
+          If you want to build HTTP server anyway,{" "}
+          <a href={"/router-api"}>Router API</a> is the best choice. Router API
+          provides a high-level interfaces for building general purpose HTTP
+          server (site, application, api or file server ...etc).
+        </p>
         <Code href={"/example/get_started.ts"} code={codes["get_started.ts"]} />
+        <Code
+          lang={"bash"}
+          code={`$ deno --allow-net https://servestjs.org/example/get_started.ts`}
+        />
+      </section>
+      <section>
+        <h2>Advanced API</h2>
+        <p>
+          If you are familiar with HTTP/1.1 protocol and programing TCP server,{" "}
+          <a href={"/serve-api"}>Serve API</a> and{" "}
+          <a href={"/agent-api"}>Agent API</a> may be useful for building
+          customized HTTP libraries.
+        </p>
       </section>
     </Article>
   </Content>

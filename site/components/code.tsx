@@ -1,7 +1,7 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
 
 export type CodeState = {
-  href: string;
+  href?: string;
   code: string;
 };
 
@@ -23,9 +23,11 @@ export const Code: React.FC<
           <div className="codeWindowButton codeWindowGreenButton" />
         </div>
         <div className="codeLink">
-          <a href={href} target="_blank">
-            {basename}
-          </a>
+          {href && (
+            <a href={href} target="_blank">
+              {basename}
+            </a>
+          )}
         </div>
         <div />
       </div>
