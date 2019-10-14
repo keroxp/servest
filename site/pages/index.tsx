@@ -1,46 +1,43 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
-import { Code, CodeState } from "../components/code.tsx";
-import { loadContents } from "../content.ts";
-import { DFC } from "../dext.ts";
+import { DFC } from "../../serve_jsx.ts";
+import { Code } from "../components/code.tsx";
+import { fetchExample } from "../content.ts";
 
-const Index: DFC<{ codes: CodeState[] }> = ({ codes }) => {
+const Index: DFC<{
+  codes: {
+    [key: string]: string;
+  };
+}> = ({ codes }) => {
   return (
     <div className="root">
-      <div className="content">
-        <div className="sidebar">
-          <div className="heading">
-            <h1>Servest</h1>
-            <p>A progressive http server for Deno</p>
-          </div>
-          <hr />
-          <div className="sidebarSection">Examples</div>
-          {codes.map(({ id, title }) => (
-            <div key={id} className="sidebarLink">
-              <a href={"#" + id}>{title}</a>
-            </div>
-          ))}
-          <hr />
-          <div className="sidebarLink">
-            <a href="https://github.com/keroxp/servest" target="_blank">
-              Github
+      <div className="indexHead">
+        <div className="indexHeadInner">
+          <h1>Servest</h1>
+          <p className="subTitle">A progressive http server for Deno</p>
+          <div className={"subButtons"}>
+            <a className="startButton" href={"/get-started"}>
+              Get Started
             </a>
           </div>
         </div>
-        <div className="article">
-          {codes.map((v,i) => (
-            <Code key={i} {...v} />
-          ))}
-        </div>
       </div>
-      <div className="footer">
-        (c) 2019 Yusuke Sakurai, MIT License, Powered by <a href="/">Servest</a>
+      <div className="index">
+        <div className="welcomeCode">
+          <Code href={"/example/use_jsx.tsx"} code={codes["use_jsx.tsx"]} />
+        </div>
       </div>
     </div>
   );
 };
 
 Index.getInitialProps = async () => {
-  const codes = await loadContents();
+  const codes = Object.fromEntries(
+    await Promise.all(
+      ["use_jsx.tsx"].map(async v => {
+        return [v, await fetchExample(v)];
+      })
+    )
+  );
   return { codes };
 };
 

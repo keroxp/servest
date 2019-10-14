@@ -1,4 +1,6 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
+import { Header } from "./header.tsx";
+import { Footer } from "./footer.tsx";
 
 export const Layout: React.FC = ({ children }) => (
   <html lang="en">
@@ -19,17 +21,27 @@ export const Layout: React.FC = ({ children }) => (
         name="keywords"
         content="Deno,TypeScript,JavaScript,Framework,HTTP,Server,Servest"
       />
+      <link
+        href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/themes/prism-tomorrow.min.css"
+        rel="stylesheet"
+      />
       <link href="./reset.css" rel="stylesheet" />
       <link href="./index.css" rel="stylesheet" />
-      <link
-        rel="stylesheet"
-        href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/styles/solarized-dark.min.css"
-      />
     </head>
     <body>
-      {children}
-      <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.15.10/highlight.min.js" />
-      <script>hljs.initHighlightingOnLoad();</script>
+      <div id="root">
+        <Header />
+        {children}
+        <Footer />
+      </div>
+
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/prism.min.js" />
+      <script
+        src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/autoloader/prism-autoloader.min.js"
+        integrity="sha256-ht8ay6ZTPZfuixYB99I5oRpCLsCq7Do2LjEYLwbe+X8="
+        crossOrigin="anonymous"
+      />
+      {/*<script>hljs.initHighlightingOnLoad();</script>*/}
     </body>
   </html>
 );

@@ -28,14 +28,6 @@ import Buffer = Deno.Buffer;
 import EOF = Deno.EOF;
 import { dateToDateHeader } from "./util.ts";
 
-function bufReader(r: Reader): BufReader {
-  if (r instanceof BufReader) {
-    return r;
-  } else {
-    return new BufReader(r);
-  }
-}
-
 export const kDefaultKeepAliveTimeout = 75000; // ms
 
 export function initServeOptions(opts: ServeOptions = {}): ServeOptions {
@@ -63,7 +55,7 @@ export async function readRequest(
   opts: ServeOptions = {}
 ): Promise<IncomingHttpRequest> {
   opts = initServeOptions(opts);
-  const reader = bufReader(r);
+  const reader = BufReader.create(r);
   const tpReader = new TextProtoReader(reader);
   // read status line
   // use keepAliveTimeout for reading request line
@@ -178,7 +170,7 @@ export async function readResponse(
     cancel = defer().promise
   }: { timeout?: number; cancel?: Promise<void> } = {}
 ): Promise<IncomingHttpResponse> {
-  const reader = bufReader(r);
+  const reader = BufReader.create(r);
   const tp = new TextProtoReader(reader);
   const timeoutOrCancel = promiseInterrupter({ timeout, cancel });
   // First line: HTTP/1,1 200 OK
@@ -409,7 +401,7 @@ export async function readTrailers(
   headers: Headers
 ): Promise<Headers> {
   const h = new Headers();
-  const reader = bufReader(r);
+  const reader = BufReader.create(r);
   const trailer = headers.get("trailer");
   if (trailer === null) {
     throw new AssertionError("trailer header must be set");
