@@ -103,7 +103,7 @@ function createListener(listenOptions: string | ListenOptions): Listener {
   if (typeof listenOptions === "string") {
     const [h, p] = listenOptions.split(":");
     if (!p) {
-      throw new Error("server: port must be specified");
+      throw new Error("redis: port must be specified");
     }
     listenOptions = { port: parseInt(p) };
     if (h) {

@@ -5,7 +5,7 @@ RUN curl -fsSL https://deno.land/x/install/install.sh | sh -s -- ${DENO_VERSION}
 ENV DENO_INSTALL=/root/.deno
 ENV PATH=${DENO_INSTALL}/bin:${PATH}
 COPY . /servest
-RUN deno fetch /servest/site/index.ts
+RUN deno fetch /servest/site/index.tsx
 WORKDIR /servest/site
 ENV PORT=${PORT}
 EXPOSE ${PORT}

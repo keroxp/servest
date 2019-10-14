@@ -10,8 +10,6 @@ import DialOptions = Deno.DialOptions;
 
 /** keep-alive http agent for single host. each message will be sent in serial */
 export interface HttpAgent {
-  hostname: string;
-  port: number;
   /** send request to host. it throws EOF if conn is closed */
   send(opts: HttpAgentSendOptions): Promise<ClientResponse>;
 
@@ -59,7 +57,6 @@ export function createAgent(
     url.protocol === "http:" || url.protocol === "https:",
     `scheme must be http or https: ${url.protocol}`
   );
-  const hostname = url.hostname;
   let port = url.port || kPortMap[url.protocol];
   assert(port !== void 0, `unexpected protocol: ${url.protocol}`);
   const connect = async () => {
@@ -71,7 +68,7 @@ export function createAgent(
       transport: "tcp"
     };
     if (url.hostname) {
-      opts.hostname = hostname;
+      opts.hostname = url.hostname;
     }
     if (url.protocol === "http:") {
       _conn = await Deno.dial(opts);
@@ -125,8 +122,6 @@ export function createAgent(
     }
   }
   return {
-    hostname,
-    port,
     send,
     get conn() {
       return _conn;

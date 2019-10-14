@@ -1,6 +1,5 @@
 #!/usr/bin/env deno --allow-net --allow-read --allow-env
 import { pathResolver } from "../util.ts";
-import { createServer } from "./index.ts";
 const resolve = pathResolver(import.meta);
 async function main() {
   const pages = await Deno.readDir(resolve("./pages"));
@@ -12,8 +11,6 @@ async function main() {
       }
     })
   );
-  const port = Deno.env()["PORT"] || "8899";
-  const router = createServer();
-  router.listen(":" + port);
+  import(resolve("./index.tsx").toString());
 }
 main();

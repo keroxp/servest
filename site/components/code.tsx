@@ -1,38 +1,25 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
 
 export type CodeState = {
-  href?: string;
+  title: string;
+  href: string;
+  id: string;
   code: string;
 };
 
-export const Code: React.FC<
-  CodeState & {
-    lang?: string;
-  }
-> = ({ code, href, lang }) => {
+export const Code: React.FC<CodeState> = ({ id, title, code, href }) => {
   const { pathname } = new URL(href, "https://dummy");
-  const basename = pathname.split("/").pop()!;
-  const cls =
-    basename.endsWith("jsx") || basename.endsWith("tsx") ? "jsx" : "ts";
+  const basename = pathname.split("/").pop();
   return (
-    <div className="codeWindow">
-      <div className="codeWindowHeader">
-        <div className="codeWindowButtonWrapper">
-          <div className="codeWindowButton codeWindowRedButton" />
-          <div className="codeWindowButton codeWindowYellowButton" />
-          <div className="codeWindowButton codeWindowGreenButton" />
-        </div>
-        <div className="codeLink">
-          {href && (
-            <a href={href} target="_blank">
-              {basename}
-            </a>
-          )}
-        </div>
-        <div />
+    <div id={id}>
+      <h2>{title}</h2>
+      <div className="codeLink">
+        <a href={href} target="_blank">
+          {basename}
+        </a>
       </div>
-      <pre className="codeWrapper">
-        <code className={`codeInner language-${lang || cls}`}>{code}</code>
+      <pre>
+        <code className="ts">{code}</code>
       </pre>
     </div>
   );

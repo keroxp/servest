@@ -15,7 +15,7 @@ jobs:
             export PATH=$HOME/.deno/bin:$PATH
             deno -A tests.ts
       - run:
-          nam: Check Site 
+          nam: Check Examples
           command: |
             export PATH=$HOME/.deno/bin:$PATH
-            deno -A ./site/check.ts
+            ./site/check.sh

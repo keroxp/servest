@@ -1,6 +1,0 @@
-{
-  "https://servestjs.org/@": {
-    "version": "v0.18.0",
-    "modules": ["/server.ts", "/router.ts"]
-  }
-}
