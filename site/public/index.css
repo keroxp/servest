@@ -1,5 +1,25 @@
+
+:root {
+  --contentWidth: 1024px;
+  --colorPrimary: #ffd600;
+  --colorPrimaryLight: #ffff52;
+  --colorPrimaryDark: #c7a500;
+  --colorSecondary:#aeea00;
+  --colorSecondaryLight: #e4ff54;
+  --colorSecondaryDark: #79b700;
+  --colorGrayDark: #DDDEDD;
+  --colorGrayLight:#F3F3F5;
+}
+@media (max-width: 480px) and (orientation: portrait),
+(max-width: 480px) and (orientation: landscape)
+{
+  :root {
+    --contentWidth: 100vw;
+  }
+}
+
 html {
-  font-family: Arial serif;
+  font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;;
 }
 code {
   font-family: Menlo, Monaco, serif;
@@ -10,9 +30,87 @@ a:active {
   color: inherit;
 }
 a {
-  color: rgb(72, 196, 200);
+  color: var(--colorSecondaryDark)
+}
+b {
+  font-weight: bold;
+}
+.header {
+  width: 100%;
+  position: sticky;
+  z-index: 1;
+  height: 50px;
+  top: 0;
+  background-color: var(--colorPrimary);
+}
+.headerLink {
+  color: black;
+  font-size: 16px;
+  font-weight: bold;
 }
 
+.brand {
+  font-size: 22px!important;
+}
+
+.inner {
+  width: var(--contentWidth);
+  height: 100%;
+  display: flex;
+  align-items: center;
+  margin: auto;
+}
+
+.headerItem {
+  padding-left: 15px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.headerSublist {
+  position: absolute;
+  display: none;
+  top: 40px;
+  left: 0;
+  width: 200px;
+  border: 1px solid #CCC;
+  background-color: white;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.headerItem:hover .headerSublist {
+  display: block;
+}
+
+.headerSublist li {
+  padding: 5px 0;
+}
+.headerSublist li > a {
+  color: black;
+}
+.headerSublist li > a:hover {
+  color: var(--colorSecondary)
+}
+
+.spacer {
+  flex: 1
+}
+
+.githubLogo {
+  background-image: url("/img/GitHub-Mark-32px.png");
+  background-size: 32px;
+  background-position: center;
+  width: 32px;
+  height: 32px;
+}
+@media (min-resolution: 2dppx) {
+  .githubLogo {
+    background-image: url("/img/GitHub-Mark-64px.png");;
+  }
+}
 h1 {
   font-size: 25px;
   font-weight: bold;
@@ -21,7 +119,8 @@ h1 {
 h2 {
   font-size: 20px;
   font-weight: bold;
-  margin: 10px 0;
+  padding: 10px 0;
+  margin-top: 10px;
 }
 h3 {
   font-size: 15px;
@@ -39,18 +138,117 @@ body {
   width: 100%;
 }
 .content {
-  width: 1024px;
+  width: var(--contentWidth);
+  min-height: calc(100vh - 50px);
   position: relative;
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  margin: auto;
+  /*padding-top: 50px;*/
+}
+
+.indexHead {
+  padding-top: 50px;
+  background-color: #282C33;
+}
+.indexHeadInner {
+  width: var(--contentWidth);
+  position: relative;
+  margin: auto;
+  padding: 30px 0;
+  text-align: center;
+}
+.indexHead h1 {
+  font-size: 45px;
+  color: var(--colorPrimary);
+}
+.indexHead .subTitle {
+  color: white;
+  font-size: 24px;
+  padding-bottom: 15px;
+}
+.indexHead .subButtons {
+  padding: 15px 0;
+  display: flex;
+  justify-content: center;
+}
+
+.indexHead .startButton {
+  background-color: var(--colorSecondary);
+  color: black;
+  font-weight: bold;
+  height: 44px;
+  width: 120px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border-radius: 4px;
+}
+.indexHead .startButton:active {
+  background-color: white;
+  color: var(--colorSecondary);
+}
+.index {
+  padding: 30px 0;
+  width: var(--contentWidth);
+  margin: auto;
+  background: white;
+}
+.index .welcomeCode {
+  width: calc(var(--contentWidth) - 240px);
+  margin: auto;
+}
+.article {
+  padding: 15px;
+  box-sizing: border-box;
+  background-color: white;
+}
+.article section {
+  /*padding-top: 50px;*/
+}
+.article p {
+  margin-bottom: 15px;
+  line-height: 1.7;
+}
+.article code.q {
+  padding: 2px;
+  background-color: var(--colorGrayLight);
+}
+.article a {
+  text-decoration: underline;
+}
+.article ul {
+  padding-left: 15px;
+}
+.article li {
+  list-style: inside;
+  padding: 5px 0;
+}
+.article section h2 {
+  position: sticky;
+  top: 50px;
+  background-color: white;
+}
+.article blockquote {
+  background-color: var(--colorGrayLight);
+  padding: 15px 0;
+  text-align: center;
+  width: 100%;
+  box-sizing: border-box;
+  margin: 15px 0;
+  font-size: 22px;
+  font-family: "Times New Roman", serif;
 }
 .sidebar {
+  position: sticky;
+  width: 240px;
+  height: calc(100vh - 50px);
+  top: 50px;
+}
+.sidebarInner {
   padding: 15px;
-  position: fixed;
-  left: 0;
 }
 @media (max-width: 480px) and (orientation: portrait) {
-  .content {
-    width: 100vw;
-  }
   .sidebar {
     position: static;
   }
@@ -61,23 +259,65 @@ body {
   margin-bottom: 15px;
 }
 .sidebarSection {
-  color: #9daab6;
-  font-weight: bold;
   margin: 10px 0;
 }
-.sidebarLink {
-  padding: 5px;
-  list-style: none;
+.sidebarSectionTitle {
+  font-weight: bold;
+  font-size: 22px;
+  margin: 10px 0;
 }
-.article {
-  padding: 15px;
-  box-sizing: border-box;
-  margin-left: 320px;
-  background-color: white;
+.sidebarSectionInner {
+  padding-left: 15px;
+}
+.sidebarLink {
+  padding: 5px 0;
 }
 .codeLink {
   padding: 5px 0;
+  display: flex;
+  align-items:center;
+  justify-content: center;
 }
+.codeWindowHeader {
+  background-color: #F6F6F6;
+  height: 40px;
+  display: grid;
+  grid-template-columns: 100px 1fr 100px;
+  padding: 0 10px;
+  box-sizing: border-box;
+  justify-content: flex-start;
+  border-top-left-radius: 8px;
+  border-top-right-radius: 8px;
+}
+.codeWindowButtonWrapper {
+  display: flex;
+  align-items: center;
+}
+.codeWindowButton {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+}
+.codeWindowRedButton {
+  background-color: #EA6459
+}
+.codeWindowYellowButton {
+  background-color: #E0C04C;
+}
+.codeWindowGreenButton {
+  background-color: #72BF46;
+}
+.codeWrapper {
+  margin-top: 0!important;
+
+  border-bottom-left-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+.codeInner {
+  /*padding: 1em!important;*/
+}
+
 @media (max-width: 480px) and (orientation: portrait) {
   .article {
     position: static;
