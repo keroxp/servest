@@ -12,6 +12,7 @@
       "/io/writers.ts",
       "/strings/decode.ts",
       "/strings/encode.ts",
+      "/flags/mod.ts",
       "/fmt/sprintf.ts",
       "/fmt/colors.ts",
       "/media_types/mod.ts",

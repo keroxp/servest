@@ -1,5 +1,6 @@
+#!/usr/bin/env deno --allow-net --allow-read --allow-env
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createRouter } from "../router.ts";
+import { createRouter, HttpRouter } from "../router.ts";
 import { serveStatic } from "../serve_static.ts";
 import { Loglevel } from "../logger.ts";
 import { Layout } from "./components/layout.tsx";
@@ -7,7 +8,6 @@ import { pathResolver } from "../util.ts";
 import { serveJsx } from "../serve_jsx.ts";
 import { RoutingError } from "../error.ts";
 
-const port = Deno.env()["PORT"] || "8899";
 const router = createRouter({ logLevel: Loglevel.INFO });
 const resolve = pathResolver(import.meta);
 router.use(serveStatic(resolve("./public")));
@@ -18,7 +18,14 @@ router.get(new RegExp("^/@(?<version>.*?)/(?<pathname>.+?)$"), async req => {
     version = "master";
   }
   const u = `https://raw.githubusercontent.com/keroxp/servest/${version}/${pathname}`;
-  await fetch(u).then(req.respond);
+  const resp = await fetch(u);
+  if (resp.status === 200) {
+    await req.respond(resp);
+  } else if (resp.status === 404) {
+    throw new RoutingError(404, await resp.body.text());
+  } else {
+    throw new Error(await resp.body.text());
+  }
 });
 router.handleError(async (e, req) => {
   if (e instanceof RoutingError) {
@@ -34,4 +41,5 @@ router.handleError(async (e, req) => {
       .finally(() => body.close());
   }
 });
+const port = Deno.env()["PORT"] || "8899";
 router.listen(":" + port);

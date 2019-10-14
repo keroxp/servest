@@ -1,4 +1,4 @@
-import { createRouter } from "https://servestjs.org/@/router.ts";
+import { createRouter } from "../../../router.ts";
 const router = createRouter();
 router.handle("/", async req => {
   await req.respond({
