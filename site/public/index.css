@@ -43,8 +43,7 @@ b {
   top: 0;
   background-color: var(--colorPrimary);
 }
-.header a {
-  padding: 0 15px;
+.headerLink {
   color: black;
   font-size: 16px;
   font-weight: bold;
@@ -64,6 +63,36 @@ b {
 
 .headerItem {
   padding-left: 15px;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
+.headerSublist {
+  position: absolute;
+  display: none;
+  top: 40px;
+  left: 0;
+  width: 200px;
+  border: 1px solid #CCC;
+  background-color: white;
+  padding: 10px;
+  border-radius: 4px;
+}
+
+.headerItem:hover .headerSublist {
+  display: block;
+}
+
+.headerSublist li {
+  padding: 5px 0;
+}
+.headerSublist li > a {
+  color: black;
+}
+.headerSublist li > a:hover {
+  color: var(--colorSecondary)
 }
 
 .spacer {
@@ -106,7 +135,7 @@ body {
   background-color: #f5f7f9;
 }
 .root {
-  width: 100vw;
+  width: 100%;
 }
 .content {
   width: var(--contentWidth);

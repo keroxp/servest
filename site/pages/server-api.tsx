@@ -5,13 +5,13 @@ import { DFC } from "../../serve_jsx.ts";
 import { fetchExample } from "../content.ts";
 import { Content } from "../components/content.tsx";
 
-const ServeApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
+const ServerApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
   <Content>
     <Article>
-      <section id={"serve-api"}>
-        <h2>Serve API</h2>
+      <section id={"server-api"}>
+        <h2>Server API</h2>
         <p>
-          Serve API is low level HTTP interface for building customized HTTP
+          Server API is low level HTTP interface for building customized HTTP
           server.
         </p>
         <p>
@@ -28,7 +28,7 @@ const ServeApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
   </Content>
 );
 
-ServeApi.getInitialProps = async () => {
+ServerApi.getInitialProps = async () => {
   const codes = Object.fromEntries(
     await Promise.all(
       ["simple_server.ts"].map(async v => {
@@ -39,4 +39,4 @@ ServeApi.getInitialProps = async () => {
   return { codes };
 };
 
-export default ServeApi;
+export default ServerApi;

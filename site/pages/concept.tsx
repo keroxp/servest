@@ -36,31 +36,6 @@ export default () => (
           author of Servest
         </p>
       </section>
-      <section id="principals">
-        <h2>Principals</h2>
-        <p>
-          Servest is designed by four principals:
-          <ul>
-            <li>
-              <b>Progressive</b>: It follows the RFC standard and implements
-              essential features for web development.
-            </li>
-            <li>
-              <b>Simple</b>: API is clearly designed based on HTTP/1.1 protocol.
-            </li>
-            <li>
-              <b>Stable</b>: It respects{" "}
-              <a href="https://semver.org/" target={"_blank"}>
-                semver
-              </a>
-              's compatibility.
-            </li>
-            <li>
-              <b>Ready</b>: It is ready for use today. (for production? ...🤔)
-            </li>
-          </ul>
-        </p>
-      </section>
     </Article>
   </Content>
 );

@@ -7,13 +7,14 @@ export const Content: React.FC = ({ children }) => (
       <SideBarSection title={"Get Started"}>
         <SideBarLink href={"/get-started"}>Get Started</SideBarLink>
         <SideBarLink href={"/installation"}>Installation</SideBarLink>
+      </SideBarSection>
+      <SideBarSection title={"API"}>
         <SideBarLink href={"/router-api"}>Router API</SideBarLink>
-        <SideBarLink href={"/serve-api"}>Serve API</SideBarLink>
+        <SideBarLink href={"/server-api"}>Server API</SideBarLink>
         <SideBarLink href={"/agent-api"}>Agent API</SideBarLink>
       </SideBarSection>
       <SideBarSection title={"Concept"}>
         <SideBarLink href={"/concept"}>Concept</SideBarLink>
-        <SideBarLink href={"/concept#principals"}>Principals</SideBarLink>
       </SideBarSection>
       <SideBarSection title={"Features"}>
         <SideBarLink href={"/use-middleware"}>Use middleware</SideBarLink>

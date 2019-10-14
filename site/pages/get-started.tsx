@@ -32,7 +32,7 @@ const GetStarted: DFC<{
         <h2>Advanced API</h2>
         <p>
           If you are familiar with HTTP/1.1 protocol and programing TCP server,{" "}
-          <a href={"/serve-api"}>Serve API</a> and{" "}
+          <a href={"/server-api"}>Server API</a> and{" "}
           <a href={"/agent-api"}>Agent API</a> may be useful for building
           customized HTTP libraries.
         </p>
