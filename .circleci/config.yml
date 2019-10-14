@@ -18,4 +18,4 @@ jobs:
           nam: Check Site 
           command: |
             export PATH=$HOME/.deno/bin:$PATH
-            deno -A ./site/check.ts
+            deno -A ./tools/fetch_dir.ts ./site
