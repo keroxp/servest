@@ -1,4 +1,4 @@
-import { listenAndServe } from "https://servestjs.org/@/server.ts";
+import { listenAndServe } from "../../../server.ts";
 const listener = listenAndServe(":8899", async req => {
   await req.respond({
     status: 200,

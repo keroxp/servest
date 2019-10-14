@@ -1,5 +1,5 @@
 import React from "https://dev.jspm.io/react/index.js";
-import { DFC } from "https://servestjs.org/@/serve_jsx.ts";
+import { DFC } from "../../../../serve_jsx.ts";
 
 const Index: DFC<{ title: string; text: string }> = ({ title, text }) => {
   return (

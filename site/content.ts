@@ -1,9 +1,17 @@
 import { pathResolver } from "../util.ts";
+import * as path from "../vendor/https/deno.land/std/fs/path.ts";
 
 const decoder = new TextDecoder();
 const resolve = pathResolver(import.meta);
 export async function fetchExample(filename: string): Promise<string> {
   const p = resolve("./public/example/" + filename);
   const b = await Deno.readFile(p);
-  return decoder.decode(b);
+  const relative = path.relative(p, resolve("../"));
+  const m = relative.match(/(..\/)+/);
+  let ret = decoder.decode(b);
+  if (m) {
+    const [pat] = m;
+    ret = ret.replace(new RegExp(pat, "g"), "https://servestjs.org/@/");
+  }
+  return ret;
 }

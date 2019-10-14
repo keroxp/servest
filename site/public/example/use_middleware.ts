@@ -1,4 +1,4 @@
-import { createRouter } from "https://servestjs.org/@/router.ts";
+import { createRouter } from "../../../router.ts";
 const router = createRouter();
 // Called for every request
 router.use(async req => {

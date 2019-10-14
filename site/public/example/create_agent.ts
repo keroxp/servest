@@ -1,4 +1,4 @@
-import { createAgent } from "https://servestjs.org/@/agent.ts";
+import { createAgent } from "../../../agent.ts";
 
 async function main() {
   const agent = createAgent("https://servestjs.org");
