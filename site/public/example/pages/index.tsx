@@ -21,7 +21,8 @@ const Index: DFC<{ title: string; text: string }> = ({ title, text }) => {
 // It will be called exactly once for each request.
 Index.getInitialProps = async () => {
   const resp = await fetch("https://some-api.com");
-  return { title: "Index Page", text: resp.body.text() };
+  const text = await resp.text();
+  return { title: "Index Page", text };
 };
 
 // default export are used for Server Side Rendering.
