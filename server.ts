@@ -8,6 +8,7 @@ import { initServeOptions, readRequest } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
 import ListenOptions = Deno.ListenOptions;
 import Listener = Deno.Listener;
+import { BodyReader } from "./readers.ts";
 
 /** request data for building http request to server */
 export type ClientRequest = {
@@ -42,7 +43,7 @@ export type IncomingHttpRequest = {
   /** HTTP Headers */
   headers: Headers;
   /** HTTP Body */
-  body?: Reader;
+  body?: BodyReader;
   /** Trailer headers. Note that it won't be assigned until finalizer will be called */
   trailers?: Headers;
   /** keep-alive info */
@@ -74,7 +75,7 @@ export type IncomingHttpResponse = {
   /** HTTP Headers */
   headers: Headers;
   /** HTTP Body */
-  body?: Reader;
+  body?: BodyReader;
   /** trailer headers. Note that it won't be assigned until finalizer will be called */
   trailers?: Headers;
   /** Request finalizer. Consume all body and trailers */

@@ -16,7 +16,7 @@
 - Server API: Low-level HTTP API for processing HTTP/1.1 requests.
 - Agent API: Low-level API for managing HTTP/1.1 Keep-Alive connection to the host.
 
-We doesn't depend on Deno's [standard http module](https://deno.land/std/http) and has our own implementation of HTTP/1.1 server. It is because of beeing progressive and experimental. 
+We doesn't depend on Deno's [standard http module](https://deno.land/std/http) and has our own implementation of HTTP/1.1 server. It is because of beeing progressive and experimental.
 
 ## Usage
 

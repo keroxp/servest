@@ -4,8 +4,15 @@ import { TextProtoReader } from "./vendor/https/deno.land/std/textproto/mod.ts";
 import { promiseInterrupter } from "./promises.ts";
 import Reader = Deno.Reader;
 import EOF = Deno.EOF;
+import {
+  FormBody,
+  parserMultipartRequest,
+  parseUrlEncodedForm
+} from "./body_parser.ts";
 
 const nullBuffer = new Uint8Array(1024);
+
+export type BodyReader = Deno.Reader & BodyTransformer;
 
 export async function readUntilEof(reader: Reader): Promise<number> {
   let total = 0;
@@ -19,93 +26,210 @@ export async function readUntilEof(reader: Reader): Promise<number> {
   return total;
 }
 
-export class BodyReader implements Reader {
-  total: number;
+export interface BodyTransformer {
+  text(): Promise<string>;
+  json<T>(): Promise<T>;
+  arrayBuffer(): Promise<Uint8Array>;
+  formData(headers: Headers): Promise<FormBody>;
+}
 
-  constructor(readonly reader: Reader, readonly contentLength: number) {
-    this.total = 0;
+interface BodyHolder {
+  readonly reader: Reader;
+  total(): number;
+}
+
+function bodyTransformer(holder: BodyHolder): BodyTransformer {
+  let bodyBuf: Deno.Buffer | undefined;
+  let formBody: FormBody | undefined;
+  let textBody: string | undefined;
+  let jsonBody: any | undefined;
+  async function formDataInternal(
+    headers: Headers,
+    body: Reader,
+    maxMemory?: number
+  ) {
+    const contentType = headers.get("content-type") || "";
+    if (contentType.match(/^multipart\/form-data/)) {
+      return parserMultipartRequest({ headers, body }, maxMemory);
+    } else if (contentType.match(/^application\/x-www-form-urlencoded/)) {
+      return parseUrlEncodedForm({
+        headers,
+        body
+      });
+    } else {
+      throw new Error(
+        "request is not multipart/form-data nor application/x-www-form-urlencoded"
+      );
+    }
+  }
+  async function formData(
+    headers: Headers,
+    maxMemory?: number
+  ): Promise<FormBody> {
+    if (formBody) {
+      return formBody;
+    } else if (bodyBuf) {
+      return (formBody = await formDataInternal(headers, bodyBuf, maxMemory));
+    }
+    if (holder.total() > 0) {
+      throw new Error("body might have been be read before");
+    }
+    return (formBody = await formDataInternal(
+      headers,
+      holder.reader,
+      maxMemory
+    ));
   }
 
-  async read(p: Uint8Array): Promise<number | EOF> {
-    const remaining = this.contentLength - this.total;
+  async function json<T>(): Promise<T> {
+    if (jsonBody) {
+      return jsonBody as T;
+    } else if (bodyBuf) {
+      return (jsonBody = JSON.parse(bodyBuf.toString()));
+    }
+    if (holder.total() > 0) {
+      throw new Error("body might have been read before");
+    }
+    bodyBuf = new Deno.Buffer();
+    await Deno.copy(bodyBuf, holder.reader);
+    return JSON.parse(bodyBuf.toString());
+  }
+
+  async function text(): Promise<string> {
+    if (textBody) {
+      return textBody;
+    } else if (bodyBuf) {
+      return (textBody = bodyBuf.toString());
+    }
+    if (holder.total() > 0) {
+      throw new Error("body might have been read before");
+    }
+    bodyBuf = new Deno.Buffer();
+    await Deno.copy(bodyBuf, holder.reader);
+    return (textBody = bodyBuf.toString());
+  }
+
+  async function arrayBuffer(): Promise<Uint8Array> {
+    if (bodyBuf) {
+      return bodyBuf.bytes();
+    }
+    if (holder.total() > 0) {
+      throw new Error("body might have been read before");
+    }
+    bodyBuf = new Deno.Buffer();
+    await Deno.copy(bodyBuf, holder.reader);
+    return bodyBuf.bytes();
+  }
+  return { json, text, formData, arrayBuffer };
+}
+
+export function bodyReader(
+  r: Reader,
+  contentLength: number,
+  opts?: {
+    timeout: number;
+    cancel?: Promise<void>;
+  }
+): BodyReader {
+  let total: number = 0;
+  async function read(p: Uint8Array): Promise<number | EOF> {
+    const remaining = contentLength - total;
     let buf = p;
     if (p.byteLength > remaining) {
       buf = new Uint8Array(remaining);
     }
-    let result = await this.reader.read(buf);
+    let result = await r.read(buf);
     if (buf !== p) {
       p.set(buf);
     }
-    let eof = result === EOF || this.total === this.contentLength;
+    let eof = result === EOF || total === contentLength;
     if (result !== EOF) {
-      this.total += result;
+      total += result;
     }
     return eof ? EOF : result;
   }
+  const reader: Deno.Reader = timeoutReader({ read }, opts);
+  const holder: BodyHolder = {
+    reader,
+    total() {
+      return total;
+    }
+  };
+  let transformer = bodyTransformer(holder);
+
+  return { ...transformer, ...reader };
 }
 
-export class ChunkedBodyReader implements Reader {
-  bufReader: BufReader;
-  tpReader: TextProtoReader;
-
-  constructor(private reader: Reader) {
-    this.bufReader =
-      reader instanceof BufReader ? reader : new BufReader(reader);
-    this.tpReader = new TextProtoReader(this.bufReader);
+export function chunkedBodyReader(
+  r: Reader,
+  opts?: {
+    timeout: number;
+    cancel?: Promise<void>;
   }
+): BodyReader {
+  let bufReader = BufReader.create(r);
+  let tpReader = new TextProtoReader(bufReader);
 
-  chunks: Uint8Array[] = [];
-  crlfBuf = new Uint8Array(2);
-  finished: boolean = false;
-
-  async read(p: Uint8Array): Promise<number | EOF> {
-    if (this.finished) {
+  const chunks: Uint8Array[] = [];
+  const crlfBuf = new Uint8Array(2);
+  let finished: boolean = false;
+  let total = 0;
+  async function read(p: Uint8Array): Promise<number | EOF> {
+    if (finished) {
       return EOF;
     }
-    const line = await this.tpReader.readLine();
+    const line = await tpReader.readLine();
     if (line === EOF) {
       return EOF;
     }
     const len = parseInt(line, 16);
     if (len === 0) {
-      this.finished = true;
-      await this.bufReader.readFull(this.crlfBuf);
+      finished = true;
+      await bufReader.readFull(crlfBuf);
       return EOF;
     } else {
       const buf = new Uint8Array(len + 2);
-      const res = await this.bufReader.readFull(buf);
+      const res = await bufReader.readFull(buf);
+      total += len;
       if (res === EOF) {
         return EOF;
       }
-      this.chunks.push(buf.slice(0, len));
+      chunks.push(buf.slice(0, len));
     }
-    const buf = this.chunks[0];
+    const buf = chunks[0];
     if (buf.byteLength <= p.byteLength) {
       p.set(buf);
-      this.chunks.shift();
+      chunks.shift();
       return buf.byteLength;
     } else {
       p.set(buf.slice(0, p.byteLength));
-      this.chunks[0] = buf.slice(p.byteLength, buf.byteLength);
+      chunks[0] = buf.slice(p.byteLength, buf.byteLength);
       return p.byteLength;
     }
   }
+  const reader: Deno.Reader = timeoutReader({ read }, opts);
+  const holder: BodyHolder = {
+    reader,
+    total() {
+      return total;
+    }
+  };
+  const transformer = bodyTransformer(holder);
+  return { ...reader, ...transformer };
 }
 
-export class TimeoutReader implements Reader {
-  timeoutOrCancel: (p: Promise<number | EOF>) => Promise<number | EOF>;
-
-  constructor(
-    private readonly r: Reader,
-    opts: {
-      timeout: number;
-      cancel?: Promise<void>;
+function timeoutReader(
+  r: Reader,
+  opts?: {
+    timeout: number;
+    cancel?: Promise<void>;
+  }
+): Reader {
+  if (!opts) return r;
+  let timeoutOrCancel = promiseInterrupter(opts);
+  return {
+    async read(p: Uint8Array): Promise<number | EOF> {
+      return await timeoutOrCancel(r.read(p));
     }
-  ) {
-    this.timeoutOrCancel = promiseInterrupter(opts);
-  }
-
-  async read(p: Uint8Array): Promise<number | EOF> {
-    return await this.timeoutOrCancel(this.r.read(p));
-  }
+  };
 }
