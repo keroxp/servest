@@ -6,6 +6,7 @@ export async function fetchDir(dir: string): Promise<number> {
   const glob = path.join(dir, "**/*.ts*");
   for await (const { filename } of fs.expandGlob(glob)) {
     if (!filename.endsWith(".d.ts") && filename.match(/\.tsx?$/)) {
+      console.log(filename);
       codes.push('import "' + filename + '"');
     }
   }

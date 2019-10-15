@@ -99,18 +99,6 @@ b {
   flex: 1
 }
 
-.githubLogo {
-  background-image: url("/img/GitHub-Mark-32px.png");
-  background-size: 32px;
-  background-position: center;
-  width: 32px;
-  height: 32px;
-}
-@media (min-resolution: 2dppx) {
-  .githubLogo {
-    background-image: url("/img/GitHub-Mark-64px.png");;
-  }
-}
 h1 {
   font-size: 25px;
   font-weight: bold;

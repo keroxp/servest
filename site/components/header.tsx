@@ -56,7 +56,12 @@ export const Header: React.FC = () => (
       </div>
       <div className="headerItem">
         <a href="https://github.com/keroxp/servest" target="_blank">
-          <div className="githubLogo" />
+          <img src={"/img/github-logo-32px.png"}
+               srcSet={
+                 "/img/github-logo-32px.png 1x, /img/github-logo-64px.png 2x"
+               }
+               alt={"Github Logo"}
+          />
         </a>
       </div>
     </div>
