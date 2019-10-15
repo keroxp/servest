@@ -4,6 +4,7 @@ import { IncomingHttpResponse } from "./server.ts";
 import { readResponse, setupBody } from "./serveio.ts";
 import Reader = Deno.Reader;
 import { createResponder } from "./responder.ts";
+import { bodyReader, BodyReader, chunkedBodyReader } from "./readers.ts";
 
 export type RequestRecorder = RoutedServerRequest & {
   /** Obtain recorded response */
@@ -43,9 +44,14 @@ export function createRecorder({
   const buf = new Deno.Buffer();
   const bufReader = new BufReader(buf);
   const bufWriter = new BufWriter(buf);
-  let bodyReader: Reader | undefined;
+  let br: BodyReader | undefined;
   if (body) {
-    bodyReader = setupBody(body, headers)[0];
+    const [a, b] = setupBody(body, headers);
+    if (b !== undefined) {
+      br = bodyReader(a, b);
+    } else {
+      br = chunkedBodyReader(a);
+    }
   }
   async function response(): Promise<IncomingHttpResponse> {
     return readResponse(bufReader);
@@ -57,7 +63,7 @@ export function createRecorder({
     headers,
     proto,
     finalize: async () => {},
-    body: bodyReader,
+    body: br,
     response,
     bufWriter,
     bufReader,

@@ -14,7 +14,7 @@ export const contentTypeFilter = (
   ...types: (string | RegExp)[]
 ): HttpHandler => async req => {
   if (types.some(v => req.headers.get("content-type").match(v) !== null)) {
-    return ;
+    return;
   }
-  throw new RoutingError(400, `Invalid content type`)
+  throw new RoutingError(400, `Invalid content type`);
 };
