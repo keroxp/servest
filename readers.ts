@@ -12,7 +12,7 @@ import {
 
 const nullBuffer = new Uint8Array(1024);
 
-export type BodyReader = Deno.Reader & BodyTransformer;
+export type BodyReader = Deno.Reader & BodyParser;
 
 export async function readUntilEof(reader: Reader): Promise<number> {
   let total = 0;
@@ -26,7 +26,7 @@ export async function readUntilEof(reader: Reader): Promise<number> {
   return total;
 }
 
-export interface BodyTransformer {
+export interface BodyParser {
   text(): Promise<string>;
   json(): Promise<any>;
   arrayBuffer(): Promise<Uint8Array>;
@@ -38,7 +38,7 @@ interface BodyHolder {
   total(): number;
 }
 
-function bodyTransformer(holder: BodyHolder): BodyTransformer {
+function bodyTransformer(holder: BodyHolder): BodyParser {
   let bodyBuf: Deno.Buffer | undefined;
   let formBody: FormBody | undefined;
   let textBody: string | undefined;
