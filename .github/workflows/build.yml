@@ -1,0 +1,21 @@
+name: CI
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v1
+    - name: Install Deno
+      run: |
+        curl -fsSL https://deno.land/x/install/install.sh | bash -s -- v0.20.0
+    - name: Run Tests
+      run: |
+        export PATH=$HOME/.deno/bin:$PATH
+        deno -A tests.ts
+    - name: Check Site
+      export PATH=$HOME/.deno/bin:$PATH
+      deno -A ./tools/fetch_dir.ts ./site
