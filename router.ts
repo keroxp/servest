@@ -133,10 +133,10 @@ export function createRouter(
   }
 
   function listen(addr: string, opts?: ServeOptions): ServeListener {
-    const handleInternal = async req => {
+    const handleInternal = async (req: ServerRequest) => {
       let { pathname } = new URL(req.url, "http://localhost");
       for (const middleware of middlewares) {
-        await middleware(req);
+        await middleware({ ...req, match: [] });
         if (req.isResponded()) {
           logRouteStatus(req, req.respondedStatus());
           return;

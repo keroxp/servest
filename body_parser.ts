@@ -4,7 +4,8 @@ import {
   isFormFile
 } from "./vendor/https/deno.land/std/multipart/formfile.ts";
 import Reader = Deno.Reader;
-export interface MultipartBody {
+
+export interface FormBody {
   field(field: string): string | undefined;
   file(field: string): FormFile | undefined;
   removeAllTempFiles(): Promise<void>;
@@ -19,7 +20,7 @@ export interface MultipartBody {
 export async function parserMultipartRequest(
   req: { headers: Headers; body?: Reader },
   maxMemory?: number
-): Promise<MultipartBody> {
+): Promise<FormBody> {
   //Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryO5quBRiT4G7Vm3R7
   const contentType = req.headers.get("content-type");
   if (!req.body) {
@@ -67,5 +68,36 @@ export async function parserMultipartRequest(
       }
       await Promise.all(promises);
     }
+  };
+}
+/**
+ * Parse application/x-www-form-urlencoded request
+ * @param req part of ServerRequest
+ */
+export async function parseUrlEncodedForm(req: {
+  headers: Headers;
+  body?: Reader;
+}): Promise<FormBody> {
+  const contentType = req.headers.get("content-type");
+  if (!req.body) {
+    throw new Error("request has no body");
+  }
+  if (
+    !contentType ||
+    !contentType.match(/^application\/x-www-form-urlencoded/)
+  ) {
+    throw new Error("is not form urlencoded request");
+  }
+  const buf = new Deno.Buffer();
+  await Deno.copy(buf, req.body);
+  const params = new URLSearchParams(decodeURIComponent(buf.toString()));
+  return {
+    field(field: string): string | undefined {
+      return params.get(field) || undefined;
+    },
+    file(field: string): FormFile | undefined {
+      return undefined;
+    },
+    async removeAllTempFiles(): Promise<void> {}
   };
 }

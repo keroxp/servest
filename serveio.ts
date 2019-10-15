@@ -3,9 +3,9 @@ import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { TextProtoReader } from "./vendor/https/deno.land/std/textproto/mod.ts";
 import {
   BodyReader,
-  ChunkedBodyReader,
-  readUntilEof,
-  TimeoutReader
+  bodyReader,
+  chunkedBodyReader,
+  readUntilEof
 } from "./readers.ts";
 import { defer, promiseInterrupter } from "./promises.ts";
 import {
@@ -82,7 +82,7 @@ export async function readRequest(
     keepAlive = parseKeepAlive(headers);
   }
   // body
-  let body: Reader | undefined;
+  let body: BodyReader | undefined;
   let trailers: Headers;
   let finalizers: (() => Promise<void>)[] = [];
   const finalize = async () => {
@@ -100,7 +100,7 @@ export async function readRequest(
           trailers = await readTrailers(reader, headers);
         });
       }
-      body = new TimeoutReader(new ChunkedBodyReader(reader), {
+      body = chunkedBodyReader(reader, {
         timeout: opts.readTimeout,
         cancel: opts.cancel
       });
@@ -110,7 +110,7 @@ export async function readRequest(
         contentLength >= 0,
         `content-length is missing or invalid: ${headers.get("content-length")}`
       );
-      body = new TimeoutReader(new BodyReader(reader, contentLength), {
+      body = bodyReader(reader, contentLength, {
         timeout: opts.readTimeout,
         cancel: opts.cancel
       });
@@ -185,7 +185,7 @@ export async function readResponse(
   }
   const contentLength = headers.get("content-length");
   const isChunked = headers.get("transfer-encoding") === "chunked";
-  let body: Reader;
+  let body: BodyReader;
   let finalizers = [
     async () => {
       await readUntilEof(body);
@@ -203,12 +203,12 @@ export async function readResponse(
         trailers = await readTrailers(reader, headers);
       });
     }
-    body = new TimeoutReader(new ChunkedBodyReader(reader), {
+    body = chunkedBodyReader(reader, {
       timeout,
       cancel
     });
   } else {
-    body = new TimeoutReader(new BodyReader(reader, parseInt(contentLength)), {
+    body = bodyReader(reader, parseInt(contentLength), {
       timeout,
       cancel
     });

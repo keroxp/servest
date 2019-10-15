@@ -17,6 +17,7 @@ export const Content: React.FC = ({ children }) => (
         <SideBarLink href={"/concept"}>Concept</SideBarLink>
       </SideBarSection>
       <SideBarSection title={"Features"}>
+        <SideBarLink href={"/reading-body"}>Reading body</SideBarLink>
         <SideBarLink href={"/use-middleware"}>Use middleware</SideBarLink>
         <SideBarLink href={"/use-jsx"}>Use JSX</SideBarLink>
         <SideBarLink href={"/use-serve-static"}>Serve static files</SideBarLink>

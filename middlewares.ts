@@ -8,3 +8,13 @@ export const methodFilter = (...method: string[]): HttpHandler => async req => {
     throw new RoutingError(404, `Cannot ${req.method} ${u.pathname}`);
   }
 };
+
+/** Deny requests with 400 if content-type doesn't match */
+export const contentTypeFilter = (
+  ...types: (string | RegExp)[]
+): HttpHandler => async req => {
+  if (types.some(v => req.headers.get("content-type").match(v) !== null)) {
+    return;
+  }
+  throw new RoutingError(400, `Invalid content type`);
+};
