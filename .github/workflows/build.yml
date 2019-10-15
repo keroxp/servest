@@ -17,5 +17,6 @@ jobs:
         export PATH=$HOME/.deno/bin:$PATH
         deno -A tests.ts
     - name: Check Site
-      export PATH=$HOME/.deno/bin:$PATH
-      deno -A ./tools/fetch_dir.ts ./site
+      run: |
+        export PATH=$HOME/.deno/bin:$PATH
+        deno -A ./tools/fetch_dir.ts ./site
