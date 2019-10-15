@@ -199,7 +199,7 @@ body {
   line-height: 1.7;
 }
 .article code.q {
-  padding: 2px;
+  padding: 0 5px;
   background-color: var(--colorGrayLight);
 }
 .article a {

@@ -28,7 +28,7 @@ export async function readUntilEof(reader: Reader): Promise<number> {
 
 export interface BodyTransformer {
   text(): Promise<string>;
-  json<T>(): Promise<T>;
+  json(): Promise<any>;
   arrayBuffer(): Promise<Uint8Array>;
   formData(headers: Headers): Promise<FormBody>;
 }
