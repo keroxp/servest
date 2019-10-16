@@ -20,6 +20,7 @@ export const Content: React.FC = ({ children }) => (
         <SideBarLink href={"/reading-body"}>Reading body</SideBarLink>
         <SideBarLink href={"/use-middleware"}>Use middleware</SideBarLink>
         <SideBarLink href={"/use-jsx"}>Use JSX</SideBarLink>
+        <SideBarLink href={"/handle-errors"}>Handle errors</SideBarLink>
         <SideBarLink href={"/use-serve-static"}>Serve static files</SideBarLink>
         <SideBarLink href={"/use-serve-jsx"}>
           Serve JSX files as a page
