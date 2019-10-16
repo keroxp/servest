@@ -20,7 +20,7 @@ We doesn't depend on Deno's [standard http module](https://deno.land/std/http) a
 
 ## Usage
 
-To get more detialed information, go to https://servestjs.rg
+To get more detialed information, go to https://servestjs.org
 
 ```ts
 // @deno-types="https://servestjs.org/@/types/react/index.d.ts"
