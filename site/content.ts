@@ -15,3 +15,15 @@ export async function fetchExample(filename: string): Promise<string> {
   }
   return ret;
 }
+
+export async function fetchExampleCodes(
+  ...files: string[]
+): Promise<{ [key: string]: string }> {
+  return Object.fromEntries(
+    await Promise.all(
+      files.map(async v => {
+        return [v, await fetchExample(v)];
+      })
+    )
+  );
+}
