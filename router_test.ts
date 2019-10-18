@@ -19,6 +19,12 @@ it("router", t => {
         body: "ok"
       });
     });
+    router.handle("/Index", async req => {
+      await req.respond({ status: 200, body: "ok" });
+    });
+    router.handle(new RegExp("^/Var"), async req => {
+      await req.respond({ status: 200, body: req.url });
+    });
     router.handle(new RegExp("/foo/(?<id>.+)"), async req => {
       const { id } = req.match.groups;
       await req.respond({
@@ -49,6 +55,20 @@ it("router", t => {
       const text = await res1.body.text();
       assertEquals(res1.status, 200);
       assertEquals(text, "ok");
+    }
+  });
+  t.run("should respond with capitalized path", async () => {
+    const res1 = await fetch("http://127.0.0.1:8898/Index");
+    const text = await res1.body.text();
+    assertEquals(res1.status, 200);
+    assertEquals(text, "ok");
+  });
+  t.run("should respond with capitalized path in regex", async () => {
+    for (const p of ["var", "Var"]) {
+      const res1 = await fetch("http://127.0.0.1:8898/" + p);
+      const text = await res1.body.text();
+      assertEquals(res1.status, 200);
+      assertEquals(text, text);
     }
   });
   t.run("should respond regexp path", async () => {
