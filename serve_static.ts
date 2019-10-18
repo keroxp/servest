@@ -37,8 +37,11 @@ export function serveStatic(
   const filter = opts.filter || (() => true);
   return async function serveStatic(req) {
     if (req.method === "GET" || req.method === "HEAD") {
-      const url = new URL(req.url, "http://dummy");
-      const filepath = await resolveIndexPath(dir, url.pathname);
+      const { pathname } = new URL(req.url, "http://dummy");
+      const filepath = await resolveIndexPath(
+        dir,
+        decodeURIComponent(pathname)
+      );
       if (!filepath || !(await filter(filepath))) {
         return;
       }

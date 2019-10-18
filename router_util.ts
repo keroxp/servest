@@ -17,7 +17,8 @@ export function findLongestAndNearestMatch(
   for (let i = 0; i < patterns.length; i++) {
     const pattern = patterns[i];
     if (pattern instanceof RegExp) {
-      const m = pathname.match(pattern);
+      // Regex pattern always match pathname in ignore case mode
+      const m = pathname.match(new RegExp(pattern, "i"));
       if (!m || m.index === undefined) {
         continue;
       }
@@ -30,7 +31,14 @@ export function findLongestAndNearestMatch(
         lastMatchIndex = m.index;
         lastMatchLength = m[0].length;
       }
-    } else if (pathname === pattern && pattern.length > lastMatchLength) {
+    } else if (
+      // req.url is raw requested url string that
+      // may contain capitalized strings.
+      // However router compares them by normalized strings
+      // "/path" matches both  "/path" and "/Path".
+      pathname.toLowerCase() === pattern.toLowerCase() &&
+      pattern.length > lastMatchLength
+    ) {
       index = i;
       match = [pattern];
       lastMatchIndex = 0;

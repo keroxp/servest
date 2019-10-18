@@ -31,6 +31,35 @@ test(async function serveioReadRequestGet() {
   f.close();
 });
 
+test(async function serveioReadRequestGetCapital() {
+  const f = await Deno.open("./fixtures/request_get_capital.txt");
+  const req = await readRequest(f);
+  assertEquals(req.method, "GET");
+  assertEquals(req.url, "/About/Index.html?deno=land&msg=gogo");
+  assertEquals(req.proto, "HTTP/1.1");
+  assertEquals(req.headers.get("host"), "deno.land");
+  assertEquals(req.headers.get("content-type"), "text/plain");
+  assert(req.body === void 0);
+  assert(req.trailers === void 0);
+  f.close();
+});
+
+test(async function serveioReadRequestEncoded() {
+  const f = await Deno.open("./fixtures/request_get_encoded.txt");
+  const req = await readRequest(f);
+  assertEquals(req.method, "GET");
+  assertEquals(
+    req.url,
+    "/%E3%81%A7%E3%81%AE%E3%81%8F%E3%81%AB?deno=%F0%9F%A6%95"
+  );
+  assertEquals(req.proto, "HTTP/1.1");
+  assertEquals(req.headers.get("host"), "deno.land");
+  assertEquals(req.headers.get("content-type"), "text/plain");
+  assert(req.body === void 0);
+  assert(req.trailers === void 0);
+  f.close();
+});
+
 test(async function serveioReadRequestPost() {
   const f = await Deno.open("./fixtures/request_post.txt");
   const req = await readRequest(f);
