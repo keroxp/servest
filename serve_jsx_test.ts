@@ -10,7 +10,9 @@ import { pathResolver, readString } from "./util.ts";
 import { it } from "./test_util.ts";
 
 it("serveJsx", t => {
-  const func = serveJsx(pathResolver(import.meta)("./fixtures/public"));
+  const func = serveJsx(pathResolver(import.meta)("./fixtures/public"), f =>
+    import(f)
+  );
   t.run("basic", async () => {
     const rec = createRecorder({
       url: "/",
