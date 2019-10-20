@@ -11,7 +11,7 @@ import { RoutingError } from "../error.ts";
 const router = createRouter({ logLevel: Loglevel.INFO });
 const resolve = pathResolver(import.meta);
 router.use(serveStatic(resolve("./public")));
-router.use(serveJsx(resolve("./pages"), Layout));
+router.use(serveJsx(resolve("./pages"), f => import(f), Layout));
 router.get(new RegExp("^/@(?<version>.*?)/(?<pathname>.+?)$"), async req => {
   let { version, pathname } = req.match.groups;
   if (!version) {
