@@ -2,7 +2,7 @@ import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { Content } from "../components/content.tsx";
 import { Article } from "../components/article.tsx";
 import { Code } from "../components/code.tsx";
-import { DFC } from "../../serve_jsx.ts";
+import { DFC } from "../../jsx.ts";
 import { fetchExample } from "../content.ts";
 
 const GetStarted: DFC<{

@@ -75,7 +75,7 @@ export type IncomingHttpResponse = {
   /** HTTP Headers */
   headers: Headers;
   /** HTTP Body */
-  body?: BodyReader;
+  body: BodyReader;
   /** trailer headers. Note that it won't be assigned until finalizer will be called */
   trailers?: Headers;
   /** Request finalizer. Consume all body and trailers */

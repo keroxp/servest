@@ -2,7 +2,7 @@ import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { Content } from "../components/content.tsx";
 import { Article } from "../components/article.tsx";
 import { Code } from "../components/code.tsx";
-import { DFC } from "../../serve_jsx.ts";
+import { DFC } from "../../jsx.ts";
 import { fetchExample, fetchExampleCodes } from "../content.ts";
 
 const HandleErrors: DFC<{
@@ -27,11 +27,10 @@ const HandleErrors: DFC<{
           global error handler for router.
         </p>
         <p>
-          There can be only one global error handler for one router.
-          If custom error handler is not defined by user,
-          errors are handled by built-in final error handler as default.
-          If defined, errors are passed to it and if not handled by it,
-          errors are passed to final error handler.
+          There can be only one global error handler for one router. If custom
+          error handler is not defined by user, errors are handled by built-in
+          final error handler as default. If defined, errors are passed to it
+          and if not handled by it, errors are passed to final error handler.
         </p>
         <Code
           href={"/example/handle_errors.ts"}

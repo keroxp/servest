@@ -2,10 +2,7 @@ import React from "./vendor/https/dev.jspm.io/react/index.js";
 import ReactDOMServer from "./vendor/https/dev.jspm.io/react-dom/server.js";
 import { HttpHandler } from "./router.ts";
 import { resolveIndexPath } from "./router_util.ts";
-
-export type DFC<P = {}> = React.FC<P> & {
-  getInitialProps?: () => Promise<P>;
-};
+import { DFC } from "./jsx.ts";
 
 /**
  * Serve jsx/tsx by dynamic import

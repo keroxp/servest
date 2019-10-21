@@ -9,6 +9,7 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
 import { createAgent } from "./agent.ts";
+import { delay } from "./vendor/https/deno.land/std/util/async.ts";
 import copy = Deno.copy;
 
 let port = 8880;
@@ -77,6 +78,7 @@ test(async function serverKeepAliveTimeout() {
     const { status, finalize } = await agent.send(req);
     await finalize();
     assertEquals(200, status);
+    await delay(100);
     await assertThrowsAsync(async () => {
       await agent.send(req);
     });

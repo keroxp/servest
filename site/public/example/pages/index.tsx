@@ -1,6 +1,6 @@
 // @deno-types="../../../../types/react/index.d.ts"
 import React from "https://dev.jspm.io/react/index.js";
-import { DFC } from "../../../../serve_jsx.ts";
+import { DFC } from "../../../../jsx.ts";
 
 const Index: DFC<{ title: string; text: string }> = ({ title, text }) => {
   return (
