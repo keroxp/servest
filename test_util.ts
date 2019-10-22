@@ -6,7 +6,7 @@ import {
 export type SetupFunc = () => any | Promise<any>;
 export interface Testing {
   run(desc: string, body: TestFunction): void;
-  beforeAfterAll(func: () => SetupFunc | Promise<SetupFunc>):  void;
+  beforeAfterAll(func: () => SetupFunc | Promise<SetupFunc>): void;
   beforeAfterEach(func: () => SetupFunc | Promise<SetupFunc>): void;
 }
 export function it(desc: string, func: (t: Testing) => void) {

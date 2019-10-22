@@ -1,6 +1,4 @@
-// Cookie: NAME1=OPAQUE_STRING1; NAME2=OPAQUE_STRING2 ...
-
-import { dateToIMF, parseIMF } from "./util.ts";
+import { dateToIMF } from "./util.ts";
 
 export type SetCookieOpts = {
   expires?: Date;
@@ -12,26 +10,23 @@ export type SetCookieOpts = {
   sameSite?: "Strict" | "Lax";
 };
 
+export type Cookie = {
+  name: string;
+  value: string;
+} & SetCookieOpts;
+
 export function parseCookie(header: string): Map<string, string> {
-  const query = header
+  const query = decodeURIComponent(header)
     .split(";")
     .map(v => v.trim())
     .join("&");
   return new Map(new URLSearchParams(query).entries());
 }
 
-export function parseSetCookie(
-  header: string
-):
-  | {
-      name: string;
-      value: string;
-      opts: SetCookieOpts;
-    }
-  | undefined {
+export function parseSetCookie(header: string): Cookie {
   const m = header.match(/^(.+?)=(.+?);(.+?)$/);
   if (!m) {
-    return;
+    throw new Error("invalid cookie header");
   }
   const [_, name, value, optStr] = m;
   const optMap = new Headers(
@@ -48,28 +43,30 @@ export function parseSetCookie(
   let expires: Date | undefined;
   if (optMap.has("Expires")) {
     const e = optMap.get("Expires")!;
-    expires = parseIMF(e);
+    expires = new Date(e);
   }
   let maxAge: number | undefined;
   if (optMap.has("Max-Age")) {
     const m = optMap.get("Max-Age")!;
     maxAge = parseInt(m);
   }
-  if (sameSite !== "Lax" && sameSite !== "Strict") {
+  if (
+    typeof sameSite === "string" &&
+    sameSite !== "Lax" &&
+    sameSite !== "Strict"
+  ) {
     throw new Error("sameSite is invalid");
   }
   return {
     name,
     value,
-    opts: {
-      expires,
-      maxAge,
-      domain,
-      path,
-      secure,
-      httpOnly,
-      sameSite
-    }
+    expires,
+    maxAge,
+    domain,
+    path,
+    secure,
+    httpOnly,
+    sameSite
   };
 }
 
@@ -121,10 +118,10 @@ export function cookieSetter(responseHeaders: Headers): CookieSetter {
     }
     out.push("Expires=" + dateToIMF(new Date(0)));
     const v = out.join("; ");
-    responseHeaders.set("Set-Cookie", v);
+    responseHeaders.append("Set-Cookie", v);
   }
   function setCookie(name: string, value: string, opts: SetCookieOpts = {}) {
-    responseHeaders.set("Set-Cookie", cookieToString(name, value, opts));
+    responseHeaders.append("Set-Cookie", cookieToString(name, value, opts));
   }
   return { setCookie, clearCookie };
 }

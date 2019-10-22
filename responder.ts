@@ -28,17 +28,17 @@ export interface ServerResponder extends CookieSetter {
 
 /** create ServerResponder object */
 export function createResponder(w: Writer): ServerResponder {
-  const headers = new Headers();
-  const cookie = cookieSetter(headers);
-  let status: number | undefined;
+  const responseHeaders = new Headers();
+  const cookie = cookieSetter(responseHeaders);
+  let responseStatus: number | undefined;
   function isResponded() {
-    return status !== undefined;
+    return responseStatus !== undefined;
   }
   async function writeTrailers(trailers: Headers): Promise<void> {
     if (!isResponded()) {
       throw new Error("trailer headers can't be written before responding");
     }
-    await serveio.writeTrailers(w, headers, trailers);
+    await serveio.writeTrailers(w, responseHeaders, trailers);
   }
   async function redirect(
     url: string,
@@ -54,14 +54,19 @@ export function createResponder(w: Writer): ServerResponder {
     if (isResponded()) {
       throw new Error("http: already responded");
     }
-    status = response.status;
-    if (response.headers) {
-      response.headers.forEach(([v, k]) => headers.set(k, v));
+    const { status, headers, body } = response;
+    responseStatus = status;
+    if (headers) {
+      headers.forEach(([v, k]) => responseHeaders.set(k, v));
     }
-    await serveio.writeResponse(w, response);
+    await serveio.writeResponse(w, {
+      status,
+      headers: responseHeaders,
+      body
+    });
   }
   function respondedStatus() {
-    return status;
+    return responseStatus;
   }
   return {
     respond,

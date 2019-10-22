@@ -1,5 +1,6 @@
 import { test, runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
 import {
+  assert,
   assertEquals,
   assertThrows
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
@@ -10,7 +11,9 @@ import { createRouter } from "./router.ts";
 
 it("parseCookie", t => {
   t.run("basic", () => {
-    const cookie = parseCookie(encodeURIComponent("deno=land; foo=var; 👉=🦕"));
+    const cookie = parseCookie(
+      `deno=land; foo=var; ${encodeURIComponent("👉=🦕")}`
+    );
     assertEquals(cookie.get("deno"), "land");
     assertEquals(cookie.get("foo"), "var");
     assertEquals(cookie.get("👉"), "🦕");
@@ -26,7 +29,7 @@ it("parseSetCookie", t => {
     const e = `deno=land; Expires=${dateToIMF(
       expires
     )}; Max-Age=${maxAge}; Domain=${domain}; Path=${path}; Secure; HttpOnly; SameSite=${sameSite}`;
-    const { name, value, opts } = parseSetCookie(e);
+    const { name, value, ...opts } = parseSetCookie(e);
     assertEquals(name, "deno");
     assertEquals(value, "land");
     assertEquals(opts.expires!.toDateString(), expires.toDateString());
@@ -78,10 +81,16 @@ it("cookieToString", t => {
 });
 
 it("cookie integration", t => {
+  const now = new Date();
+  now.setMilliseconds(0);
   t.beforeAfterAll(() => {
     const router = createRouter();
     router.get("/", req => {
-      req.setCookie("deno", "land", { path: "/" });
+      req.setCookie("deno", "land", {
+        path: "/",
+        maxAge: 1000,
+        expires: now
+      });
       return req.respond({ status: 200, body: "ok" });
     });
     router.get("/deno", req => {
@@ -92,8 +101,28 @@ it("cookie integration", t => {
     return () => lis.close();
   });
   t.run("basic", async () => {
-    // const resp = await fetch("http://127.0.0.1:9988/");
-    // const secCookie = resp.headers.get("Set-Cookie");
+    const resp = await fetch("http://127.0.0.1:9988/");
+    const sc = resp.headers.get("Set-Cookie");
+    assert(sc != null, "should set cookie");
+    const cookie = parseSetCookie(sc);
+    assertEquals(cookie, {
+      name: "deno",
+      value: "land",
+      path: "/",
+      maxAge: 1000,
+      expires: now,
+      sameSite: undefined,
+      domain: undefined,
+      secure: undefined,
+      httpOnly: undefined
+    });
+    const resp2 = await fetch("http://127.0.0.1:9988/deno", {
+      headers: {
+        Cookie: "deno=land"
+      }
+    });
+    const body = await resp2.body.text();
+    assertEquals(body, "land");
   });
 });
 
