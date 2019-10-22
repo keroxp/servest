@@ -119,7 +119,7 @@ export function createAgent(
       if (e === Deno.EOF) {
         throw new ConnectionClosedError();
       } else {
-        throw new Error(`${e}`);
+        throw e;
       }
     } finally {
       sending = false;

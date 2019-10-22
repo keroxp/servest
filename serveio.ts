@@ -169,10 +169,7 @@ export async function writeRequest(
 /** read http response from reader */
 export async function readResponse(
   r: Reader,
-  {
-    timeout = -1,
-    cancel = deferred<void>()
-  }: { timeout?: number; cancel?: Promise<void> } = {}
+  { timeout, cancel }: { timeout?: number; cancel?: Promise<void> } = {}
 ): Promise<IncomingHttpResponse> {
   const reader = BufReader.create(r);
   const tp = new TextProtoReader(reader);
