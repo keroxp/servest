@@ -1,8 +1,8 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { ClientResponse } from "./server.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { defer } from "./promises.ts";
 import { readResponse, writeRequest } from "./serveio.ts";
+import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;
@@ -52,7 +52,7 @@ export function createAgent(
   let connected = false;
   let connecting = false;
   let _conn: Conn;
-  let connectDeferred = defer();
+  let connectDeferred = deferred<void>();
   let bufReader: BufReader;
   let bufWriter: BufWriter;
   const url = new URL(baseUrl);
@@ -65,7 +65,7 @@ export function createAgent(
   assert(port !== void 0, `unexpected protocol: ${url.protocol}`);
   const connect = async () => {
     if (connected) return;
-    if (connecting) return connectDeferred.promise;
+    if (connecting) return connectDeferred;
     connecting = true;
     const opts: DialOptions = {
       port: parseInt(port),

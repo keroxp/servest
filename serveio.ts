@@ -7,7 +7,8 @@ import {
   chunkedBodyReader,
   readUntilEof
 } from "./readers.ts";
-import { defer, promiseInterrupter } from "./promises.ts";
+import { promiseInterrupter } from "./promises.ts";
+import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
 import {
   assert,
   AssertionError
@@ -170,7 +171,7 @@ export async function readResponse(
   r: Reader,
   {
     timeout = -1,
-    cancel = defer().promise
+    cancel = deferred<void>()
   }: { timeout?: number; cancel?: Promise<void> } = {}
 ): Promise<IncomingHttpResponse> {
   const reader = BufReader.create(r);
