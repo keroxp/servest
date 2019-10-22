@@ -1,5 +1,5 @@
 import { pathResolver } from "../util.ts";
-import * as path from "../vendor/https/deno.land/std/fs/path.ts";
+import * as path from "../vendor/https/deno.land/std/path/mod.ts";
 
 const decoder = new TextDecoder();
 const resolve = pathResolver(import.meta);

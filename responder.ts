@@ -57,7 +57,9 @@ export function createResponder(w: Writer): ServerResponder {
     const { status, headers, body } = response;
     responseStatus = status;
     if (headers) {
-      headers.forEach(([v, k]) => responseHeaders.set(k, v));
+      for (const [k, v] of headers.entries()) {
+        responseHeaders.append(k, v);
+      }
     }
     await serveio.writeResponse(w, {
       status,

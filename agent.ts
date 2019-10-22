@@ -10,11 +10,12 @@ import DialOptions = Deno.DialOptions;
 
 /** keep-alive http agent for single host. each message will be sent in serial */
 export interface HttpAgent {
+  /** Hostname of host. deno.land of deno.land:80 */
   hostname: string;
+  /** Port of host. 80 of deno.land:80 */
   port: number;
   /** send request to host. it throws EOF if conn is closed */
   send(opts: HttpAgentSendOptions): Promise<ClientResponse>;
-
   /** tcp connection for http agent */
   conn: Conn;
 }

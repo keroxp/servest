@@ -1,11 +1,11 @@
 {
   "https://deno.land/std": {
-    "version": "@v0.20.0",
+    "version": "@v0.21.0",
     "modules": [
       "/testing/mod.ts",
       "/testing/asserts.ts",
       "/textproto/mod.ts",
-      "/fs/path.ts",
+      "/path/mod.ts",
       "/fs/mod.ts",
       "/io/bufio.ts",
       "/io/readers.ts",
