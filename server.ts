@@ -44,6 +44,8 @@ export type IncomingHttpRequest = {
   headers: Headers;
   /** HTTP Body */
   body?: BodyReader;
+  /** Cookie */
+  cookies: Map<string, string>;
   /** Trailer headers. Note that it won't be assigned until finalizer will be called */
   trailers?: Headers;
   /** keep-alive info */

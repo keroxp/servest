@@ -6,8 +6,8 @@ import {
 export type SetupFunc = () => any | Promise<any>;
 export interface Testing {
   run(desc: string, body: TestFunction): void;
-  beforeAfterAll(func: () => SetupFunc): SetupFunc | void;
-  beforeAfterEach(func: () => SetupFunc): SetupFunc | void;
+  beforeAfterAll(func: () => SetupFunc | Promise<SetupFunc>):  void;
+  beforeAfterEach(func: () => SetupFunc | Promise<SetupFunc>): void;
 }
 export function it(desc: string, func: (t: Testing) => void) {
   let testCnt = 0;

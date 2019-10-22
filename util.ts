@@ -15,7 +15,7 @@ const kMonths = [
   "Nov",
   "Dec"
 ];
-export function dateToDateHeader(time: Date = new Date()): string {
+export function dateToIMF(time: Date = new Date()): string {
   //Date: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
   //Date: Wed, 21 Oct 2015 07:28:00 GMT
   const day = kDays[time.getUTCDay()];
@@ -35,6 +35,17 @@ export function dateToDateHeader(time: Date = new Date()): string {
     min,
     sec
   );
+}
+
+export function parseIMF(str: string): Date {
+  const comps = str.split(" ").map(v => v.trim());
+  if (comps.length !== 6) {
+    throw new Error("invalid imf time style");
+  }
+  const [_, date, month, year, time] = comps;
+  const [hour, min, sec] = time.split(":").map(parseInt);
+  const monthNum = kMonths.indexOf(month) + 1;
+  return new Date(parseInt(year), monthNum, parseInt(date), hour, min, sec);
 }
 
 export function pathResolver(meta: ImportMeta): (p: string) => string {

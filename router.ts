@@ -5,7 +5,6 @@ import {
   ServeOptions,
   ServerRequest
 } from "./server.ts";
-import { internalServerError } from "./responder.ts";
 import { findLongestAndNearestMatch } from "./router_util.ts";
 import { methodFilter } from "./middlewares.ts";
 import { RoutingError } from "./error.ts";
@@ -93,7 +92,10 @@ export function createRouter(
         });
         error(e.stack);
       } else {
-        await req.respond(internalServerError());
+        await req.respond({
+          status: 500,
+          body: kHttpStatusMessages[500]
+        });
         error(e);
       }
     }

@@ -1,11 +1,11 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import Writer = Deno.Writer;
-import { kHttpStatusMessages } from "./serveio.ts";
 import * as serveio from "./serveio.ts";
 import { ServerResponse } from "./server.ts";
+import { cookieSetter, CookieSetter } from "./cookie.ts";
 
 /** Basic responder for http response */
-export interface ServerResponder {
+export interface ServerResponder extends CookieSetter {
   /** Respond to request */
   respond(response: ServerResponse): Promise<void>;
 
@@ -28,7 +28,8 @@ export interface ServerResponder {
 
 /** create ServerResponder object */
 export function createResponder(w: Writer): ServerResponder {
-  let headers: Headers;
+  const headers = new Headers();
+  const cookie = cookieSetter(headers);
   let status: number | undefined;
   function isResponded() {
     return status !== undefined;
@@ -54,7 +55,9 @@ export function createResponder(w: Writer): ServerResponder {
       throw new Error("http: already responded");
     }
     status = response.status;
-    headers = response.headers;
+    if (response.headers) {
+      response.headers.forEach(([v, k]) => headers.set(k, v));
+    }
     await serveio.writeResponse(w, response);
   }
   function respondedStatus() {
@@ -65,26 +68,7 @@ export function createResponder(w: Writer): ServerResponder {
     redirect,
     isResponded,
     respondedStatus,
-    writeTrailers
+    writeTrailers,
+    ...cookie
   };
-}
-
-export function badRequest(): ServerResponse {
-  return { status: 400, body: kHttpStatusMessages[400] };
-}
-
-export function unauthorized(): ServerResponse {
-  return { status: 401, body: kHttpStatusMessages[401] };
-}
-
-export function forbidden(): ServerResponse {
-  return { status: 403, body: kHttpStatusMessages[403] };
-}
-
-export function notFound(): ServerResponse {
-  return { status: 404, body: kHttpStatusMessages[404] };
-}
-
-export function internalServerError(): ServerResponse {
-  return { status: 500, body: kHttpStatusMessages[500] };
 }
