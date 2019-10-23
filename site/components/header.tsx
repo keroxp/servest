@@ -15,9 +15,7 @@ export const Header: React.FC = () => (
         </a>
       </div>
       <div className="headerItem">
-        <a className="headerLink">
-          API
-        </a>
+        <a className="headerLink">API</a>
         <ul className={"headerSublist"}>
           <li>
             <a href={"/router-api"}>Router API</a>
@@ -36,9 +34,7 @@ export const Header: React.FC = () => (
         </a>
       </div>
       <div className="headerItem">
-        <a className="headerLink">
-          Features
-        </a>
+        <a className="headerLink">Features</a>
         <ul className={"headerSublist"}>
           <li>
             <a href={"/use-middleware"}>Use Middleware</a>
@@ -56,11 +52,12 @@ export const Header: React.FC = () => (
       </div>
       <div className="headerItem">
         <a href="https://github.com/keroxp/servest" target="_blank">
-          <img src={"/img/github-logo-32px.png"}
-               srcSet={
-                 "/img/github-logo-32px.png 1x, /img/github-logo-64px.png 2x"
-               }
-               alt={"Github Logo"}
+          <img
+            src={"/img/github-logo-32px.png"}
+            srcSet={
+              "/img/github-logo-32px.png 1x, /img/github-logo-64px.png 2x"
+            }
+            alt={"Github Logo"}
           />
         </a>
       </div>

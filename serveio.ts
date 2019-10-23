@@ -7,7 +7,8 @@ import {
   chunkedBodyReader,
   readUntilEof
 } from "./readers.ts";
-import { defer, promiseInterrupter } from "./promises.ts";
+import { promiseInterrupter } from "./promises.ts";
+import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
 import {
   assert,
   AssertionError
@@ -26,7 +27,8 @@ import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
 import EOF = Deno.EOF;
-import { dateToDateHeader } from "./util.ts";
+import { dateToIMF } from "./util.ts";
+import { parseCookie } from "./cookie.ts";
 
 export const kDefaultKeepAliveTimeout = 75000; // ms
 
@@ -69,7 +71,7 @@ export async function readRequest(
   let [_, method, url, proto] = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
   method = method.toUpperCase();
   // read header
-  const headers = await promiseInterrupter({
+  const headers: Headers = await promiseInterrupter({
     timeout: opts.readTimeout,
     cancel: opts.cancel
   })(tpReader.readMIMEHeader());
@@ -80,6 +82,8 @@ export async function readRequest(
   if (headers.has("keep-alive")) {
     keepAlive = parseKeepAlive(headers);
   }
+  // cookie
+  const cookies = parseCookie(headers.get("Cookie") || "");
   // body
   let body: BodyReader | undefined;
   let trailers: Headers;
@@ -104,7 +108,7 @@ export async function readRequest(
         cancel: opts.cancel
       });
     } else {
-      const contentLength = parseInt(headers.get("content-length"));
+      const contentLength = parseInt(headers.get("content-length")!);
       assert(
         contentLength >= 0,
         `content-length is missing or invalid: ${headers.get("content-length")}`
@@ -120,6 +124,7 @@ export async function readRequest(
     url,
     proto,
     headers,
+    cookies,
     body,
     keepAlive,
     get trailers() {
@@ -164,10 +169,7 @@ export async function writeRequest(
 /** read http response from reader */
 export async function readResponse(
   r: Reader,
-  {
-    timeout = -1,
-    cancel = defer().promise
-  }: { timeout?: number; cancel?: Promise<void> } = {}
+  { timeout, cancel }: { timeout?: number; cancel?: Promise<void> } = {}
 ): Promise<IncomingHttpResponse> {
   const reader = BufReader.create(r);
   const tp = new TextProtoReader(reader);
@@ -305,7 +307,7 @@ export async function writeHeaders(w: Writer, headers: Headers): Promise<void> {
   const lines: string[] = [];
   const writer = BufWriter.create(w);
   if (!headers.has("date")) {
-    headers.set("date", dateToDateHeader());
+    headers.set("date", dateToIMF());
   }
   if (headers)
     for (const [key, value] of headers) {

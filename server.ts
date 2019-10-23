@@ -3,7 +3,8 @@ import listen = Deno.listen;
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { defer, promiseInterrupter } from "./promises.ts";
+import { promiseInterrupter } from "./promises.ts";
+import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
 import { initServeOptions, readRequest } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
 import ListenOptions = Deno.ListenOptions;
@@ -44,6 +45,8 @@ export type IncomingHttpRequest = {
   headers: Headers;
   /** HTTP Body */
   body?: BodyReader;
+  /** Cookie */
+  cookies: Map<string, string>;
   /** Trailer headers. Note that it won't be assigned until finalizer will be called */
   trailers?: Headers;
   /** keep-alive info */
@@ -75,7 +78,7 @@ export type IncomingHttpResponse = {
   /** HTTP Headers */
   headers: Headers;
   /** HTTP Body */
-  body?: BodyReader;
+  body: BodyReader;
   /** trailer headers. Note that it won't be assigned until finalizer will be called */
   trailers?: Headers;
   /** Request finalizer. Consume all body and trailers */
@@ -134,11 +137,11 @@ export function listenAndServe(
   opts = initServeOptions(opts);
   let listener = createListener(listenOptions);
   let cancel: Promise<void>;
-  let d = defer();
+  let d = deferred<void>();
   if (opts.cancel) {
-    cancel = Promise.race([opts.cancel, d.promise]);
+    cancel = Promise.race([opts.cancel, d]);
   } else {
-    cancel = d.promise;
+    cancel = d;
   }
   const throwIfCancelled = promiseInterrupter({
     cancel

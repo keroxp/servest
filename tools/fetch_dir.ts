@@ -1,6 +1,6 @@
 #!/usr/bin/env deno -A
 import * as fs from "../vendor/https/deno.land/std/fs/mod.ts";
-import * as path from "../vendor/https/deno.land/std/fs/path.ts";
+import * as path from "../vendor/https/deno.land/std/path/mod.ts";
 export async function fetchDir(dir: string): Promise<number> {
   let codes: string[] = [];
   const glob = path.join(dir, "**/*.ts*");

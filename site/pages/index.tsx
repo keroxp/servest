@@ -1,5 +1,5 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
-import { DFC } from "../../serve_jsx.ts";
+import { DFC } from "../../jsx.ts";
 import { Code } from "../components/code.tsx";
 import { fetchExample } from "../content.ts";
 
@@ -24,12 +24,10 @@ const Index: DFC<{
       <div className="index">
         <div className="welcomeCode">
           <Code href={"/example/use_jsx.tsx"} code={codes["use_jsx.tsx"]} />
-          <h2>
-            Running on you machine now
-          </h2>
-          <Code code={
-`$ deno --allow-net https://servestjs.org/example/use_jsx.tsx`
-          }/>
+          <h2>Running on you machine now</h2>
+          <Code
+            code={`$ deno --allow-net https://servestjs.org/example/use_jsx.tsx`}
+          />
         </div>
       </div>
     </div>

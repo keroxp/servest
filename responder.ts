@@ -1,11 +1,11 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import Writer = Deno.Writer;
-import { kHttpStatusMessages } from "./serveio.ts";
 import * as serveio from "./serveio.ts";
 import { ServerResponse } from "./server.ts";
+import { cookieSetter, CookieSetter } from "./cookie.ts";
 
 /** Basic responder for http response */
-export interface ServerResponder {
+export interface ServerResponder extends CookieSetter {
   /** Respond to request */
   respond(response: ServerResponse): Promise<void>;
 
@@ -28,16 +28,17 @@ export interface ServerResponder {
 
 /** create ServerResponder object */
 export function createResponder(w: Writer): ServerResponder {
-  let headers: Headers;
-  let status: number | undefined;
+  const responseHeaders = new Headers();
+  const cookie = cookieSetter(responseHeaders);
+  let responseStatus: number | undefined;
   function isResponded() {
-    return status !== undefined;
+    return responseStatus !== undefined;
   }
   async function writeTrailers(trailers: Headers): Promise<void> {
     if (!isResponded()) {
       throw new Error("trailer headers can't be written before responding");
     }
-    await serveio.writeTrailers(w, headers, trailers);
+    await serveio.writeTrailers(w, responseHeaders, trailers);
   }
   async function redirect(
     url: string,
@@ -53,38 +54,28 @@ export function createResponder(w: Writer): ServerResponder {
     if (isResponded()) {
       throw new Error("http: already responded");
     }
-    status = response.status;
-    headers = response.headers;
-    await serveio.writeResponse(w, response);
+    const { status, headers, body } = response;
+    responseStatus = status;
+    if (headers) {
+      for (const [k, v] of headers.entries()) {
+        responseHeaders.append(k, v);
+      }
+    }
+    await serveio.writeResponse(w, {
+      status,
+      headers: responseHeaders,
+      body
+    });
   }
   function respondedStatus() {
-    return status;
+    return responseStatus;
   }
   return {
     respond,
     redirect,
     isResponded,
     respondedStatus,
-    writeTrailers
+    writeTrailers,
+    ...cookie
   };
-}
-
-export function badRequest(): ServerResponse {
-  return { status: 400, body: kHttpStatusMessages[400] };
-}
-
-export function unauthorized(): ServerResponse {
-  return { status: 401, body: kHttpStatusMessages[401] };
-}
-
-export function forbidden(): ServerResponse {
-  return { status: 403, body: kHttpStatusMessages[403] };
-}
-
-export function notFound(): ServerResponse {
-  return { status: 404, body: kHttpStatusMessages[404] };
-}
-
-export function internalServerError(): ServerResponse {
-  return { status: 500, body: kHttpStatusMessages[500] };
 }

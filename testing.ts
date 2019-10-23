@@ -5,6 +5,7 @@ import { readResponse, setupBody } from "./serveio.ts";
 import Reader = Deno.Reader;
 import { createResponder } from "./responder.ts";
 import { bodyReader, BodyReader, chunkedBodyReader } from "./readers.ts";
+import { parseCookie } from "./cookie.ts";
 
 export type RequestRecorder = RoutedServerRequest & {
   /** Obtain recorded response */
@@ -57,6 +58,7 @@ export function createRecorder({
     return readResponse(bufReader);
   }
   const responder = createResponder(bufWriter);
+  const cookies = parseCookie(headers.get("Cookie") || "");
   return {
     url,
     method,
@@ -68,6 +70,7 @@ export function createRecorder({
     bufWriter,
     bufReader,
     conn,
+    cookies,
     match,
     ...responder
   };

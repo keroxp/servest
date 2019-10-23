@@ -1,25 +1,23 @@
-
 :root {
   --contentWidth: 1024px;
   --colorPrimary: #ffd600;
   --colorPrimaryLight: #ffff52;
   --colorPrimaryDark: #c7a500;
-  --colorSecondary:#aeea00;
+  --colorSecondary: #aeea00;
   --colorSecondaryLight: #e4ff54;
   --colorSecondaryDark: #79b700;
-  --colorGrayDark: #DDDEDD;
-  --colorGrayLight:#F3F3F5;
+  --colorGrayDark: #dddedd;
+  --colorGrayLight: #f3f3f5;
 }
 @media (max-width: 480px) and (orientation: portrait),
-(max-width: 480px) and (orientation: landscape)
-{
+  (max-width: 480px) and (orientation: landscape) {
   :root {
     --contentWidth: 100vw;
   }
 }
 
 html {
-  font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;;
+  font-family: "Source Sans Pro", "Helvetica Neue", Arial, sans-serif;
 }
 code {
   font-family: Menlo, Monaco, serif;
@@ -30,7 +28,7 @@ a:active {
   color: inherit;
 }
 a {
-  color: var(--colorSecondaryDark)
+  color: var(--colorSecondaryDark);
 }
 b {
   font-weight: bold;
@@ -50,7 +48,7 @@ b {
 }
 
 .brand {
-  font-size: 22px!important;
+  font-size: 22px !important;
 }
 
 .inner {
@@ -75,7 +73,7 @@ b {
   top: 40px;
   left: 0;
   width: 200px;
-  border: 1px solid #CCC;
+  border: 1px solid #ccc;
   background-color: white;
   padding: 10px;
   border-radius: 4px;
@@ -92,11 +90,11 @@ b {
   color: black;
 }
 .headerSublist li > a:hover {
-  color: var(--colorSecondary)
+  color: var(--colorSecondary);
 }
 
 .spacer {
-  flex: 1
+  flex: 1;
 }
 
 h1 {
@@ -137,7 +135,7 @@ body {
 
 .indexHead {
   padding-top: 50px;
-  background-color: #282C33;
+  background-color: #282c33;
 }
 .indexHeadInner {
   width: var(--contentWidth);
@@ -263,11 +261,11 @@ body {
 .codeLink {
   padding: 5px 0;
   display: flex;
-  align-items:center;
+  align-items: center;
   justify-content: center;
 }
 .codeWindowHeader {
-  background-color: #F6F6F6;
+  background-color: #f6f6f6;
   height: 40px;
   display: grid;
   grid-template-columns: 100px 1fr 100px;
@@ -288,16 +286,16 @@ body {
   margin-right: 8px;
 }
 .codeWindowRedButton {
-  background-color: #EA6459
+  background-color: #ea6459;
 }
 .codeWindowYellowButton {
-  background-color: #E0C04C;
+  background-color: #e0c04c;
 }
 .codeWindowGreenButton {
-  background-color: #72BF46;
+  background-color: #72bf46;
 }
 .codeWrapper {
-  margin-top: 0!important;
+  margin-top: 0 !important;
 
   border-bottom-left-radius: 8px;
   border-bottom-right-radius: 8px;

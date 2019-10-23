@@ -1,4 +1,4 @@
-import * as path from "./vendor/https/deno.land/std/fs/path.ts";
+import * as path from "./vendor/https/deno.land/std/path/mod.ts";
 import { runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
 
 /**

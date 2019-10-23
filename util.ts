@@ -15,7 +15,7 @@ const kMonths = [
   "Nov",
   "Dec"
 ];
-export function dateToDateHeader(time: Date = new Date()): string {
+export function dateToIMF(time: Date = new Date()): string {
   //Date: <day-name>, <day> <month> <year> <hour>:<minute>:<second> GMT
   //Date: Wed, 21 Oct 2015 07:28:00 GMT
   const day = kDays[time.getUTCDay()];
