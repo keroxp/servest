@@ -25,6 +25,8 @@ export const Content: React.FC = ({ children }) => (
         <SideBarLink href={"/use-serve-jsx"}>
           Serve JSX files as a page
         </SideBarLink>
+        <SideBarLink href={"/testing-handler"}>Testing Handler</SideBarLink>
+        <SideBarLink href={"/manage-cookie"}>Manage Cookie</SideBarLink>
       </SideBarSection>
     </SideBar>
     {children}
