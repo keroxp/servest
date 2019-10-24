@@ -16,11 +16,12 @@ async function getSession(sid: string): Promise<User | undefined> {
 }
 async function authenticate(
   userId: string,
-  password: string
+  password: string,
+  name: string,
 ): Promise<User | 401> {
   // do authenticate via Database
   if (userId === "deno" && password === "land") {
-    return { id: "deno", name: "land" };
+    return { id: "deno", name };
   }
   return 401;
 }
@@ -31,7 +32,7 @@ router.use(async req => {
   }
   const session = await getSession(sid);
   if (!session) {
-    return req.respond("/login");
+    return req.redirect("/login");
   }
   // save session to store
   sessionMap.set(req, session);
@@ -52,14 +53,38 @@ router.get("/login", async req => {
     headers: new Headers({
       "content-type": "text/plain"
     }),
-    body: "Hello, Servest!"
+    body: `
+<html lang="en">
+<header>
+  <title>Login</title>
+</header>
+<body>
+  <form action="/login/auth" method="POST">
+    <div>
+    <label for="id-input">Id</label>
+    <input id="id-input" type="text" name="id" />   
+    </div>
+    <div>
+      <label for="password-input">Password</label>
+      <input id="password-input" type="password" name="password" />
+    </div>
+    <div>
+      <label for="name-input">Name</label>
+      <input id="note-input" type="text" name="name" />
+    </div>
+    <input type="submit" value="login"/>
+  </form>
+</body>
+</html>
+    `
   });
 });
 router.post("/login/auth", async req => {
-  const form = await req.body!.formData();
-  const userId = form.field("userId");
+  const form = await req.body!.formData(req.headers);
+  const userId = form.field("id");
   const password = form.field("password");
-  const user = await authenticate(userId, password);
+  const name = form.field("name");
+  const user = await authenticate(userId, password, name);
   if (user === 401) {
     return req.respond({ status: 401, body: "Unauthorized" });
   }

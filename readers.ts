@@ -30,7 +30,7 @@ export interface BodyParser {
   text(): Promise<string>;
   json(): Promise<any>;
   arrayBuffer(): Promise<Uint8Array>;
-  formData(headers: Headers): Promise<FormBody>;
+  formData(headers: Headers, maxMemory?: number): Promise<FormBody>;
 }
 
 interface BodyHolder {
@@ -38,7 +38,7 @@ interface BodyHolder {
   total(): number;
 }
 
-function bodyTransformer(holder: BodyHolder): BodyParser {
+function bodyParser(holder: BodyHolder): BodyParser {
   let bodyBuf: Deno.Buffer | undefined;
   let formBody: FormBody | undefined;
   let textBody: string | undefined;
@@ -155,7 +155,7 @@ export function bodyReader(
       return total;
     }
   };
-  let transformer = bodyTransformer(holder);
+  let transformer = bodyParser(holder);
 
   return { ...transformer, ...reader };
 }
@@ -214,7 +214,7 @@ export function chunkedBodyReader(
       return total;
     }
   };
-  const transformer = bodyTransformer(holder);
+  const transformer = bodyParser(holder);
   return { ...reader, ...transformer };
 }
 
