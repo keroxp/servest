@@ -52,6 +52,7 @@ test(async function server() {
     listener.close();
   }
 });
+/*
 it("server", t => {
   port++;
   t.beforeAfterAll(() => {
@@ -92,6 +93,7 @@ it("server", t => {
     }
   });
 });
+ */
 test(async function serverKeepAliveTimeoutMax() {
   port++;
   const listener = listenAndServe(
