@@ -7,7 +7,7 @@ import { createResponder } from "./responder.ts";
 import { bodyReader, BodyReader, chunkedBodyReader } from "./readers.ts";
 import { parseCookie } from "./cookie.ts";
 
-export type RequestRecorder = RoutedServerRequest & {
+export type ResponseRecorder = RoutedServerRequest & {
   /** Obtain recorded response */
   response(): Promise<IncomingHttpResponse>;
 };
@@ -27,7 +27,7 @@ export function createRecorder({
   headers?: Headers;
   body?: string | Uint8Array | Reader;
   match?: RegExpMatchArray | null;
-}): RequestRecorder {
+}): ResponseRecorder {
   const conn: Deno.Conn = {
     localAddr: "",
     remoteAddr: "",

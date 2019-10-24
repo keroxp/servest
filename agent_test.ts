@@ -74,7 +74,6 @@ it("agent", t => {
       agent.conn.close();
     }
   });
-  /* TODO: dialTls is breaking on v0.20.0
   t.run("agentTls", async () => {
     const agent = createAgent(`https://httpbin.org`);
     try {
@@ -104,8 +103,7 @@ it("agent", t => {
     } finally {
       agent.conn.close();
     }
-  }); 
-   */
+  });
   t.run("agent unread body", async () => {
     const agent = createAgent(`http://127.0.0.1:${port}`);
     try {

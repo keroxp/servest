@@ -52,7 +52,7 @@ test(async function server() {
     listener.close();
   }
 });
-/* TODO: Running this test hangs process
+/*
 it("server", t => {
   port++;
   t.beforeAfterAll(() => {
@@ -93,7 +93,7 @@ it("server", t => {
     }
   });
 });
-*/
+ */
 test(async function serverKeepAliveTimeoutMax() {
   port++;
   const listener = listenAndServe(

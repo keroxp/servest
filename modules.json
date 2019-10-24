@@ -4,6 +4,7 @@
     "modules": [
       "/testing/mod.ts",
       "/testing/asserts.ts",
+      "/testing/runner.ts",
       "/textproto/mod.ts",
       "/path/mod.ts",
       "/fs/mod.ts",
