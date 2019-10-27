@@ -1,6 +1,9 @@
 import * as path from "./vendor/https/deno.land/std/path/mod.ts";
 import { runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
 
+const REGEX_URI_MATCHES = /(:[^/]+)/g;
+const URI_PARAM_MARKER = ":";
+
 /**
  * Find the match that appeared in the nearest position to the beginning of word.
  * If positions are same, the longest one will be picked.
@@ -15,7 +18,13 @@ export function findLongestAndNearestMatch(
   let match: RegExpMatchArray | null = null;
   let index = -1;
   for (let i = 0; i < patterns.length; i++) {
-    const pattern = patterns[i];
+    let pattern = patterns[i];
+    if (typeof pattern === "string" && pattern.includes(URI_PARAM_MARKER)) {
+      pattern = pattern.replace(REGEX_URI_MATCHES, (match, name) => {
+        return `(?<${name.replace(URI_PARAM_MARKER, "")}>[^/]+)`;
+      });
+      pattern = new RegExp(`^${pattern}$`);
+    }
     if (pattern instanceof RegExp) {
       // Regex pattern always match pathname in ignore case mode
       const m = pathname.match(new RegExp(pattern, "i"));

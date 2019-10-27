@@ -24,5 +24,16 @@ router.get(new RegExp("^/foo/(.+)"), async req => {
     body: JSON.stringify({ id })
   });
 });
+// Or use colon style for required parameters
+router.get("/users/:name", async req => {
+  const { name } = req.match.groups;
+  await req.respond({
+    status: 200,
+    headers: new Headers({
+      "content-type": "application/json"
+    }),
+    body: JSON.stringify({ name })
+  });
+});
 // Start listening on port 8899
 router.listen(":8899");

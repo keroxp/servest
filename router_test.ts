@@ -35,6 +35,26 @@ it("router", t => {
         body: JSON.stringify({ id })
       });
     });
+    router.handle("/params/:param", async req => {
+      const { param } = req.match.groups;
+      await req.respond({
+        status: 200,
+        headers: new Headers({
+          "content-type": "application/json"
+        }),
+        body: JSON.stringify({ param })
+      });
+    });
+    router.handle("/params/:param1/:param2", async req => {
+      const { param1, param2 } = req.match.groups;
+      await req.respond({
+        status: 200,
+        headers: new Headers({
+          "content-type": "application/json"
+        }),
+        body: JSON.stringify({ param1, param2 })
+      });
+    });
     router.handle("/no-response", async req => {});
     router.handle("/throw", async req => {
       throw new Error("throw");
@@ -77,6 +97,21 @@ it("router", t => {
     assertEquals(res2.status, 200);
     assertEquals(res2.headers.get("content-type"), "application/json");
     assertEquals(json["id"], "123");
+  });
+  t.run("should respond :param", async () => {
+    const res2 = await fetch("http://127.0.0.1:8898/params/p1");
+    const json = await res2.body.json();
+    assertEquals(res2.status, 200);
+    assertEquals(res2.headers.get("content-type"), "application/json");
+    assertEquals(json["param"], "p1");
+  });
+  t.run("should respond :param1 and :param2", async () => {
+    const res2 = await fetch("http://127.0.0.1:8898/params/p1/p2");
+    const json = await res2.body.json();
+    assertEquals(res2.status, 200);
+    assertEquals(res2.headers.get("content-type"), "application/json");
+    assertEquals(json["param1"], "p1");
+    assertEquals(json["param2"], "p2");
   });
   t.run("should respond even if req.respond wasn't called", async () => {
     const res = await fetch("http://127.0.0.1:8898/no-response");
