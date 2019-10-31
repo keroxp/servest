@@ -1,6 +1,8 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   listenAndServe,
+  listenAndServeTLS,
+  ServeHandler,
   ServeListener,
   ServeOptions,
   ServerRequest
@@ -11,6 +13,7 @@ import { RoutingError } from "./error.ts";
 import { kHttpStatusMessages } from "./serveio.ts";
 import { createLogger, Logger, Loglevel, namedLogger } from "./logger.ts";
 import ListenOptions = Deno.ListenOptions;
+import ListenTLSOptions = Deno.ListenTLSOptions;
 
 export interface HttpRouter {
   /**
@@ -46,6 +49,9 @@ export interface HttpRouter {
 
   /** Start listening with given addr */
   listen(addr: string | ListenOptions, opts?: ServeOptions): ServeListener;
+
+  /** Start listening for HTTPS server */
+  listenTLS(tlsOptions: ListenTLSOptions, opts?: ServeOptions): ServeListener;
 }
 
 export type RoutedServerRequest = ServerRequest & {
@@ -134,7 +140,7 @@ export function createRouter(
     errorHandler = handler;
   }
 
-  function listen(addr: string, opts?: ServeOptions): ServeListener {
+  function createHandler(): ServeHandler {
     const handleInternal = async (req: ServerRequest) => {
       let { pathname } = new URL(req.url, "http://localhost");
       for (const middleware of middlewares) {
@@ -164,7 +170,7 @@ export function createRouter(
         throw new RoutingError(404, kHttpStatusMessages[404]);
       }
     };
-    const handler = async req => {
+    return (req: RoutedServerRequest) => {
       const onError = async (e: any) => {
         try {
           await errorHandler(e, req);
@@ -180,9 +186,24 @@ export function createRouter(
       };
       return handleInternal(req).catch(onError);
     };
+  }
+  function listen(
+    addr: string | ListenOptions,
+    opts?: ServeOptions
+  ): ServeListener {
+    const handler = createHandler();
     const listener = listenAndServe(addr, handler, opts);
     info(`listening on ${addr}`);
     return listener;
   }
-  return { handle, use, get, post, handleError, listen };
+  function listenTLS(
+    listenOptions: ListenTLSOptions,
+    opts?: ServeOptions
+  ): ServeListener {
+    const handler = createHandler();
+    const listener = listenAndServeTLS(listenOptions, handler, opts);
+    info(`listening on ${listenOptions.hostname || ""}:${listenOptions.port}`);
+    return listener;
+  }
+  return { handle, use, get, post, handleError, listen, listenTLS };
 }
