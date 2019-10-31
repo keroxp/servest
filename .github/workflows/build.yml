@@ -11,7 +11,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Install Deno
       run: |
-        curl -fsSL https://deno.land/x/install/install.sh | bash -s -- v0.21.0
+        curl -fsSL https://deno.land/x/install/install.sh | bash -s -- v0.22.0
     - name: Run Tests
       run: |
         export PATH=$HOME/.deno/bin:$PATH
