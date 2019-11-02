@@ -17,7 +17,7 @@ async function getSession(sid: string): Promise<User | undefined> {
 async function authenticate(
   userId: string,
   password: string,
-  name: string,
+  name: string
 ): Promise<User | 401> {
   // do authenticate via Database
   if (userId === "deno" && password === "land") {

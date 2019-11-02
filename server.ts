@@ -1,5 +1,4 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import listen = Deno.listen;
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
@@ -10,6 +9,7 @@ import { createResponder, ServerResponder } from "./responder.ts";
 import ListenOptions = Deno.ListenOptions;
 import Listener = Deno.Listener;
 import { BodyReader } from "./readers.ts";
+import ListenTLSOptions = Deno.ListenTLSOptions;
 
 /** request data for building http request to server */
 export type ClientRequest = {
@@ -102,6 +102,7 @@ export type ServeOptions = {
 };
 
 export type ServeListener = Deno.Closer;
+export type ServeHandler = (req: ServerRequest) => Promise<void>;
 
 function createListener(listenOptions: string | ListenOptions): Listener {
   if (typeof listenOptions === "string") {
@@ -113,29 +114,36 @@ function createListener(listenOptions: string | ListenOptions): Listener {
     if (h) {
       listenOptions.hostname = h;
     }
-    return listen(listenOptions);
+    return Deno.listen(listenOptions);
   } else {
-    return listen(listenOptions);
+    return Deno.listen(listenOptions);
   }
 }
 
-export function listenAndServe(
-  addr: string,
-  handler: (req: ServerRequest) => Promise<void>,
+export function listenAndServeTLS(
+  listenOptions: ListenTLSOptions,
+  handler: ServeHandler,
   opts?: ServeOptions
-): ServeListener;
-export function listenAndServe(
-  listenOptions: ListenOptions,
-  handler: (req: ServerRequest) => Promise<void>,
-  opts?: ServeOptions
-): ServeListener;
+): ServeListener {
+  const listener = Deno.listenTLS(listenOptions);
+  return listenInternal(listener, handler, opts);
+}
+
 export function listenAndServe(
   listenOptions: string | ListenOptions,
-  handler: (req: ServerRequest) => Promise<void>,
+  handler: ServeHandler,
   opts: ServeOptions = {}
 ): ServeListener {
   opts = initServeOptions(opts);
-  let listener = createListener(listenOptions);
+  const listener = createListener(listenOptions);
+  return listenInternal(listener, handler, opts);
+}
+
+function listenInternal(
+  listener: Listener,
+  handler: (req: ServerRequest) => Promise<void>,
+  opts: ServeOptions = {}
+): ServeListener {
   let cancel: Promise<void>;
   let d = deferred<void>();
   if (opts.cancel) {

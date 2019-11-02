@@ -17,8 +17,7 @@ const ServerApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
         <p>
           To set cookie to client, use <Q>req.setCookie()</Q> with options.
         </p>
-        <p>
-        </p>
+        <p></p>
         <Code
           href={"/example/manage_cookie.ts"}
           code={codes["manage_cookie.ts"]}

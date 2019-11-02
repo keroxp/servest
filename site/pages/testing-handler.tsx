@@ -1,4 +1,3 @@
-
 import { Article } from "../components/article.tsx";
 import { Code } from "../components/code.tsx";
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
@@ -13,10 +12,12 @@ const ServerApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
       <section id={"server-api"}>
         <h2>Testing Handler</h2>
         <p>
-          <Q>ResponseRecorder</Q> is dummy request that records response from <Q>HttpHandler</Q>.
+          <Q>ResponseRecorder</Q> is dummy request that records response from{" "}
+          <Q>HttpHandler</Q>.
         </p>
         <p>
-          It behaves as an actual HTTP request for handlers and is useful for unit testing.
+          It behaves as an actual HTTP request for handlers and is useful for
+          unit testing.
         </p>
         <Code
           href={"/example/testing_handler.ts"}

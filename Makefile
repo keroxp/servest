@@ -7,7 +7,7 @@ deno.d.ts:
 tsconfig.json:
 	./make.sh > tsconfig.json
 test:
-	deno run -A tests.ts
+	deno -A test
 build:
 	docker build -t servest/site .
 bench:

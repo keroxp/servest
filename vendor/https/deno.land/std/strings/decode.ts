@@ -1,1 +1,1 @@
-export * from "https://deno.land/std@v0.21.0/strings/decode.ts";
+export * from "https://deno.land/std@v0.22.0/strings/decode.ts";
