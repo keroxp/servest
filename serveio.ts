@@ -71,7 +71,7 @@ export async function readRequest(
   let [_, method, url, proto] = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
   method = method.toUpperCase();
   // read header
-  const headers: Headers = await promiseInterrupter({
+  const headers = await promiseInterrupter({
     timeout: opts.readTimeout,
     cancel: opts.cancel
   })(tpReader.readMIMEHeader());

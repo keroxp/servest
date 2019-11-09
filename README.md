@@ -3,8 +3,8 @@
 [![Build Status](https://github.com/keroxp/servest/workflows/CI/badge.svg)](https://github.com/keroxp/servest/actions)
 ![https://img.shields.io/github/tag/keroxp/servest.svg](https://img.shields.io/github/tag/keroxp/servest.svg)
 [![license](https://img.shields.io/github/license/keroxp/servest.svg)](https://github.com/keroxp/servest)
-[![tag](https://img.shields.io/badge/deno-v0.21.0-green.svg)](https://github.com/denoland/deno)
-[![tag](https://img.shields.io/badge/deno__std-v0.21.0-green.svg)](https://github.com/denoland/deno_std)
+[![tag](https://img.shields.io/badge/deno-v0.23.0-green.svg)](https://github.com/denoland/deno)
+[![tag](https://img.shields.io/badge/deno__std-v0.23.0-green.svg)](https://github.com/denoland/deno_std)
 
 🌾A progressive http server for Deno🌾
 
