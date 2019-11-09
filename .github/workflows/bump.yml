@@ -1,6 +1,8 @@
 name: Bump
 
-on: [push]  
+on:
+  schedule:
+    - cron: 0 13 * * *    
 jobs:
   build:
     runs-on: ubuntu-latest
