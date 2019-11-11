@@ -19,4 +19,4 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       run: |
         export PATH=$HOME/.deno/bin:$PATH
-        deno run -A https://denopkg.com/keroxp/dink-bot@v0.1.0/main.ts
+        deno run -A https://denopkg.com/keroxp/dink-bot@v0.2.0/main.ts
