@@ -1,6 +1,6 @@
 {
   "https://deno.land/std": {
-    "version": "@v0.23.0",
+    "version": "@v0.24.0",
     "modules": [
       "/testing/mod.ts",
       "/testing/asserts.ts",
@@ -24,45 +24,32 @@
   },
   "https://dev.jspm.io/react": {
     "version": "@16.10.2",
-    "modules": [
-      "/index.js"
-    ],
+    "modules": ["/index.js"],
     "types": {
       "/index.js": "./types/react/index.d.ts"
     }
   },
   "https://dev.jspm.io/react-dom": {
     "version": "@16.10.2",
-    "modules": [
-      "/server.js"
-    ],
+    "modules": ["/server.js"],
     "types": {
       "/server.js": "./types/react-dom/server/index.d.ts"
     }
   },
   "https://dev.jspm.io/@types/react": {
     "version": "@16",
-    "modules": [
-      "/index.d.ts",
-      "/global.d.ts"
-    ]
+    "modules": ["/index.d.ts", "/global.d.ts"]
   },
   "https://dev.jspm.io/@types/react-dom": {
     "version": "@16",
-    "modules": [
-      "/server/index.d.ts"
-    ]
+    "modules": ["/server/index.d.ts"]
   },
   "https://dev.jspm.io/@types/prop-types": {
     "version": "@15.7.2",
-    "modules": [
-      "/index.d.ts"
-    ]
+    "modules": ["/index.d.ts"]
   },
   "https://dev.jspm.io/csstype": {
     "version": "@2.6.7",
-    "modules": [
-      "/index.d.ts"
-    ]
+    "modules": ["/index.d.ts"]
   }
 }

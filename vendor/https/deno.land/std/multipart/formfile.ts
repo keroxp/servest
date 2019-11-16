@@ -1,1 +1,1 @@
-export * from "https://deno.land/std@v0.23.0/multipart/formfile.ts";
+export * from "https://deno.land/std@v0.24.0/multipart/formfile.ts";
