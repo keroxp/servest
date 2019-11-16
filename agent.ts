@@ -61,14 +61,14 @@ export function createAgent(
     `scheme must be http or https: ${url.protocol}`
   );
   const hostname = url.hostname;
-  let port = url.port || kPortMap[url.protocol];
+  let port = url.port ? parseInt(url.port) : kPortMap[url.protocol];
   assert(port !== void 0, `unexpected protocol: ${url.protocol}`);
   const connect = async () => {
     if (connected) return;
     if (connecting) return connectDeferred;
     connecting = true;
     const opts: DialOptions = {
-      port: parseInt(port),
+      port,
       transport: "tcp"
     };
     if (url.hostname) {
