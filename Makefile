@@ -9,7 +9,7 @@ tsconfig.json:
 test:
 	deno -A test
 build:
-	docker build -t servest/site .
+	docker build --build-arg `cat .denov` -t servest/site .
 bench:
 	docker build -t servest/bench -f benchmark/Dockerfile .
 do-bench: bench
