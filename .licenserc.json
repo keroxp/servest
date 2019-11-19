@@ -1,4 +1,4 @@
 {
   "**/*.ts": "// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.",
-  "ignore": ["tests.ts", "vendor/**/*.ts", "vendor/**/*.js"]
+  "ignore": ["tests.ts", "vendor/", "fixtures/"]
 }
