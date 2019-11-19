@@ -36,14 +36,6 @@
       "/server.js": "./types/react-dom/server/index.d.ts"
     }
   },
-  "https://dev.jspm.io/@types/react": {
-    "version": "@16",
-    "modules": ["/index.d.ts", "/global.d.ts"]
-  },
-  "https://dev.jspm.io/@types/react-dom": {
-    "version": "@16",
-    "modules": ["/server/index.d.ts"]
-  },
   "https://dev.jspm.io/@types/prop-types": {
     "version": "@15.7.2",
     "modules": ["/index.d.ts"]

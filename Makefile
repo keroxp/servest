@@ -6,12 +6,16 @@ deno.d.ts:
 	deno --types > deno.d.ts
 tsconfig.json:
 	./make.sh > tsconfig.json
+.PHONY: types	
+types:
+	deno -A tools/gen_types.ts
+	deno fmt types/**/*.ts
 test:
 	deno -A test
 build:
 	docker build --build-arg `cat .denov` -t servest/site .
 bench:
-	docker build -t servest/bench -f benchmark/Dockerfile .
+	docker build --build-arg `cat .denov` -t servest/bench -f benchmark/Dockerfile .
 do-bench: bench
 	docker run -t servest/bench
 do-std-bench: bench
