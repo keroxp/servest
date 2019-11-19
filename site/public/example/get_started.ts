@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { createRouter } from "../../../router.ts";
 const router = createRouter();
 router.handle("/", async req => {

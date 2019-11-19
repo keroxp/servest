@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { serve } from "https://deno.land/std@v0.24.0/http/server.ts";
 const body = new TextEncoder().encode("Hello World");
 const it = serve(":4500");

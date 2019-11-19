@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { createRecorder } from "./testing.ts";
 import {
   assertEquals,
