@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { RoutedServerRequest } from "./router.ts";
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { IncomingHttpResponse } from "./server.ts";

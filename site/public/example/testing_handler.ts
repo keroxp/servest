@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { test } from "https://deno.land/std@v0.21.0/testing/mod.ts";
 import { assertEquals } from "https://deno.land/std@v0.21.0/testing/asserts.ts";
 import { HttpHandler } from "../../../router.ts";

@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { pathResolver } from "../util.ts";
 import * as path from "../vendor/https/deno.land/std/path/mod.ts";
 import { ServestVersion } from "../version.ts";

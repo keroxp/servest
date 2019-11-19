@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { createRouter } from "../../../router.ts";
 import { serveStatic } from "../../../serve_static.ts";
 const router = createRouter();

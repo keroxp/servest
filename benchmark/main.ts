@@ -1,3 +1,4 @@
+// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 export async function main() {
   const tgt = Deno.env()["TARGET"];
   console.log("start benching for " + tgt);
