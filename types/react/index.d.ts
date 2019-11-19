@@ -24,10 +24,13 @@
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.8
 
+// NOTE: Users of the `experimental` builds of React should add a reference
+// to 'react/experimental' in their project. See experimental.d.ts's top comment
+// for reference and documentation on how exactly to do it.
+
 import "./global.d.ts";
-// import * as CSS from 'csstype';
+
 import * as CSS from "../../vendor/https/dev.jspm.io/csstype/index.d.ts";
-// import * as PropTypes from 'prop-types';
 import * as PropTypes from "../../vendor/https/dev.jspm.io/@types/prop-types/index.d.ts";
 
 type NativeAnimationEvent = AnimationEvent;
@@ -117,12 +120,12 @@ declare namespace React {
     key: Key | null;
   }
 
-  /* FIXME: keroxp) Broken on ts 3.7.2 2019/11/16
-  interface ReactComponentElement<
-    T extends keyof JSX.IntrinsicElements | JSXElementConstructor<any>,
-    P = Pick<ComponentProps<T>, Exclude<keyof ComponentProps<T>, 'key' | 'ref'>>
-    > extends ReactElement<P, T> { }
-  */
+  /** FIXME: keroxp) Broken on ts 3.7.2 2019/11/16
+interface ReactComponentElement<
+        T extends keyof JSX.IntrinsicElements | JSXElementConstructor<any>,
+        P = Pick<ComponentProps<T>, Exclude<keyof ComponentProps<T>, 'key' | 'ref'>>
+    > extends ReactElement<P, T> { } 
+*/
 
   /**
    * @deprecated Please use `FunctionComponentElement`
