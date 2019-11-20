@@ -8,7 +8,7 @@ export type SetCookieOpts = {
   path?: string;
   secure?: boolean;
   httpOnly?: boolean;
-  sameSite?: "Strict" | "Lax";
+  sameSite?: "Strict" | "Lax" | "None";
 };
 
 export type Cookie = {
