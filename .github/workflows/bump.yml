@@ -12,11 +12,7 @@ jobs:
       run: |
         DENO_VERSION=$(cat .denov)
         curl -fsSL https://deno.land/x/install/install.sh | bash -s -- ${DENO_VERSION}
-    - name: Check And Bump
-      env:
-        GITHUB_USER: keroxp
-        GITHUB_REPO: servest
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      run: |
-        export PATH=$HOME/.deno/bin:$PATH
-        deno run -A https://denopkg.com/keroxp/dink-bot@v0.2.0/main.ts
+    - uses: keroxp/dink-bot@v0.3.0
+      with:
+        github-repository: ${{ github.repository }}
+        github-token: ${{ secrets.GITHUB_TOKEN }}
