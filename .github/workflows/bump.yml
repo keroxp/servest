@@ -1,6 +1,9 @@
 name: Bump
 
 on:
+  push:
+    branches:
+       - ci-test
   schedule:
     - cron: 0 13 * * *    
 jobs:
@@ -8,11 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install Deno
-      run: |
-        DENO_VERSION=$(cat .denov)
-        curl -fsSL https://deno.land/x/install/install.sh | bash -s -- ${DENO_VERSION}
-    - uses: keroxp/dink-bot@v0.3.0
+    - uses: keroxp/dink-bot@v0.3.3
       with:
         github-repository: ${{ github.repository }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
