@@ -16,7 +16,7 @@ jobs:
     - name: Run Tests
       run: |
         export PATH=$HOME/.deno/bin:$PATH
-        deno -A test
+        deno test -A
     - name: Check Site
       run: |
         export PATH=$HOME/.deno/bin:$PATH
