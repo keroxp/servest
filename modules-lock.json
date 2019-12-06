@@ -1,6 +1,6 @@
 {
   "https://deno.land/std": {
-    "version": "@v0.25.0",
+    "version": "@v0.26.0",
     "modules": [
       "/testing/mod.ts",
       "/testing/asserts.ts",
