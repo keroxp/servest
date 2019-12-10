@@ -8,7 +8,7 @@ import {
   ServerRequest
 } from "./server.ts";
 import { findLongestAndNearestMatch } from "./router_util.ts";
-import { methodFilter } from "./middlewares.ts";
+import { methodFilter } from "./middleware.ts";
 import { RoutingError } from "./error.ts";
 import { kHttpStatusMessages } from "./serveio.ts";
 import { createLogger, Logger, Loglevel, namedLogger } from "./logger.ts";

@@ -5,7 +5,7 @@ import { RoutingError } from "./error.ts";
 /** Deny request with 404 if method doesn't match */
 export const methodFilter = (...method: string[]): HttpHandler => async req => {
   if (!method.includes(req.method)) {
-    const u = new URL(req.url);
+    const u = new URL(req.url, "http://dummy");
     throw new RoutingError(404, `Cannot ${req.method} ${u.pathname}`);
   }
 };

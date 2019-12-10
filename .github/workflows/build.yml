@@ -20,9 +20,9 @@ jobs:
         curl -fsSL https://deno.land/x/install/install.sh | bash -s -- ${DENO_VERSION}
     - name: Run Tests
       run: |
-        export PATH=$HOME/.deno/bin:$PATH
+        export PATH=$HOME/.local/bin:$PATH
         deno test -A
     - name: Check Site
       run: |
-        export PATH=$HOME/.deno/bin:$PATH
+        export PATH=$HOME/.local/bin:$PATH
         deno -A ./tools/fetch_dir.ts ./site
