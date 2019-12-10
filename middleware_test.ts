@@ -6,8 +6,6 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
 import { createRecorder } from "./testing.ts";
-import { IncomingHttpRequest } from "./server.ts";
-import { RoutedServerRequest } from "./router.ts";
 import { RoutingError } from "./error.ts";
 it("middleware", t => {
   t.run("basic", async () => {
