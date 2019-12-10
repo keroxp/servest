@@ -1,6 +1,6 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { createRouter } from "../../../router.ts";
-import { contentTypeFilter } from "../../../middlewares.ts";
+import { contentTypeFilter } from "../../../middleware.ts";
 const router = createRouter();
 router.post("/json", contentTypeFilter("application/json"), async req => {
   const bodyJson = (await req.body!.json()) as { name: string; id: string };
