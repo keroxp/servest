@@ -12,10 +12,7 @@ jobs:
   build:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.label.name == 'CI start')
     runs-on: ubuntu-latest
-    env:
-      DENO_INSTALL: "${{ env.HOME }}/.deno"
-      PATH: "${{ env.HOME }}/.deno/bin:${{ env.PATH }}"
-    steps:      
+    steps:
     - uses: actions/checkout@v1
     - name: Install Deno
       run: |
@@ -23,7 +20,9 @@ jobs:
         curl -fsSL https://deno.land/x/install/install.sh | bash -s -- ${DENO_VERSION}
     - name: Run Tests
       run: |
+        export PATH=$HOME/.local/bin:$PATH
         deno test -A
     - name: Check Site
       run: |
+        export PATH=$HOME/.local/bin:$PATH
         deno -A ./tools/fetch_dir.ts ./site
