@@ -26,3 +26,6 @@ jobs:
       run: |
         export PATH=$HOME/.local/bin:$PATH
         deno -A ./tools/fetch_dir.ts ./site
+    - name: Build Image
+      run: |
+        make build

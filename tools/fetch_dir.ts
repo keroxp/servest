@@ -1,4 +1,4 @@
-#!/usr/bin/env deno -A
+#!/usr/bin/env deno -A --
 import * as fs from "../vendor/https/deno.land/std/fs/mod.ts";
 import * as path from "../vendor/https/deno.land/std/path/mod.ts";
 export async function fetchDir(dir: string): Promise<number> {
@@ -23,7 +23,7 @@ export async function fetchDir(dir: string): Promise<number> {
 }
 
 async function main() {
-  const code = await fetchDir(Deno.args[1]);
+  const code = await fetchDir(Deno.args[0]);
   Deno.exit(code);
 }
 
