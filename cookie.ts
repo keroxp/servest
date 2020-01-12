@@ -33,7 +33,7 @@ export function parseSetCookie(header: string): Cookie {
   const optMap = new Headers(
     optStr.split(";").map(i => {
       const [k, v] = i.trim().split("=");
-      return [k, v];
+      return [k, v] as [string, string];
     })
   );
   const domain = optMap.get("Domain") || undefined;
