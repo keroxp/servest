@@ -154,12 +154,12 @@ test(async function serveioReadResponseChunked() {
 });
 
 test(async function serveioWriteResponse() {
-  const list: ([
+  const list: [
     ServerResponse["body"],
     string | null,
     string | undefined,
     string
-  ])[] = [
+  ][] = [
     ["ok", "2", undefined, "text/plain; charset=UTF-8"],
     [encode("ok"), "2", "text/plain", "text/plain"],
     [new StringReader("ok"), null, undefined, "application/octet-stream"]

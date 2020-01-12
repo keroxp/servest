@@ -214,7 +214,7 @@ interface ReactComponentElement<
   type ClassicFactory<P> = CFactory<P, ClassicComponent<P, ComponentState>>;
 
   type DOMFactory<P extends DOMAttributes<T>, T extends Element> = (
-    props?: ClassAttributes<T> & P | null,
+    props?: (ClassAttributes<T> & P) | null,
     ...children: ReactNode[]
   ) => DOMElement<P, T>;
 
@@ -227,7 +227,7 @@ interface ReactComponentElement<
     T extends HTMLElement
   > extends DOMFactory<P, T> {
     (
-      props?: ClassAttributes<T> & P | null,
+      props?: (ClassAttributes<T> & P) | null,
       ...children: ReactNode[]
     ): DetailedReactHTMLElement<P, T>;
   }
@@ -235,7 +235,7 @@ interface ReactComponentElement<
   interface SVGFactory
     extends DOMFactory<SVGAttributes<SVGElement>, SVGElement> {
     (
-      props?: ClassAttributes<SVGElement> & SVGAttributes<SVGElement> | null,
+      props?: (ClassAttributes<SVGElement> & SVGAttributes<SVGElement>) | null,
       ...children: ReactNode[]
     ): ReactSVGElement;
   }
@@ -294,8 +294,8 @@ interface ReactComponentElement<
   function createElement(
     type: "input",
     props?:
-      | InputHTMLAttributes<HTMLInputElement> &
-          ClassAttributes<HTMLInputElement>
+      | (InputHTMLAttributes<HTMLInputElement> &
+          ClassAttributes<HTMLInputElement>)
       | null,
     ...children: ReactNode[]
   ): DetailedReactHTMLElement<
@@ -304,17 +304,17 @@ interface ReactComponentElement<
   >;
   function createElement<P extends HTMLAttributes<T>, T extends HTMLElement>(
     type: keyof ReactHTML,
-    props?: ClassAttributes<T> & P | null,
+    props?: (ClassAttributes<T> & P) | null,
     ...children: ReactNode[]
   ): DetailedReactHTMLElement<P, T>;
   function createElement<P extends SVGAttributes<T>, T extends SVGElement>(
     type: keyof ReactSVG,
-    props?: ClassAttributes<T> & P | null,
+    props?: (ClassAttributes<T> & P) | null,
     ...children: ReactNode[]
   ): ReactSVGElement;
   function createElement<P extends DOMAttributes<T>, T extends Element>(
     type: string,
-    props?: ClassAttributes<T> & P | null,
+    props?: (ClassAttributes<T> & P) | null,
     ...children: ReactNode[]
   ): DOMElement<P, T>;
 
@@ -322,7 +322,7 @@ interface ReactComponentElement<
 
   function createElement<P extends {}>(
     type: FunctionComponent<P>,
-    props?: Attributes & P | null,
+    props?: (Attributes & P) | null,
     ...children: ReactNode[]
   ): FunctionComponentElement<P>;
   function createElement<P extends {}>(
@@ -331,7 +331,7 @@ interface ReactComponentElement<
       ClassicComponent<P, ComponentState>,
       ClassicComponentClass<P>
     >,
-    props?: ClassAttributes<ClassicComponent<P, ComponentState>> & P | null,
+    props?: (ClassAttributes<ClassicComponent<P, ComponentState>> & P) | null,
     ...children: ReactNode[]
   ): CElement<P, ClassicComponent<P, ComponentState>>;
   function createElement<
@@ -340,12 +340,12 @@ interface ReactComponentElement<
     C extends ComponentClass<P>
   >(
     type: ClassType<P, T, C>,
-    props?: ClassAttributes<T> & P | null,
+    props?: (ClassAttributes<T> & P) | null,
     ...children: ReactNode[]
   ): CElement<P, T>;
   function createElement<P extends {}>(
     type: FunctionComponent<P> | ComponentClass<P> | string,
-    props?: Attributes & P | null,
+    props?: (Attributes & P) | null,
     ...children: ReactNode[]
   ): ReactElement<P>;
 
@@ -3181,7 +3181,9 @@ interface ReactComponentElement<
 
 // naked 'any' type in a conditional type will short circuit and union both the then/else branches
 // so boolean is only resolved for T = any
-type IsExactlyAny<T> = boolean extends (T extends never ? true : false)
+type IsExactlyAny<T> = boolean extends (T extends never
+? true
+: false)
   ? true
   : false;
 
