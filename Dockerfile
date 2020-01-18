@@ -4,7 +4,8 @@ ARG DENO_VERSION
 ENV DENO_DIR=/deno
 ENV DENO_INSTALL=${DENO_DIR}/.deno
 ENV PATH=${DENO_INSTALL}/bin:${PATH}
-RUN curl -fsSL https://deno.land/x/install/install.sh | sh -s -- ${DENO_VERSION}
+RUN curl -fsSL https://deno.land/x/install/install.sh | sh -s -- ${DENO_VERSION} \
+    && deno -V
 COPY modules.json modules-lock.json /servest/
 COPY ./vendor /servest/vendor
 COPY ./tools/fetch_dir.ts /servest/tools/fetch_dir.ts

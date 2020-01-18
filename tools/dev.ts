@@ -42,7 +42,7 @@ EXAMPLE:
     `);
     Deno.exit(1);
   }
-  const globs = Deno.args.slice(1, Deno.args.length - 1);
+  const globs = Deno.args.slice(0, Deno.args.length - 1);
   const cmd = Deno.args[Deno.args.length - 1];
   let proc: Deno.Process;
   function replaceProcess() {

@@ -23,7 +23,7 @@ export async function fetchDir(dir: string): Promise<number> {
 }
 
 async function main() {
-  const code = await fetchDir(Deno.args[1]);
+  const code = await fetchDir(Deno.args[0]);
   Deno.exit(code);
 }
 
