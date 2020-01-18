@@ -98,11 +98,11 @@ it("cookie integration", t => {
       const deno = req.cookies.get("deno");
       return req.respond({ status: 200, body: deno || "" });
     });
-    const lis = router.listen(":9988");
+    const lis = router.listen(":9983");
     return () => lis.close();
   });
   t.run("basic", async () => {
-    const resp = await fetch("http://127.0.0.1:9988/");
+    const resp = await fetch("http://127.0.0.1:9983/");
     const sc = resp.headers.get("Set-Cookie");
     assert(sc != null, "should set cookie");
     const cookie = parseSetCookie(sc);
@@ -117,7 +117,7 @@ it("cookie integration", t => {
       secure: undefined,
       httpOnly: undefined
     });
-    const resp2 = await fetch("http://127.0.0.1:9988/deno", {
+    const resp2 = await fetch("http://127.0.0.1:9983/deno", {
       headers: {
         Cookie: "deno=land"
       }

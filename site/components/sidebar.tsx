@@ -13,9 +13,9 @@ export const SideBarSection: React.FC<{
     <div className="sidebarSectionInner">{children}</div>
   </div>
 );
-export const SideBarLink: React.FC<
-  React.AnchorHTMLAttributes<HTMLAnchorElement>
-> = ({ children, ...rest }) => (
+export const SideBarLink: React.FC<React.AnchorHTMLAttributes<
+  HTMLAnchorElement
+>> = ({ children, ...rest }) => (
   <div className="sidebarLink">
     <a {...rest}>{children}</a>
   </div>
