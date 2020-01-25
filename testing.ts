@@ -30,8 +30,8 @@ export function createRecorder({
   match?: RegExpMatchArray | null;
 }): ResponseRecorder {
   const conn: Deno.Conn = {
-    localAddr: "",
-    remoteAddr: "",
+    localAddr: { transport: "tcp", hostname: "0.0.0.0", port: 80 },
+    remoteAddr: { transport: "tcp", hostname: "0.0.0.0", port: 80 },
     rid: 0,
     close(): void {},
     closeRead(): void {},
