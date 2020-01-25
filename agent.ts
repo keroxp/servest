@@ -6,7 +6,7 @@ import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;
-import DialOptions = Deno.DialOptions;
+import DialOptions = Deno.ConnectOptions;
 
 /** keep-alive http agent for single host. each message will be sent in serial */
 export interface HttpAgent {
@@ -75,9 +75,9 @@ export function createAgent(
       opts.hostname = hostname;
     }
     if (url.protocol === "http:") {
-      _conn = await Deno.dial(opts);
+      _conn = await Deno.connect(opts);
     } else {
-      _conn = await Deno.dialTLS(opts);
+      _conn = await Deno.connectTLS(opts);
     }
     bufReader = new BufReader(_conn);
     bufWriter = new BufWriter(_conn);
