@@ -1,2 +1,2 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-export const ServestVersion = "v0.26.2";
+export const ServestVersion = "v0.27.0";
