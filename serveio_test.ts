@@ -1,9 +1,15 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { runIfMain, test } from "./vendor/https/deno.land/std/testing/mod.ts";
+import {
+  runIfMain,
+  test,
+  setFilter
+} from "./vendor/https/deno.land/std/testing/mod.ts";
 import {
   parseKeepAlive,
   readRequest,
   readResponse,
+  setupBody,
+  writeRequest,
   writeResponse
 } from "./serveio.ts";
 import {
@@ -17,6 +23,7 @@ import Buffer = Deno.Buffer;
 import copy = Deno.copy;
 import { ServerResponse } from "./server.ts";
 import { readString } from "./util.ts";
+import { it } from "./test_util.ts";
 
 test(async function serveioReadRequestGet() {
   const f = await Deno.open("./fixtures/request_get.txt");
@@ -153,6 +160,51 @@ test(async function serveioReadResponseChunked() {
   f.close();
 });
 
+test("writeRequest", async () => {
+  const buf = new Buffer();
+  await writeRequest(buf, {
+    url: "http://localhost",
+    method: "POST",
+    headers: new Headers({
+      "content-type": "text/plain"
+    }),
+    body: "ok"
+  });
+  const req = await readRequest(buf);
+  assertEquals(req.url, "/");
+  assertEquals(req.headers.get("content-type"), "text/plain");
+  assertEquals(req.headers.get("content-length"), "2");
+  assertEquals(await req.body?.text(), "ok");
+});
+
+test("writeRequestWithTrailer", async () => {
+  const buf = new Buffer();
+  await writeRequest(buf, {
+    url: "http://localhost",
+    method: "POST",
+    headers: new Headers({
+      "content-type": "text/plain",
+      "transfer-encoding": "chunked",
+      trailer: "deno,node"
+    }),
+    body: "ok",
+    trailers: () =>
+      new Headers({
+        deno: "land",
+        node: "js"
+      })
+  });
+  const req = await readRequest(buf);
+  assertEquals(req.url, "/");
+  assertEquals(req.headers.get("content-type"), "text/plain");
+  assertEquals(req.headers.has("content-length"), false);
+  assertEquals(await req.body?.text(), "ok");
+  assertEquals(req.trailers, undefined);
+  await req.finalize();
+  assertEquals(req.trailers?.get("deno"), "land");
+  assertEquals(req.trailers?.get("node"), "js");
+});
+
 test(async function serveioWriteResponse() {
   const list: [
     ServerResponse["body"],
@@ -197,6 +249,170 @@ test(async function serveioWriteResponseWithoutHeaders() {
   const resBody = new Buffer();
   await copy(resBody, res.body);
   assertEquals(resBody.toString(), "ok");
+});
+
+test(async function serveioWriteResponseWithTrailers() {
+  const buf = new Buffer();
+  await writeResponse(buf, {
+    status: 200,
+    body: encode("ok"),
+    headers: new Headers({
+      trailer: "deno,node",
+      "transfer-encoding": "chunked"
+    }),
+    trailers: () =>
+      new Headers({
+        deno: "land",
+        node: "js"
+      })
+  });
+  const res = await readResponse(buf);
+  assertEquals(res.status, 200);
+  assertEquals(res.headers.get("trailer"), "deno,node");
+  assertEquals(res.headers.get("transfer-encoding"), "chunked");
+  const resBody = new Buffer();
+  await copy(resBody, res.body);
+  assertEquals(resBody.toString(), "ok");
+  assertEquals(res.trailers, undefined);
+  await res.finalize();
+  assertEquals(res.trailers?.get("deno"), "land");
+  assertEquals(res.trailers?.get("node"), "js");
+});
+
+it("setupBody", t => {
+  t.run("len,string,no-header", () => {
+    const h = new Headers();
+    const [r, l] = setupBody("ok", h);
+    assertEquals(r instanceof Buffer, true);
+    assertEquals(h.get("content-type"), "text/plain; charset=UTF-8");
+    assertEquals(h.get("content-length"), "2");
+    assertEquals(l, 2);
+  });
+  t.run("len,string,header", () => {
+    const h = new Headers({ "content-type": "application/json" });
+    const [r, l] = setupBody("[]", h);
+    assertEquals(r instanceof Buffer, true);
+    assertEquals(h.get("content-type"), "application/json");
+    assertEquals(h.get("content-length"), "2");
+    assertEquals(l, 2);
+  });
+  t.run("len,bin,no-header", () => {
+    const h = new Headers();
+    const [r, l] = setupBody(new Uint8Array([0, 1]), h);
+    assertEquals(r instanceof Buffer, true);
+    assertEquals(h.get("content-type"), "application/octet-stream");
+    assertEquals(h.get("content-length"), "2");
+    assertEquals(l, 2);
+  });
+  t.run("len,bin,header", () => {
+    const ct = "text/plain";
+    const h = new Headers({ "content-type": ct });
+    const [r, l] = setupBody(new Uint8Array([0, 1]), h);
+    assertEquals(r instanceof Buffer, true);
+    assertEquals(h.get("content-type"), ct);
+    assertEquals(h.get("content-length"), "2");
+    assertEquals(l, 2);
+  });
+  t.run("len,reader,no-header", () => {
+    const h = new Headers();
+    const body = new Buffer(new Uint8Array([0, 1]));
+    const [r, l] = setupBody(body, h);
+    assertEquals(r, body);
+    assertEquals(h.get("content-type"), "application/octet-stream");
+    assertEquals(h.has("content-length"), false);
+    assertEquals(h.get("transfer-encoding"), "chunked");
+    assertEquals(l, undefined);
+  });
+  t.run("len,reader,header", () => {
+    const ct = "text/plain";
+    const h = new Headers({ "content-type": ct });
+    const body = new Buffer(new Uint8Array([0, 1]));
+    const [r, l] = setupBody(body, h);
+    assertEquals(r, body);
+    assertEquals(h.get("content-type"), ct);
+    assertEquals(h.has("content-length"), false);
+    assertEquals(l, undefined);
+    assertEquals(h.get("transfer-encoding"), "chunked");
+  });
+  t.run("len,reader,header,cl", () => {
+    const ct = "text/plain";
+    const h = new Headers({ "content-type": ct, "content-length": "2" });
+    const body = new Buffer(new Uint8Array([0, 1]));
+    const [r, l] = setupBody(body, h);
+    assertEquals(r, body);
+    assertEquals(h.get("content-type"), ct);
+    assertEquals(h.get("content-length"), "2");
+    assertEquals(l, 2);
+    assertEquals(h.has("transfer-encoding"), false);
+  });
+  // chunked
+  t.run("chunked,string,no-header", () => {
+    const h = new Headers({ "transfer-encoding": "chunked" });
+    const [r, l] = setupBody("ok", h);
+    assertEquals(r instanceof Buffer, true);
+    assertEquals(h.get("content-type"), "text/plain; charset=UTF-8");
+    assertEquals(h.has("content-length"), false);
+    assertEquals(h.get("transfer-encoding"), "chunked");
+    assertEquals(l, undefined);
+  });
+  t.run("chunked,string,header", () => {
+    const h = new Headers({
+      "content-type": "application/json",
+      "transfer-encoding": "chunked"
+    });
+    const [r, l] = setupBody("[]", h);
+    assertEquals(r instanceof Buffer, true);
+    assertEquals(h.get("content-type"), "application/json");
+    assertEquals(h.get("transfer-encoding"), "chunked");
+    assertEquals(h.has("content-length"), false);
+    assertEquals(l, undefined);
+  });
+  t.run("chunked,bin,no-header", () => {
+    const h = new Headers({ "transfer-encoding": "chunked" });
+    const [r, l] = setupBody(new Uint8Array([0, 1]), h);
+    assertEquals(r instanceof Buffer, true);
+    assertEquals(h.get("content-type"), "application/octet-stream");
+    assertEquals(h.get("transfer-encoding"), "chunked");
+    assertEquals(h.has("content-length"), false);
+    assertEquals(l, undefined);
+  });
+  t.run("chunked,bin,header", () => {
+    const ct = "text/plain";
+    const h = new Headers({
+      "transfer-encoding": "chunked",
+      "content-type": ct
+    });
+    const [r, l] = setupBody(new Uint8Array([0, 1]), h);
+    assertEquals(r instanceof Buffer, true);
+    assertEquals(h.get("content-type"), ct);
+    assertEquals(h.has("content-length"), false);
+    assertEquals(h.get("transfer-encoding"), "chunked");
+    assertEquals(l, undefined);
+  });
+  t.run("chunked,reader,no-header", () => {
+    const h = new Headers({ "transfer-encoding": "chunked" });
+    const body = new Buffer(new Uint8Array([0, 1]));
+    const [r, l] = setupBody(body, h);
+    assertEquals(r, body);
+    assertEquals(h.get("content-type"), "application/octet-stream");
+    assertEquals(h.has("content-length"), false);
+    assertEquals(h.get("transfer-encoding"), "chunked");
+    assertEquals(l, undefined);
+  });
+  t.run("chunked,reader,header", () => {
+    const ct = "text/plain";
+    const h = new Headers({
+      "transfer-encoding": "chunked",
+      "content-type": ct
+    });
+    const body = new Buffer(new Uint8Array([0, 1]));
+    const [r, l] = setupBody(body, h);
+    assertEquals(r, body);
+    assertEquals(h.get("content-type"), ct);
+    assertEquals(h.has("content-length"), false);
+    assertEquals(h.get("transfer-encoding"), "chunked");
+    assertEquals(l, undefined);
+  });
 });
 
 test(function serveioParseKeepAlive() {

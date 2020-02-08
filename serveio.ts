@@ -8,7 +8,6 @@ import {
   readUntilEof
 } from "./readers.ts";
 import { promiseInterrupter } from "./promises.ts";
-import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
 import {
   assert,
   AssertionError
@@ -164,6 +163,10 @@ export async function writeRequest(
   if (bodyReader) {
     await writeBody(writer, bodyReader, contentLength);
   }
+  if (req.trailers) {
+    const trailers = await req.trailers();
+    await writeTrailers(writer, headers, trailers);
+  }
 }
 
 /** read http response from reader */
@@ -185,13 +188,9 @@ export async function readResponse(
     throw EOF;
   }
   const contentLength = headers.get("content-length");
-  const isChunked = headers.get("transfer-encoding") === "chunked";
+  const isChunked = headers.get("transfer-encoding")?.match(/^chunked/);
   let body: BodyReader;
-  let finalizers = [
-    async () => {
-      await readUntilEof(body);
-    }
-  ];
+  let finalizers: (() => Promise<any>)[] = [() => readUntilEof(body)];
   const finalize = async () => {
     for (const f of finalizers) {
       await f();
@@ -245,36 +244,50 @@ export const kHttpStatusMessages = {
   500: "Internal Server Error"
 };
 
+function bodyToReader(
+  body: string | Uint8Array | Reader,
+  headers: Headers
+): [Reader, number | undefined] {
+  if (typeof body === "string") {
+    const bin = encode(body);
+    return [new Buffer(bin), bin.byteLength];
+  } else if (body instanceof Uint8Array) {
+    return [new Buffer(body), body.byteLength];
+  } else {
+    const cl = headers.get("content-length");
+    if (cl) {
+      return [body, parseInt(cl)];
+    }
+    return [body, undefined];
+  }
+}
+
 export function setupBody(
   body: string | Uint8Array | Reader,
   headers: Headers
 ): [Reader, number | undefined] {
-  let r: Reader;
-  let len: number | undefined;
-  if (body instanceof Uint8Array) {
-    headers.set("content-length", `${body.byteLength}`);
-    [r, len] = [new Buffer(body), body.byteLength];
-  } else if (typeof body === "string") {
-    const bin = encode(body);
-    headers.set("content-length", `${bin.byteLength}`);
-    [r, len] = [new Buffer(bin), bin.byteLength];
+  let [r, len] = bodyToReader(body, headers);
+  const transferEncoding = headers.get("transfer-encoding");
+  let chunked = transferEncoding?.match(/^chunked/) != null;
+  if (!chunked && typeof len === "number") {
+    headers.set("content-length", `${len}`);
+  }
+  if (typeof body === "string") {
     if (!headers.has("content-type")) {
       headers.set("content-type", "text/plain; charset=UTF-8");
     }
+  } else if (body instanceof Uint8Array) {
+    // noop
   } else {
     if (!headers.has("content-length") && !headers.has("transfer-encoding")) {
       headers.set("transfer-encoding", "chunked");
+      chunked = true;
     }
-    const size = headers.get("content-length");
-    if (size) {
-      len = parseInt(size);
-    }
-    r = body;
   }
   if (!headers.has("content-type")) {
     headers.set("content-type", "application/octet-stream");
   }
-  return [r, len];
+  return [r, chunked ? undefined : len];
 }
 /** write http response to writer. Content-Length, Transfer-Encoding headers are set if needed */
 export async function writeResponse(
@@ -282,7 +295,7 @@ export async function writeResponse(
   res: ServerResponse
 ): Promise<void> {
   const writer = BufWriter.create(w);
-  if (res.headers === void 0) {
+  if (!res.headers) {
     res.headers = new Headers();
   }
   // status line
@@ -299,6 +312,10 @@ export async function writeResponse(
   await writeHeaders(writer, res.headers);
   if (bodyReader) {
     await writeBody(writer, bodyReader, contentLength);
+  }
+  if (res.trailers) {
+    const trailer = await res.trailers();
+    await writeTrailers(writer, res.headers, trailer);
   }
 }
 

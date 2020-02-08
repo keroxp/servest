@@ -1,8 +1,8 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import Writer = Deno.Writer;
-import * as serveio from "./serveio.ts";
 import { ServerResponse } from "./server.ts";
 import { cookieSetter, CookieSetter } from "./cookie.ts";
+import { writeResponse } from "./serveio.ts";
 
 /** Basic responder for http response */
 export interface ServerResponder extends CookieSetter {
@@ -18,27 +18,22 @@ export interface ServerResponder extends CookieSetter {
     }
   ): Promise<void>;
 
-  /** Write additional trailer headers in tail of response */
-  writeTrailers(trailers: Headers): Promise<void>;
-
   isResponded(): boolean;
 
   respondedStatus(): number | undefined;
 }
 
 /** create ServerResponder object */
-export function createResponder(w: Writer): ServerResponder {
+export function createResponder(
+  w: Writer,
+  onResponse: (r: ServerResponse) => Promise<void> = resp =>
+    writeResponse(w, resp)
+): ServerResponder {
   const responseHeaders = new Headers();
   const cookie = cookieSetter(responseHeaders);
   let responseStatus: number | undefined;
   function isResponded() {
     return responseStatus !== undefined;
-  }
-  async function writeTrailers(trailers: Headers): Promise<void> {
-    if (!isResponded()) {
-      throw new Error("trailer headers can't be written before responding");
-    }
-    await serveio.writeTrailers(w, responseHeaders, trailers);
   }
   async function redirect(
     url: string,
@@ -61,7 +56,7 @@ export function createResponder(w: Writer): ServerResponder {
         responseHeaders.append(k, v);
       }
     }
-    await serveio.writeResponse(w, {
+    await onResponse({
       status,
       headers: responseHeaders,
       body
@@ -75,7 +70,6 @@ export function createResponder(w: Writer): ServerResponder {
     redirect,
     isResponded,
     respondedStatus,
-    writeTrailers,
     ...cookie
   };
 }
