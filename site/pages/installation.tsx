@@ -2,11 +2,13 @@ import { Article } from "../components/article.tsx";
 import { Code } from "../components/code.tsx";
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { DFC } from "../../jsx.ts";
-import { fetchExample } from "../content.ts";
+import { fetchExample, getLatestVersion } from "../content.ts";
 import { Content } from "../components/content.tsx";
-import { ServestVersion } from "../../version.ts";
 
-const Installation: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
+const Installation: DFC<{
+  codes: { [key: string]: string };
+  latestVersion: string;
+}> = ({ codes, latestVersion }) => (
   <Content>
     <Article>
       <section id={"installation"}>
@@ -22,8 +24,8 @@ const Installation: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
             </li>
             <li>
               <b>Versioned</b>:{" "}
-              <a href={`/@${ServestVersion}/server.ts`}>
-                https://servestjs.org/@{ServestVersion}/server.ts
+              <a href={`/@${latestVersion}/server.ts`}>
+                https://servestjs.org/@${latestVersion}/server.ts
               </a>
             </li>
           </ul>
@@ -51,7 +53,8 @@ Installation.getInitialProps = async () => {
       })
     )
   );
-  return { codes };
+  const latestVersion = await getLatestVersion();
+  return { codes, latestVersion };
 };
 
 export default Installation;

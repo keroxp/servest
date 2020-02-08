@@ -5,11 +5,9 @@ export type CodeState = {
   code: string;
 };
 
-export const Code: React.FC<
-  CodeState & {
-    lang?: string;
-  }
-> = ({ code, href, lang }) => {
+export const Code: React.FC<CodeState & {
+  lang?: string;
+}> = ({ code, href, lang }) => {
   const { pathname } = new URL(href, "https://dummy");
   const basename = pathname.split("/").pop()!;
   const cls =
