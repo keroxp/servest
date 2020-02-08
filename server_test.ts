@@ -172,7 +172,7 @@ test(async function serverConnectionClose() {
 it("handleKeepAliveConn", t => {
   t.beforeAfterAll(() => {
     port++;
-    const l = listenAndServe({ port }, req => {
+    const l = listenAndServe({ port }, async req => {
       const url = new URL(req.url, "http://dummy");
       const i = url.searchParams.get("q")!;
       req.respond({ status: 200, body: "resp:" + i });
