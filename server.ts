@@ -10,6 +10,7 @@ import ListenOptions = Deno.ListenOptions;
 import Listener = Deno.Listener;
 import { BodyReader } from "./readers.ts";
 import ListenTLSOptions = Deno.ListenTLSOptions;
+import { promiseWaitQueue } from "./util.ts";
 
 export type HttpBody = string | Uint8Array | Reader;
 /** request data for building http request to server */
@@ -189,6 +190,10 @@ export function handleKeepAliveConn(
   const bufReader = new BufReader(conn);
   const bufWriter = new BufWriter(conn);
   const originalOpts = opts;
+  const q = promiseWaitQueue<ServerResponse, void>(resp =>
+    writeResponse(bufWriter, resp)
+  );
+
   // ignore keepAliveTimeout and use readTimeout for the first time
   scheduleReadRequest({
     keepAliveTimeout: opts.readTimeout,
@@ -202,35 +207,11 @@ export function handleKeepAliveConn(
       .catch(() => conn.close());
   }
 
-  const queue: {
-    d: Deferred<void>;
-    response: ServerResponse;
-  }[] = [];
-  function enqueue(response: ServerResponse): Promise<void> {
-    const d = deferred<void>();
-    queue.push({ d, response });
-    if (queue.length === 1) {
-      dequeue();
-    }
-    return d;
-  }
-  function dequeue() {
-    const [e] = queue;
-    if (!e) return;
-    writeResponse(bufWriter, e.response)
-      .then(e.d.resolve)
-      .catch(e.d.reject)
-      .finally(() => {
-        queue.shift();
-        dequeue();
-      });
-  }
-
   async function processRequest(opts: ServeOptions): Promise<ServeOptions> {
     const req = await readRequest(bufReader, opts);
     let responded: Promise<void> = Promise.resolve();
     const onResponse = (resp: ServerResponse) => {
-      responded = enqueue(resp);
+      responded = q.enqueue(resp);
       return responded;
     };
     const responder = createResponder(bufWriter, onResponse);

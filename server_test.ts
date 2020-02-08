@@ -13,10 +13,13 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
 import { createAgent } from "./agent.ts";
-import { it } from "./test_util.ts";
+import { readResponse, writeRequest } from "./serveio.ts";
+import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";
+import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
+import Buffer = Deno.Buffer;
 
 let port = 8880;
-
+setFilter("handleKeepAliveConn");
 test(async function server() {
   const listener = listenAndServe(
     {
@@ -169,26 +172,54 @@ test(async function serverConnectionClose() {
   }
 });
 
-it("handleKeepAliveConn", t => {
-  t.beforeAfterAll(() => {
-    port++;
-    const l = listenAndServe({ port }, async req => {
-      const url = new URL(req.url, "http://dummy");
-      const i = url.searchParams.get("q")!;
-      req.respond({ status: 200, body: "resp:" + i });
+function dummyConn(r: Deno.Reader, w: Deno.Writer): Deno.Conn {
+  const addr: Deno.Addr = { hostname: "0.0.0.0", port: 1, transport: "tcp" };
+  return {
+    rid: -1,
+    close(): void {},
+    closeWrite(): void {},
+    closeRead(): void {},
+    localAddr: addr,
+    remoteAddr: addr,
+    read: p => r.read(p),
+    write: p => w.write(p)
+  };
+}
+
+test("handleKeepAliveConn should respond exclusively", async () => {
+  const r = new Buffer();
+  const w = new Buffer();
+  await writeRequest(r, {
+    method: "GET",
+    url: "http://localhost/?q=1"
+  });
+  await writeRequest(r, {
+    method: "GET",
+    url: "http://localhost/?q=2"
+  });
+  await writeRequest(r, {
+    method: "GET",
+    url: "http://localhost/?q=3"
+  });
+  const d = deferred<void>();
+  let latch = 3;
+  handleKeepAliveConn(dummyConn(r, w), async req => {
+    const url = new URL(req.url, "http://dummy");
+    const i = url.searchParams.get("q")!;
+    req.respond({ status: 200, body: "resp:" + i }).then(() => {
+      if (--latch === 0) {
+        d.resolve();
+      }
     });
-    return () => l.close();
   });
-  t.run("should respond exclusively", async () => {
-    const [resp1, resp2, resp3] = await Promise.all([
-      fetch("http://localhost:" + port + "/?q=1"),
-      fetch("http://localhost:" + port + "/?q=2"),
-      fetch("http://localhost:" + port + "/?q=3")
-    ]);
-    assertEquals(await resp1.body.text(), "resp:1");
-    assertEquals(await resp2.body.text(), "resp:2");
-    assertEquals(await resp3.body.text(), "resp:3");
-  });
+  await d;
+  const responseReader = new BufReader(w);
+  const resp1 = await readResponse(responseReader);
+  assertEquals(await resp1.body.text(), "resp:1");
+  const resp2 = await readResponse(responseReader);
+  assertEquals(await resp2.body.text(), "resp:2");
+  const resp3 = await readResponse(responseReader);
+  assertEquals(await resp3.body.text(), "resp:3");
 });
 
 runIfMain(import.meta);
