@@ -1,10 +1,10 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { serve } from "https://deno.land/std@v0.24.0/http/server.ts";
+import { serve } from "https://deno.land/std@v0.32.0/http/server.ts";
 const body = new TextEncoder().encode("Hello World");
 const it = serve(":4500");
 async function main() {
   for await (const req of it) {
-    await req.respond({
+    req.respond({
       status: 200,
       body
     });

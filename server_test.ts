@@ -4,7 +4,7 @@ import {
   setFilter,
   test
 } from "./vendor/https/deno.land/std/testing/mod.ts";
-import { listenAndServe } from "./server.ts";
+import { handleKeepAliveConn, listenAndServe } from "./server.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { StringWriter } from "./vendor/https/deno.land/std/io/writers.ts";
 import {
@@ -13,7 +13,6 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
 import { createAgent } from "./agent.ts";
-import { delay } from "./vendor/https/deno.land/std/util/async.ts";
 import { it } from "./test_util.ts";
 
 let port = 8880;
@@ -168,6 +167,28 @@ test(async function serverConnectionClose() {
     agent.conn.close();
     listener.close();
   }
+});
+
+it("handleKeepAliveConn", t => {
+  t.beforeAfterAll(() => {
+    port++;
+    const l = listenAndServe({ port }, req => {
+      const url = new URL(req.url, "http://dummy");
+      const i = url.searchParams.get("q")!;
+      req.respond({ status: 200, body: "resp:" + i });
+    });
+    return () => l.close();
+  });
+  t.run("should respond exclusively", async () => {
+    const [resp1, resp2, resp3] = await Promise.all([
+      fetch("http://localhost:" + port + "/?q=1"),
+      fetch("http://localhost:" + port + "/?q=2"),
+      fetch("http://localhost:" + port + "/?q=3")
+    ]);
+    assertEquals(await resp1.body.text(), "resp:1");
+    assertEquals(await resp2.body.text(), "resp:2");
+    assertEquals(await resp3.body.text(), "resp:3");
+  });
 });
 
 runIfMain(import.meta);

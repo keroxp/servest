@@ -3,14 +3,15 @@ import Conn = Deno.Conn;
 import Reader = Deno.Reader;
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { promiseInterrupter } from "./promises.ts";
-import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
-import { initServeOptions, readRequest } from "./serveio.ts";
+import { Deferred, deferred } from "./vendor/https/deno.land/std/util/async.ts";
+import { initServeOptions, readRequest, writeResponse } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
 import ListenOptions = Deno.ListenOptions;
 import Listener = Deno.Listener;
 import { BodyReader } from "./readers.ts";
 import ListenTLSOptions = Deno.ListenTLSOptions;
 
+export type HttpBody = string | Uint8Array | Reader;
 /** request data for building http request to server */
 export type ClientRequest = {
   /** full request url with queries */
@@ -20,7 +21,9 @@ export type ClientRequest = {
   /** HTTP Headers */
   headers?: Headers;
   /** HTTP Body */
-  body?: string | Uint8Array | Reader;
+  body?: HttpBody;
+  /** HTTP Trailers setter. It will be after finishing writing body. */
+  trailers?: () => Promise<Headers> | Headers;
 };
 
 /** response data for building http response to client */
@@ -30,7 +33,9 @@ export type ServerResponse = {
   /** HTTP headers */
   headers?: Headers;
   /** HTTP body */
-  body?: string | Uint8Array | Reader;
+  body?: HttpBody;
+  /** HTTP Trailers setter. It will be after finishing writing body. */
+  trailers?: () => Promise<Headers> | Headers;
 };
 
 /** Incoming http request for handling request from client */
@@ -141,7 +146,7 @@ export function listenAndServe(
 
 function listenInternal(
   listener: Listener,
-  handler: (req: ServerRequest) => Promise<void>,
+  handler: ServeHandler,
   opts: ServeOptions = {}
 ): ServeListener {
   let cancel: Promise<void>;
@@ -176,11 +181,11 @@ function listenInternal(
 }
 
 /** Try to continually read and process requests from keep-alive connection. */
-function handleKeepAliveConn(
+export function handleKeepAliveConn(
   conn: Conn,
-  handler: (req: ServerRequest) => Promise<void>,
+  handler: ServeHandler,
   opts: ServeOptions = {}
-) {
+): void {
   const bufReader = new BufReader(conn);
   const bufWriter = new BufWriter(conn);
   const originalOpts = opts;
@@ -197,9 +202,38 @@ function handleKeepAliveConn(
       .catch(() => conn.close());
   }
 
+  const queue: {
+    d: Deferred<void>;
+    response: ServerResponse;
+  }[] = [];
+  function enqueue(response: ServerResponse): Promise<void> {
+    const d = deferred<void>();
+    queue.push({ d, response });
+    if (queue.length === 1) {
+      dequeue();
+    }
+    return d;
+  }
+  function dequeue() {
+    const [e] = queue;
+    if (!e) return;
+    writeResponse(bufWriter, e.response)
+      .then(e.d.resolve)
+      .catch(e.d.reject)
+      .finally(() => {
+        queue.shift();
+        dequeue();
+      });
+  }
+
   async function processRequest(opts: ServeOptions): Promise<ServeOptions> {
     const req = await readRequest(bufReader, opts);
-    const responder = createResponder(bufWriter);
+    let responded: Promise<void> = Promise.resolve();
+    const onResponse = (resp: ServerResponse) => {
+      responded = enqueue(resp);
+      return responded;
+    };
+    const responder = createResponder(bufWriter, onResponse);
     const nextReq: ServerRequest = {
       ...req,
       bufWriter,
@@ -208,6 +242,7 @@ function handleKeepAliveConn(
       ...responder
     };
     await handler(nextReq);
+    await responded;
     await req.finalize();
     let keepAliveTimeout = originalOpts.keepAliveTimeout;
     if (req.keepAlive && req.keepAlive.max <= 0) {
