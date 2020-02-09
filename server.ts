@@ -3,7 +3,7 @@ import Conn = Deno.Conn;
 import Reader = Deno.Reader;
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { promiseInterrupter } from "./promises.ts";
-import { Deferred, deferred } from "./vendor/https/deno.land/std/util/async.ts";
+import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
 import { initServeOptions, readRequest, writeResponse } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
 import ListenOptions = Deno.ListenOptions;
@@ -41,8 +41,12 @@ export type ServerResponse = {
 
 /** Incoming http request for handling request from client */
 export type IncomingHttpRequest = {
-  /** request path with queries. always begin with / */
+  /** Raw requested URL (path + query): /path/to/resource?a=1&b=2 */
   url: string;
+  /** Path part of url: /path/to/resource */
+  path: string;
+  /** Query part of url: ?a=1&b=2 */
+  query: URLSearchParams;
   /** HTTP method */
   method: string;
   /** requested protocol. like HTTP/1.1 */

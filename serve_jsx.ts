@@ -18,8 +18,7 @@ export function serveJsx(
   parentComponent: any = React.Fragment
 ): HttpHandler {
   return async function serveJsx(req) {
-    const { pathname } = new URL(req.url, "http://dummy");
-    const p = await resolveIndexPath(dir, pathname, [".tsx", ".jsx"]);
+    const p = await resolveIndexPath(dir, req.path, [".tsx", ".jsx"]);
     if (p) {
       const jsx = await onImport(p);
       const el = jsx.default as DFC;
