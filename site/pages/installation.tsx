@@ -2,7 +2,7 @@ import { Article } from "../components/article.tsx";
 import { Code } from "../components/code.tsx";
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { DFC } from "../../jsx.ts";
-import { fetchExample, getLatestVersion } from "../content.ts";
+import { fetchExample, getServerstVersion } from "../content.ts";
 import { Content } from "../components/content.tsx";
 
 const Installation: DFC<{
@@ -25,7 +25,7 @@ const Installation: DFC<{
             <li>
               <b>Versioned</b>:{" "}
               <a href={`/@${latestVersion}/server.ts`}>
-                https://servestjs.org/@${latestVersion}/server.ts
+                https://servestjs.org/@{latestVersion}/server.ts
               </a>
             </li>
           </ul>
@@ -53,7 +53,7 @@ Installation.getInitialProps = async () => {
       })
     )
   );
-  const latestVersion = await getLatestVersion();
+  const latestVersion = await getServerstVersion();
   return { codes, latestVersion };
 };
 
