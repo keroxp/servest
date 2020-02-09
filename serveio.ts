@@ -47,9 +47,9 @@ export function initServeOptions(opts: ServeOptions = {}): ServeOptions {
 }
 
 /**
- * read http request from reader
- * status-line and headers are certainly read. body and trailers may not be read
- * read will be aborted when opts.cancel is called or any read wait to reader is over opts.readTimeout
+ * Read http request from reader.
+ * 'status-line' and headers are certainly read. body and trailers may not be read.
+ * Read will be aborted when opts.cancel is called or any read wait to reader is over opts.readTimeout.
  * */
 export async function readRequest(
   r: Reader,
@@ -68,6 +68,7 @@ export async function readRequest(
     throw EOF;
   }
   let [_, method, url, proto] = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
+  const { searchParams: query, pathname: path } = new URL(url, "http://dummy");
   method = method.toUpperCase();
   // read header
   const headers = await promiseInterrupter({
@@ -121,6 +122,8 @@ export async function readRequest(
   return {
     method,
     url,
+    path,
+    query,
     proto,
     headers,
     cookies,

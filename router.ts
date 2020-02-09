@@ -142,7 +142,6 @@ export function createRouter(
 
   function createHandler(): ServeHandler {
     const handleInternal = async (req: ServerRequest) => {
-      let { pathname } = new URL(req.url, "http://localhost");
       for (const middleware of middlewares) {
         await middleware({ ...req, match: [] });
         if (req.isResponded()) {
@@ -151,7 +150,7 @@ export function createRouter(
         }
       }
       const { index, match } = findLongestAndNearestMatch(
-        pathname,
+        req.path,
         routes.map(v => v.pattern)
       );
       if (index > -1 && match) {

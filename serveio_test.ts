@@ -30,6 +30,9 @@ test(async function serveioReadRequestGet() {
   const req = await readRequest(f);
   assertEquals(req.method, "GET");
   assertEquals(req.url, "/index.html?deno=land&msg=gogo");
+  assertEquals(req.path, "/index.html");
+  assertEquals(req.query.get("deno"), "land");
+  assertEquals(req.query.get("msg"), "gogo");
   assertEquals(req.proto, "HTTP/1.1");
   assertEquals(req.headers.get("host"), "deno.land");
   assertEquals(req.headers.get("content-type"), "text/plain");
@@ -43,6 +46,8 @@ test(async function serveioReadRequestGetCapital() {
   const req = await readRequest(f);
   assertEquals(req.method, "GET");
   assertEquals(req.url, "/About/Index.html?deno=land&msg=gogo");
+  assertEquals(req.query.get("deno"), "land");
+  assertEquals(req.query.get("msg"), "gogo");
   assertEquals(req.proto, "HTTP/1.1");
   assertEquals(req.headers.get("host"), "deno.land");
   assertEquals(req.headers.get("content-type"), "text/plain");
@@ -60,6 +65,8 @@ test(async function serveioReadRequestEncoded() {
     "/%E3%81%A7%E3%81%AE%E3%81%8F%E3%81%AB?deno=%F0%9F%A6%95"
   );
   assertEquals(req.proto, "HTTP/1.1");
+  assertEquals(req.path, "/%E3%81%A7%E3%81%AE%E3%81%8F%E3%81%AB");
+  assertEquals(req.query.get("deno"), "🦕");
   assertEquals(req.headers.get("host"), "deno.land");
   assertEquals(req.headers.get("content-type"), "text/plain");
   assert(req.body === void 0);
@@ -72,6 +79,7 @@ test(async function serveioReadRequestPost() {
   const req = await readRequest(f);
   assertEquals(req.method, "POST");
   assertEquals(req.url, "/index.html");
+  assertEquals(req.path, "/index.html");
   assertEquals(req.proto, "HTTP/1.1");
   assertEquals(req.headers.get("host"), "deno.land");
   assertEquals(req.headers.get("content-type"), "text/plain");
