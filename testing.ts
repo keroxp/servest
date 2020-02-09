@@ -60,8 +60,11 @@ export function createRecorder({
   }
   const responder = createResponder(bufWriter);
   const cookies = parseCookie(headers.get("Cookie") || "");
+  const { pathname: path, searchParams: query } = new URL(url, "http://dummy");
   return {
     url,
+    path,
+    query,
     method,
     headers,
     proto,
