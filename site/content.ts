@@ -10,10 +10,22 @@ export async function fetchExample(filename: string): Promise<string> {
   const relative = path.relative(p, resolve("../"));
   const m = relative.match(/(..\/)+/);
   let ret = decoder.decode(b);
+  const v = await getServerstVersion();
   if (m) {
     const [pat] = m;
-    const v = await getLatestVersion();
     ret = ret.replace(new RegExp(pat, "g"), `https://servestjs.org/@${v}/`);
+  }
+  if (ret.match("{{ServestVersion}}")) {
+    ret = ret.replace(/{{ServestVersion}}/g, v);
+  }
+  if (ret.match("https://deno.land/std")) {
+    const denov = await getDenoVersion();
+    if (denov) {
+      ret = ret.replace(
+        /https:\/\/deno.land\/std/g,
+        `https://deno.land/std@${denov}`
+      );
+    }
   }
   return ret;
 }
@@ -30,15 +42,27 @@ export async function fetchExampleCodes(
   );
 }
 
-let LatestVersion: string = "";
-export async function getLatestVersion() {
-  if (LatestVersion) return LatestVersion;
+let servestVersion: string | undefined;
+let denoVersoin: string | undefined;
+export async function getServerstVersion(): Promise<string> {
+  if (servestVersion) return servestVersion;
+  const v = await getLatestVersion("keroxp", "servest");
+  return (servestVersion = v) ?? "";
+}
+export async function getDenoVersion(): Promise<string> {
+  if (denoVersoin) return denoVersoin;
+  const v = await getLatestVersion("denoland", "deno");
+  return (denoVersoin = v) ?? "";
+}
+async function getLatestVersion(
+  owner: string,
+  repo: string
+): Promise<string | undefined> {
   const resp = await fetch(
-    "https://api.github.com/repos/keroxp/servest/releases/latest"
+    `https://api.github.com/repos/${owner}/${repo}/releases/latest`
   );
   if (resp.status === 200) {
     const j = await resp.json();
-    LatestVersion = j["name"];
+    return j["name"];
   }
-  return LatestVersion;
 }

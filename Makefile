@@ -20,4 +20,4 @@ do-bench: bench
 do-std-bench: bench
 	docker run -e TARGET=/servest/benchmark/std_bench.ts -t servest/bench
 dev:
-	./tools/dev.ts "site/**/*.ts" "site/**/*.ts" "site/index.ts"
+	./tools/dev.ts "site/**/*.ts" "site/**/*.tsx" "site/index.ts"

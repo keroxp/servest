@@ -24,10 +24,6 @@ const Index: DFC<{
       <div className="index">
         <div className="welcomeCode">
           <Code href={"/example/use_jsx.tsx"} code={codes["use_jsx.tsx"]} />
-          <h2>Running on you machine now</h2>
-          <Code
-            code={`$ deno --allow-net https://servestjs.org/example/use_jsx.tsx`}
-          />
         </div>
       </div>
     </div>
