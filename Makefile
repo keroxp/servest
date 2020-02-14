@@ -10,7 +10,7 @@ types:
 	deno -A tools/gen_types.ts
 	deno fmt types/**/*.ts
 test:
-	deno test -A
+	deno test -A *_test.ts
 build:
 	docker build --build-arg DENO_VERSION=`cat .denov` -t servest/site .
 bench:

@@ -1,6 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { createRouter } from "./router.ts";
-import { runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
 import {
   assertEquals,
   assertMatch
@@ -103,4 +102,3 @@ it("router", t => {
     assertEquals(await res.body.text(), "ok");
   });
 });
-runIfMain(import.meta);

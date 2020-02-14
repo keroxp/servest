@@ -1,9 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  runIfMain,
-  test,
-  setFilter
-} from "./vendor/https/deno.land/std/testing/mod.ts";
+
 import {
   parseKeepAlive,
   readRequest,
@@ -24,6 +20,7 @@ import copy = Deno.copy;
 import { ServerResponse } from "./server.ts";
 import { readString } from "./util.ts";
 import { it } from "./test_util.ts";
+const { test } = Deno;
 
 test(async function serveioReadRequestGet() {
   const f = await Deno.open("./fixtures/request_get.txt");
@@ -433,4 +430,3 @@ test(function serveioParseKeepAlive() {
   assertEquals(ka.max, 100);
 });
 
-runIfMain(import.meta);

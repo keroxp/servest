@@ -1,9 +1,4 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  runIfMain,
-  setFilter,
-  test
-} from "./vendor/https/deno.land/std/testing/mod.ts";
 import { handleKeepAliveConn, listenAndServe } from "./server.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { StringWriter } from "./vendor/https/deno.land/std/io/writers.ts";
@@ -17,9 +12,9 @@ import { readResponse, writeRequest } from "./serveio.ts";
 import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
 import Buffer = Deno.Buffer;
-
 let port = 8880;
-setFilter("handleKeepAliveConn");
+const { test } = Deno;
+
 test(async function server() {
   const listener = listenAndServe(
     {
@@ -222,4 +217,3 @@ test("handleKeepAliveConn should respond exclusively", async () => {
   assertEquals(await resp3.body.text(), "resp:3");
 });
 
-runIfMain(import.meta);

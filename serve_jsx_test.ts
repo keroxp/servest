@@ -5,7 +5,6 @@ import {
   assertMatch,
   assertThrowsAsync
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
 import { serveJsx } from "./serve_jsx.ts";
 import { pathResolver, readString } from "./util.ts";
 import { it } from "./test_util.ts";
@@ -49,5 +48,3 @@ it("serveJsx", t => {
     );
   });
 });
-
-runIfMain(import.meta);

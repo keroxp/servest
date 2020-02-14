@@ -1,8 +1,8 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { test, runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { dateToIMF, pathResolver } from "./util.ts";
 import { it } from "./test_util.ts";
+const { test } = Deno;
 
 test("dateToIMF", () => {
   const res = dateToIMF(new Date("2019-09-15T08:20:15Z"));
@@ -19,4 +19,3 @@ it("pathResolver", t => {
     });
   });
 });
-runIfMain(import.meta);

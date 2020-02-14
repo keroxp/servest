@@ -1,5 +1,4 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
 import {
   assertEquals,
   assertMatch
@@ -60,4 +59,3 @@ it("serveStatic integration", t => {
   });
 });
 
-runIfMain(import.meta);

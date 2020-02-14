@@ -1,5 +1,4 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { runIfMain, test } from "./vendor/https/deno.land/std/testing/mod.ts";
 import { MultipartWriter } from "./vendor/https/deno.land/std/mime/multipart.ts";
 import {
   assert,
@@ -76,4 +75,3 @@ it("multipart", t => {
   });
 });
 
-runIfMain(import.meta);

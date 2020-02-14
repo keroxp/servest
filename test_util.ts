@@ -1,12 +1,8 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  test,
-  TestFunction
-} from "./vendor/https/deno.land/std/testing/mod.ts";
 
 export type SetupFunc = () => any | Promise<any>;
 export interface Testing {
-  run(desc: string, body: TestFunction): void;
+  run(desc: string, body: () => (void | Promise<void>)): void;
   beforeAfterAll(func: () => SetupFunc | Promise<SetupFunc>): void;
   beforeAfterEach(func: () => SetupFunc | Promise<SetupFunc>): void;
 }
@@ -23,7 +19,7 @@ export function it(desc: string, func: (t: Testing) => void) {
     beforeEachFunc = func;
   }
   function run(desc2: string, func2: () => any | Promise<any>) {
-    test(`${desc} ${desc2}`, async () => {
+    Deno.test(`${desc} ${desc2}`, async () => {
       if (testCnt === 0 && beforeAllFunc) {
         afterAllFunc = await beforeAllFunc();
       }
