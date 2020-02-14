@@ -25,4 +25,4 @@ jobs:
     - name: Check Site
       run: |
         export PATH=$HOME/.local/bin:$PATH
-        deno fetch site/**/*.ts site/**/*.tsx
+        deno -A ./tools/fetch_dir.ts ./site
