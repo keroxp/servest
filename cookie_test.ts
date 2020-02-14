@@ -1,5 +1,4 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { test, runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
 import {
   assert,
   assertEquals,
@@ -127,4 +126,3 @@ it("cookie integration", t => {
   });
 });
 
-runIfMain(import.meta);

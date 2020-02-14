@@ -1,5 +1,4 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { runIfMain, test } from "./vendor/https/deno.land/std/testing/mod.ts";
 import { bodyReader, chunkedBodyReader } from "./readers.ts";
 import {
   assertEquals,
@@ -122,4 +121,3 @@ it("chunkedBodyReader", t => {
   });
 });
 
-runIfMain(import.meta);

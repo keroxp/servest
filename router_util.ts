@@ -1,6 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import * as path from "./vendor/https/deno.land/std/path/mod.ts";
-import { runIfMain } from "./vendor/https/deno.land/std/testing/mod.ts";
 
 /**
  * Find the match that appeared in the nearest position to the beginning of word.
@@ -78,5 +77,3 @@ export async function resolveIndexPath(
     }
   }
 }
-
-runIfMain(import.meta);

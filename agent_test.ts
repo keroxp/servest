@@ -1,9 +1,4 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  runIfMain,
-  setFilter,
-  test
-} from "./vendor/https/deno.land/std/testing/mod.ts";
 import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
 import { createAgent } from "./agent.ts";
 import { createRouter } from "./router.ts";
@@ -126,7 +121,3 @@ it("agent", t => {
   });
 });
 
-if (Deno.args.length > 1) {
-  setFilter(Deno.args[1]);
-}
-runIfMain(import.meta);

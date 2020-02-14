@@ -21,8 +21,8 @@ jobs:
     - name: Run Tests
       run: |
         export PATH=$HOME/.local/bin:$PATH
-        deno test -A
+        make test
     - name: Check Site
       run: |
         export PATH=$HOME/.local/bin:$PATH
-        deno -A ./tools/fetch_dir.ts ./site
+        deno fetch site/**/*.ts site/**/*.tsx
