@@ -18,9 +18,13 @@ export interface ServerResponder extends CookieSetter {
     }
   ): Promise<void>;
 
+  /** Mark this responded from other way */
+  markResponded(status: number): void;
+
   isResponded(): boolean;
 
   respondedStatus(): number | undefined;
+
 }
 
 /** create ServerResponder object */
@@ -62,6 +66,9 @@ export function createResponder(
       body
     });
   }
+  function markResponded(status: number) {
+    responseStatus = status;
+  }
   function respondedStatus() {
     return responseStatus;
   }
@@ -70,6 +77,7 @@ export function createResponder(
     redirect,
     isResponded,
     respondedStatus,
+    markResponded,
     ...cookie
   };
 }
