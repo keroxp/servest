@@ -8,10 +8,14 @@ export type CodeState = {
 export const Code: React.FC<CodeState & {
   lang?: string;
 }> = ({ code, href, lang }) => {
-  const { pathname } = new URL(href, "https://dummy");
-  const basename = pathname.split("/").pop()!;
-  const cls =
-    basename.endsWith("jsx") || basename.endsWith("tsx") ? "jsx" : "ts";
+  let cls = "";
+  let basename: string | undefined;
+  if (href) {
+    const { pathname } = new URL(href, "https://dummy");
+    basename = pathname.split("/").pop()!;
+    cls =
+      basename.endsWith("jsx") || basename.endsWith("tsx") ? "jsx" : "ts";
+  }
   return (
     <div className="codeWindow">
       <div className="codeWindowHeader">

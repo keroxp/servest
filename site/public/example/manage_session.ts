@@ -85,6 +85,9 @@ router.post("/login/auth", async req => {
   const userId = form.field("id");
   const password = form.field("password");
   const name = form.field("name");
+  if (!userId || !password || !name) {
+    return req.respond({ status: 400, body: "Bad Request" });
+  }
   const user = await authenticate(userId, password, name);
   if (user === 401) {
     return req.respond({ status: 401, body: "Unauthorized" });
