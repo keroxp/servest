@@ -20,7 +20,7 @@ export interface FormBody {
  */
 export async function parserMultipartRequest(
   req: { headers: Headers; body?: Reader },
-  maxMemory?: number
+  maxMemory: number = 1 << 10 // 10MB by default
 ): Promise<FormBody> {
   //Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryO5quBRiT4G7Vm3R7
   const contentType = req.headers.get("content-type");
@@ -54,13 +54,14 @@ export async function parserMultipartRequest(
       const arr = Object.values(form).filter(isFormFile) as FormFile[];
       const promises: Promise<void>[] = [];
       for (const v of arr) {
-        if (v.tempfile) {
+        const { tempfile } = v;
+        if (tempfile) {
           promises.push(
             (async () => {
               try {
-                const stat = await Deno.stat(v.tempfile);
+                const stat = await Deno.stat(tempfile);
                 if (stat.isFile()) {
-                  await Deno.remove(v.tempfile);
+                  await Deno.remove(tempfile);
                 }
               } catch (e) {}
             })()

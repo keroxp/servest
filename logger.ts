@@ -34,10 +34,10 @@ const kColorFuncMap = new Map<Loglevel, ColorFunc>([
   [Loglevel.ERROR, red]
 ]);
 export interface NamedLogger {
-  debug(msg: string, ...args: any[]);
-  info(msg: string, ...args: any[]);
-  warn(msg: string, ...args: any[]);
-  error(msg: string, ...args: any[]);
+  debug(msg: string, ...args: any[]): void;
+  info(msg: string, ...args: any[]): void;
+  warn(msg: string, ...args: any[]): void;
+  error(msg: string, ...args: any[]): void;
 }
 
 export function createLogger(

@@ -29,7 +29,7 @@ it("serveStatic", t => {
       const resp = await rec.response();
       assertEquals(resp.status, 200);
       const contentType = resp.headers.get("content-type");
-      assertMatch(contentType, new RegExp(type));
+      assertMatch(contentType!, new RegExp(type));
     });
   });
 });

@@ -12,10 +12,10 @@ export function it(desc: string, func: (t: Testing) => void) {
   let afterAllFunc: SetupFunc | undefined;
   let beforeEachFunc: SetupFunc | undefined;
   let afterEachFunc: SetupFunc | undefined;
-  function beforeAfterAll(func) {
+  function beforeAfterAll(func: SetupFunc) {
     beforeAllFunc = func;
   }
-  function beforeAfterEach(func) {
+  function beforeAfterEach(func: SetupFunc) {
     beforeEachFunc = func;
   }
   function run(desc2: string, func2: () => any | Promise<any>) {

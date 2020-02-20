@@ -67,7 +67,9 @@ export async function readRequest(
   if (resLine === EOF) {
     throw EOF;
   }
-  let [_, method, url, proto] = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
+  const m = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
+  assert(m != null, "invalid start line");
+  let [_, method, url, proto] = m;
   const { searchParams: query, pathname: path } = new URL(url, "http://dummy");
   method = method.toUpperCase();
   // read header
@@ -95,7 +97,9 @@ export async function readRequest(
   };
   if (method === "POST" || method === "PUT") {
     finalizers.push(async () => {
-      await readUntilEof(body);
+      if (body) {
+        await readUntilEof(body);
+      }
     });
     if (headers.get("transfer-encoding") === "chunked") {
       if (headers.has("trailer")) {
@@ -210,11 +214,13 @@ export async function readResponse(
       timeout,
       cancel
     });
-  } else {
+  } else if (contentLength != null){
     body = bodyReader(reader, parseInt(contentLength), {
       timeout,
       cancel
     });
+  } else {
+    throw new Error("unkown conetnt-lengh or chunked")
   }
   return {
     proto,
@@ -229,7 +235,7 @@ export async function readResponse(
   };
 }
 
-export const kHttpStatusMessages = {
+export const kHttpStatusMessages: {[k:number]: string} = {
   100: "Continue",
   101: "Switching Protocols",
   102: "Processing",
@@ -441,9 +447,11 @@ export async function readTrailers(
     if (readLine === EOF) {
       throw EOF;
     }
-    const [_, field, value] = decode(readLine.line)
+    const m = decode(readLine.line)
       .trim()
       .match(/^([^ :]+?):(.+?)$/);
+    assert(m != null)
+    const [_, field, value] = m;
     assert(
       trailerHeaderFields.includes(field),
       `unexpected trailer field: ${field}`
@@ -454,8 +462,8 @@ export async function readTrailers(
 }
 
 export function parseKeepAlive(h: Headers): KeepAlive {
-  let timeout;
-  let max;
+  let timeout: number = -1;
+  let max: number = -1;
   const keepAlive = h.get("keep-alive");
   if (keepAlive === null) {
     throw new AssertionError("keep-alive must be set");
@@ -464,14 +472,14 @@ export function parseKeepAlive(h: Headers): KeepAlive {
   for (const [key, value] of kv) {
     if (key === "timeout") {
       timeout = parseInt(value);
-      assert(
-        Number.isInteger(timeout),
-        `"timeout" must be integer: ${timeout}`
-      );
     } else if (key === "max") {
       max = parseInt(value);
-      assert(Number.isInteger(max), `"max" max be integer: ${max}`);
     }
   }
+  assert(
+    Number.isInteger(timeout),
+    `"timeout" must be integer: ${timeout}`
+  );
+  assert(Number.isInteger(max), `"max" max be integer: ${max}`);
   return { timeout, max };
 }

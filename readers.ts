@@ -123,13 +123,14 @@ function bodyParser(holder: BodyHolder): BodyParser {
   return { json, text, formData, arrayBuffer };
 }
 
+const kDefaultReadTimeout = 10000; // 10sec
 export function bodyReader(
   r: Reader,
   contentLength: number,
   opts?: {
-    timeout: number;
+    timeout?: number;
     cancel?: Promise<void>;
-  }
+  } 
 ): BodyReader {
   let total: number = 0;
   async function read(p: Uint8Array): Promise<number | EOF> {
@@ -148,7 +149,9 @@ export function bodyReader(
     }
     return eof ? EOF : result;
   }
-  const reader: Deno.Reader = timeoutReader({ read }, opts);
+  const timeout = opts?.timeout ?? kDefaultReadTimeout;
+  const cancel = opts?.cancel;
+  const reader: Deno.Reader = timeoutReader({ read }, {timeout, cancel});
   const holder: BodyHolder = {
     reader,
     total() {
@@ -163,7 +166,7 @@ export function bodyReader(
 export function chunkedBodyReader(
   r: Reader,
   opts?: {
-    timeout: number;
+    timeout?: number;
     cancel?: Promise<void>;
   }
 ): BodyReader {
@@ -207,7 +210,9 @@ export function chunkedBodyReader(
       return p.byteLength;
     }
   }
-  const reader: Deno.Reader = timeoutReader({ read }, opts);
+  const timeout = opts?.timeout ?? kDefaultReadTimeout;
+  const cancel = opts?.cancel;
+  const reader: Deno.Reader = timeoutReader({ read }, {timeout, cancel});
   const holder: BodyHolder = {
     reader,
     total() {

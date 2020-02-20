@@ -11,7 +11,7 @@ export function promiseInterrupter({
   cancel?: Promise<void>;
 }): <T>(p: Promise<T>) => Promise<T> {
   timeout = Number.isInteger(timeout) ? timeout : -1;
-  return <T>(p) =>
+  return <T>(p: Promise<T>) =>
     new Promise<T>((resolve, reject) => {
       if (timeout < 0) {
         p.then(resolve).catch(reject);
