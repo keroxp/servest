@@ -13,7 +13,7 @@ const resolve = pathResolver(import.meta);
 router.use(serveStatic(resolve("./public")));
 router.use(serveJsx(resolve("./pages"), f => import(f), Layout));
 router.get(new RegExp("^/@(?<version>.*?)/(?<pathname>.+?)$"), async req => {
-  let { version, pathname } = req.match.groups;
+  let { version, pathname } = req.match.groups!;
   if (!version) {
     version = "master";
   }
