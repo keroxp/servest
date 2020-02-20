@@ -41,14 +41,12 @@ it("responder", t => {
       await res.respond({
         status: 200,
         headers: new Headers(),
-        body: null
       });
       await assertThrowsAsync(
         async () =>
           res.respond({
             status: 200,
             headers: new Headers(),
-            body: null
           }),
         Error,
         "responded"

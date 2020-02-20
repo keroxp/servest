@@ -20,14 +20,14 @@ export function createRecorder({
   headers = new Headers(),
   body,
   proto = "http",
-  match
+  match = [url],
 }: {
   url: string;
   method?: string;
   proto?: string;
   headers?: Headers;
   body?: string | Uint8Array | Reader;
-  match?: RegExpMatchArray | null;
+  match?: RegExpMatchArray;
 }): ResponseRecorder {
   const conn: Deno.Conn = {
     localAddr: { transport: "tcp", hostname: "0.0.0.0", port: 80 },

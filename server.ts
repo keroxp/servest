@@ -112,7 +112,7 @@ export type ServeOptions = {
 };
 
 export type ServeListener = Deno.Closer;
-export type ServeHandler = (req: ServerRequest) => Promise<void>;
+export type ServeHandler  = (req: ServerRequest) => Promise<void>;
 
 function createListener(listenOptions: string | ListenOptions): Listener {
   if (typeof listenOptions === "string") {

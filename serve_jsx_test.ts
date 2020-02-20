@@ -21,7 +21,7 @@ it("serveJsx", t => {
     await func(rec);
     const resp = await rec.response();
     assertEquals(resp.status, 200);
-    assertMatch(resp.headers.get("content-type"), /text\/html/);
+    assertMatch(resp.headers.get("content-type")!, /text\/html/);
     assertEquals(
       await readString(resp.body),
       '<html data-reactroot="">deno</html>'

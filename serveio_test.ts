@@ -82,7 +82,7 @@ test(async function serveioReadRequestPost() {
   assertEquals(req.headers.get("content-type"), "text/plain");
   assertEquals(req.headers.get("content-length"), "69");
   assertEquals(
-    await readString(req.body),
+    await readString(req.body!),
     "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
   );
   assert(req.trailers === void 0);
@@ -99,7 +99,7 @@ test(async function serveioReadRequestPostChunked() {
   assertEquals(req.headers.get("content-type"), "text/plain");
   assertEquals(req.headers.get("transfer-encoding"), "chunked");
   assertEquals(
-    await readString(req.body),
+    await readString(req.body!),
     "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
   );
   assertEquals(req.trailers, void 0);
@@ -116,15 +116,15 @@ test(async function serveioReadRequestPostChunkedWithTrailers() {
   assertEquals(req.headers.get("content-type"), "text/plain");
   assertEquals(req.headers.get("transfer-encoding"), "chunked");
   assertEquals(
-    await readString(req.body),
+    await readString(req.body!),
     "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
   );
   assertEquals(req.trailers, void 0);
   assertEquals(typeof req.finalize, "function");
   await req.finalize();
-  assertEquals(req.trailers.constructor, Headers);
-  assertEquals(req.trailers.get("x-deno"), "land");
-  assertEquals(req.trailers.get("x-node"), "js");
+  assertEquals(req.trailers?.constructor, Headers);
+  assertEquals(req.trailers?.get("x-deno"), "land");
+  assertEquals(req.trailers?.get("x-node"), "js");
   f.close();
 });
 
@@ -159,8 +159,8 @@ test(async function serveioReadResponseChunked() {
   );
   assertEquals(res.trailers, void 0);
   await res.finalize();
-  assertEquals(res.trailers.get("x-deno"), "land");
-  assertEquals(res.trailers.get("x-node"), "js");
+  assertEquals(res.trailers?.get("x-deno"), "land");
+  assertEquals(res.trailers?.get("x-node"), "js");
   assert(typeof res.finalize === "function");
   f.close();
 });

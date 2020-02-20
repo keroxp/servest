@@ -14,13 +14,14 @@ import { kHttpStatusMessages } from "./serveio.ts";
 import { createLogger, Logger, Loglevel, namedLogger } from "./logger.ts";
 import ListenOptions = Deno.ListenOptions;
 import ListenTLSOptions = Deno.ListenTLSOptions;
+import { ServerResponder } from "./responder.ts";
 
 export interface HttpRouter {
   /**
    * Set global middleware.
    * It will be called for each request on any routes.
    * */
-  use(...handlers: HttpHandler[]);
+  use(...handlers: HttpHandler[]): void;
 
   /**
    * Register route with given pattern.
@@ -29,23 +30,23 @@ export interface HttpRouter {
    *   router.handle("/", ...)   => Called if request path exactly matches "/".
    *   router.handle(/^\//, ...) => Called if request path matches given regexp.
    * */
-  handle(pattern: string | RegExp, ...handlers: HttpHandler[]);
+  handle(pattern: string | RegExp, ...handlers: HttpHandler[]): void;
 
   /**
    * Register GET route.
    * Handlers will be called on GET and HEAD method.
    * */
-  get(pattern: string | RegExp, ...handlers: HttpHandler[]);
+  get(pattern: string | RegExp, ...handlers: HttpHandler[]): void;
 
   /** Register POST route */
-  post(patter: string | RegExp, ...handlers: HttpHandler[]);
+  post(patter: string | RegExp, ...handlers: HttpHandler[]): void;
 
   /**
    * Set global error handler.
    * All unhandled promise rejections while processing requests will be passed into this handler.
    * If error is ignored, it will be handled by built-in final error handler.
    * Only one handler can be set for one router. */
-  handleError(handler: ErrorHandler);
+  handleError(handler: ErrorHandler): void;
 
   /** Start listening with given addr */
   listen(addr: string | ListenOptions, opts?: ServeOptions): ServeListener;
@@ -65,7 +66,7 @@ export type HttpHandler = (req: RoutedServerRequest) => void | Promise<void>;
 /** Global error handler for requests */
 export type ErrorHandler = (
   e: any | RoutingError,
-  req: RoutedServerRequest
+  req: ServerRequest
 ) => void | Promise<void>;
 
 export type RouterOptions = {
@@ -82,7 +83,7 @@ export function createRouter(
   const middlewares: HttpHandler[] = [];
   const routes: { pattern: string | RegExp; handlers: HttpHandler[] }[] = [];
   const { info, error } = namedLogger("servest:router", opts.logger);
-  const finalErrorHandler = async (e: any, req: RoutedServerRequest) => {
+  const finalErrorHandler = async (e: any, req: ServerRequest) => {
     if (e instanceof RoutingError) {
       logRouteStatus(req, e.status);
       await req.respond({
@@ -96,7 +97,7 @@ export function createRouter(
           status: 500,
           body: e.stack
         });
-        error(e.stack);
+        if (e.stack)error(e.stack);
       } else {
         await req.respond({
           status: 500,
@@ -145,7 +146,7 @@ export function createRouter(
       for (const middleware of middlewares) {
         await middleware({ ...req, match: [] });
         if (req.isResponded()) {
-          logRouteStatus(req, req.respondedStatus());
+          logRouteStatus(req, req.respondedStatus()!);
           return;
         }
       }
@@ -158,7 +159,7 @@ export function createRouter(
         for (const handler of handlers) {
           await handler({ ...req, match });
           if (req.isResponded()) {
-            logRouteStatus(req, req.respondedStatus());
+            logRouteStatus(req, req.respondedStatus()!);
             break;
           }
         }
@@ -169,7 +170,7 @@ export function createRouter(
         throw new RoutingError(404, kHttpStatusMessages[404]);
       }
     };
-    return (req: RoutedServerRequest) => {
+    return (req: ServerRequest) => {
       const onError = async (e: any) => {
         try {
           await errorHandler(e, req);
@@ -191,7 +192,9 @@ export function createRouter(
     opts?: ServeOptions
   ): ServeListener {
     const handler = createHandler();
-    const listener = listenAndServe(addr, handler, opts);
+    const listener = listenAndServe(addr, req => {
+      return handler(req);
+    }, opts);
     info(`listening on ${addr}`);
     return listener;
   }

@@ -27,7 +27,7 @@ it("router_util", t => {
       ["./fixtures/public", "/index", "fixtures/public/index.html"],
       ["./fixtures/public", "/index.html", "fixtures/public/index.html"],
       ["./fixtures/public", "/nofile", undefined]
-    ]) {
+    ] as [string, string, string | undefined][]) {
       assertEquals(await resolveIndexPath(dir, fp), exp);
     }
   });
