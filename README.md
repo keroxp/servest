@@ -52,6 +52,7 @@ router.listen(":8899");
 
 - [ ] Security Middleware
 - [ ] Auth Middleware
+- [ ] WebSocket Integration
 - [x] HTTP testing api
 - [x] Serve JSX
 - [x] Cookie support
