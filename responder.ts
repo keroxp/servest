@@ -18,7 +18,7 @@ export interface ServerResponder extends CookieSetter {
     }
   ): Promise<void>;
 
-  /** Mark this responded from other way */
+  /** Mark as responded manually */
   markResponded(status: number): void;
 
   isResponded(): boolean;

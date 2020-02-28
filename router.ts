@@ -46,12 +46,12 @@ export interface HttpRouter {
   post(patter: string | RegExp, ...handlers: HttpHandler[]): void;
 
   /** Accept ws upgrade */
-  ws(pattern: string | RegExp, handler: WebSocketHandler[]);
+  ws(pattern: string | RegExp, ...handler: WebSocketHandler[]): void;
   ws(
     pattern: string | RegExp,
     handlers: HttpHandler[],
     handler: WebSocketHandler
-  );
+  ): void;
 
   /**
    * Set global error handler.
@@ -76,8 +76,8 @@ export type RoutedServerRequest = ServerRequest & {
 export type HttpHandler = (req: RoutedServerRequest) => void | Promise<void>;
 
 export type WebSocketHandler = (
+  sock: WebSocket,
   req: RoutedServerRequest,
-  sock: WebSocket
 ) => void;
 
 /** Global error handler for requests */
@@ -187,8 +187,9 @@ export function createRouter(
       );
       if (index > -1 && match) {
         const { handlers, wsHandler } = routes[index];
+        const routedReq = {...req, match};
         for (const handler of handlers) {
-          await handler({ ...req, match });
+          await handler(routedReq);
           if (req.isResponded()) {
             logRouteStatus(req, req.respondedStatus()!);
             break;
@@ -197,7 +198,7 @@ export function createRouter(
         if (wsHandler && acceptable(req)) {
           const sock = await acceptWebSocket(req);
           await req.markResponded(101);
-          wsHandler(req, sock);
+          wsHandler(sock, routedReq);
         }
         if (!req.isResponded()) {
           throw new RoutingError(404, kHttpStatusMessages[404]);
