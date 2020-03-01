@@ -78,7 +78,7 @@ export type HttpHandler = (req: RoutedServerRequest) => void | Promise<void>;
 export type WebSocketHandler = (
   sock: WebSocket,
   req: RoutedServerRequest
-) => void;
+) => void | Promise<void>;
 
 /** Global error handler for requests */
 export type ErrorHandler = (
