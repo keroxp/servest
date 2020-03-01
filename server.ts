@@ -207,28 +207,38 @@ export function handleKeepAliveConn(
 
   function scheduleReadRequest(opts: ServeOptions) {
     processRequest(opts)
-      .then(scheduleReadRequest)
-      .catch(() => conn.close());
+      .then(v => {
+        if (v) scheduleReadRequest(v);
+      })
+      .catch(() => {
+        conn.close();
+      });
   }
 
-  async function processRequest(opts: ServeOptions): Promise<ServeOptions> {
-    const req = await readRequest(bufReader, opts);
+  async function processRequest(
+    opts: ServeOptions
+  ): Promise<ServeOptions | undefined> {
+    const baseReq = await readRequest(bufReader, opts);
     let responded: Promise<void> = Promise.resolve();
     const onResponse = (resp: ServerResponse) => {
       responded = q.enqueue(resp);
       return responded;
     };
     const responder = createResponder(bufWriter, onResponse);
-    const nextReq: ServerRequest = {
-      ...req,
+    const req: ServerRequest = {
+      ...baseReq,
       bufWriter,
       bufReader,
       conn,
       ...responder
     };
-    await handler(nextReq);
+    await handler(req);
     await responded;
     await req.finalize();
+    if (req.isUpgraded()) {
+      // Stop processing
+      return;
+    }
     let keepAliveTimeout = originalOpts.keepAliveTimeout;
     if (req.keepAlive && req.keepAlive.max <= 0) {
       throw Deno.EOF;

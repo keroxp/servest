@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createRouter } from "./router.ts";
+import { createRouter, HttpRouter } from "./router.ts";
 import {
   assertEquals,
   assertMatch
@@ -7,7 +7,7 @@ import {
 import { it } from "./test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 import { writeResponse } from "./serveio.ts";
-import { connectWebSocket } from "./vendor/https/deno.land/std/ws/mod.ts"
+import { connectWebSocket } from "./vendor/https/deno.land/std/ws/mod.ts";
 setLevel(Loglevel.NONE);
 
 it("router", t => {
@@ -43,7 +43,7 @@ it("router", t => {
     router.handle("/redirect", req => req.redirect("/index"));
     router.handle("/respond-raw", async req => {
       await writeResponse(req.bufWriter, { status: 200, body: "ok" });
-      req.markResponded(200);
+      req.markAsResponded(200);
     });
     router.handleError((e, req) => {
       errorHandled = true;
@@ -120,7 +120,7 @@ it("router", t => {
 it("router/ws", t => {
   t.beforeAfterAll(() => {
     const router = createRouter();
-    router.ws("/ws", async (sock) => {
+    router.ws("/ws", async sock => {
       await sock.send("Hello");
       await sock.close(1000);
     });
@@ -136,7 +136,6 @@ it("router/ws", t => {
     assertEquals(msg2, { code: 1000, reason: "" });
     const { done } = await it.next();
     assertEquals(done, true);
-    // await sock.close(1000);
-    sock.conn.close();
+    assertEquals(sock.isClosed, true);
   });
 });

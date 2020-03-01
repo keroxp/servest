@@ -77,7 +77,7 @@ export type HttpHandler = (req: RoutedServerRequest) => void | Promise<void>;
 
 export type WebSocketHandler = (
   sock: WebSocket,
-  req: RoutedServerRequest,
+  req: RoutedServerRequest
 ) => void;
 
 /** Global error handler for requests */
@@ -187,7 +187,7 @@ export function createRouter(
       );
       if (index > -1 && match) {
         const { handlers, wsHandler } = routes[index];
-        const routedReq = {...req, match};
+        const routedReq = { ...req, match };
         for (const handler of handlers) {
           await handler(routedReq);
           if (req.isResponded()) {
@@ -197,7 +197,8 @@ export function createRouter(
         }
         if (wsHandler && acceptable(req)) {
           const sock = await acceptWebSocket(req);
-          await req.markResponded(101);
+          req.markAsResponded(101);
+          req.markAsUpgraded();
           wsHandler(sock, routedReq);
         }
         if (!req.isResponded()) {
