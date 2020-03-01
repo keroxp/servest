@@ -17,7 +17,8 @@
       "/fmt/colors.ts",
       "/media_types/mod.ts",
       "/mime/multipart.ts",
-      "/util/async.ts"
+      "/util/async.ts",
+      "/ws/mod.ts"
     ]
   },
   "https://dev.jspm.io/react": {

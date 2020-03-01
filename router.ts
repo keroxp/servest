@@ -14,7 +14,11 @@ import { kHttpStatusMessages } from "./serveio.ts";
 import { createLogger, Logger, Loglevel, namedLogger } from "./logger.ts";
 import ListenOptions = Deno.ListenOptions;
 import ListenTLSOptions = Deno.ListenTLSOptions;
-import { ServerResponder } from "./responder.ts";
+import {
+  acceptable,
+  acceptWebSocket,
+  WebSocket
+} from "./vendor/https/deno.land/std/ws/mod.ts";
 
 export interface HttpRouter {
   /**
@@ -41,6 +45,14 @@ export interface HttpRouter {
   /** Register POST route */
   post(patter: string | RegExp, ...handlers: HttpHandler[]): void;
 
+  /** Accept ws upgrade */
+  ws(pattern: string | RegExp, ...handler: WebSocketHandler[]): void;
+  ws(
+    pattern: string | RegExp,
+    handlers: HttpHandler[],
+    handler: WebSocketHandler
+  ): void;
+
   /**
    * Set global error handler.
    * All unhandled promise rejections while processing requests will be passed into this handler.
@@ -63,6 +75,11 @@ export type RoutedServerRequest = ServerRequest & {
 /** Basic handler for http request */
 export type HttpHandler = (req: RoutedServerRequest) => void | Promise<void>;
 
+export type WebSocketHandler = (
+  sock: WebSocket,
+  req: RoutedServerRequest
+) => void | Promise<void>;
+
 /** Global error handler for requests */
 export type ErrorHandler = (
   e: any | RoutingError,
@@ -80,8 +97,12 @@ export function createRouter(
     logger: createLogger()
   }
 ): HttpRouter {
-  const middlewares: HttpHandler[] = [];
-  const routes: { pattern: string | RegExp; handlers: HttpHandler[] }[] = [];
+  const middlewareList: HttpHandler[] = [];
+  const routes: {
+    pattern: string | RegExp;
+    handlers: HttpHandler[];
+    wsHandler?: WebSocketHandler;
+  }[] = [];
   const { info, error } = namedLogger("servest:router", opts.logger);
   const finalErrorHandler = async (e: any, req: ServerRequest) => {
     if (e instanceof RoutingError) {
@@ -134,7 +155,17 @@ export function createRouter(
 
   function use(...middleware: HttpHandler[]) {
     info(`use: ${handlerToString(middleware)}`);
-    middlewares.push(...middleware);
+    middlewareList.push(...middleware);
+  }
+
+  function ws(pattern: string | RegExp, ...args: any[]) {
+    if (Array.isArray(args[0])) {
+      routes.push({ pattern, handlers: args[0], wsHandler: args[1] });
+    } else if (typeof args[0] === "function") {
+      routes.push({ pattern, handlers: [], wsHandler: args[0] });
+    } else {
+      throw new Error("invalid function arguments");
+    }
   }
 
   function handleError(handler: ErrorHandler) {
@@ -143,7 +174,7 @@ export function createRouter(
 
   function createHandler(): ServeHandler {
     const handleInternal = async (req: ServerRequest) => {
-      for (const middleware of middlewares) {
+      for (const middleware of middlewareList) {
         await middleware({ ...req, match: [] });
         if (req.isResponded()) {
           logRouteStatus(req, req.respondedStatus()!);
@@ -155,13 +186,20 @@ export function createRouter(
         routes.map(v => v.pattern)
       );
       if (index > -1 && match) {
-        const { handlers } = routes[index];
+        const { handlers, wsHandler } = routes[index];
+        const routedReq = { ...req, match };
         for (const handler of handlers) {
-          await handler({ ...req, match });
+          await handler(routedReq);
           if (req.isResponded()) {
             logRouteStatus(req, req.respondedStatus()!);
             break;
           }
+        }
+        if (wsHandler && acceptable(req)) {
+          const sock = await acceptWebSocket(req);
+          req.markAsResponded(101);
+          req.markAsUpgraded();
+          wsHandler(sock, routedReq);
         }
         if (!req.isResponded()) {
           throw new RoutingError(404, kHttpStatusMessages[404]);
@@ -211,5 +249,5 @@ export function createRouter(
     info(`listening on ${listenOptions.hostname || ""}:${listenOptions.port}`);
     return listener;
   }
-  return { handle, use, get, post, handleError, listen, listenTLS };
+  return { handle, use, get, post, ws, handleError, listen, listenTLS };
 }

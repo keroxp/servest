@@ -62,4 +62,28 @@ it("responder", t => {
     assertEquals(status, 302);
     assertEquals(headers.get("location"), "/index.html");
   });
+
+  t.run("markResponded()", async () => {
+    const w = new Buffer();
+    const res = createResponder(w);
+    res.markAsResponded(200);
+    assertEquals(res.isResponded(), true);
+    assertEquals(res.respondedStatus(), 200);
+    await assertThrowsAsync(
+      () => res.respond({ status: 404, body: "404" }),
+      Error,
+      "already"
+    );
+  });
+  t.run("markAsUpgraded()", async () => {
+    const w = new Buffer();
+    const res = createResponder(w);
+    res.markAsUpgraded();
+    assertEquals(res.isUpgraded(), true);
+    await assertThrowsAsync(
+      () => res.respond({ status: 404, body: "404" }),
+      Error,
+      "upgraded"
+    );
+  });
 });

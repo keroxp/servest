@@ -18,7 +18,15 @@ export interface ServerResponder extends CookieSetter {
     }
   ): Promise<void>;
 
+  /** Mark as responded manually */
+  markAsResponded(status: number): void;
+
   isResponded(): boolean;
+
+  /** Mark as connection upgraded */
+  markAsUpgraded(): void;
+
+  isUpgraded(): boolean;
 
   respondedStatus(): number | undefined;
 }
@@ -32,8 +40,12 @@ export function createResponder(
   const responseHeaders = new Headers();
   const cookie = cookieSetter(responseHeaders);
   let responseStatus: number | undefined;
+  let upgraded = false;
   function isResponded() {
     return responseStatus !== undefined;
+  }
+  function isUpgraded() {
+    return upgraded;
   }
   async function redirect(
     url: string,
@@ -47,7 +59,10 @@ export function createResponder(
   }
   async function respond(response: ServerResponse): Promise<void> {
     if (isResponded()) {
-      throw new Error("http: already responded");
+      throw new Error("Request already responded");
+    }
+    if (isUpgraded()) {
+      throw new Error("Request upgraded");
     }
     const { status, headers, body } = response;
     responseStatus = status;
@@ -62,6 +77,12 @@ export function createResponder(
       body
     });
   }
+  function markAsResponded(status: number) {
+    responseStatus = status;
+  }
+  function markAsUpgraded() {
+    upgraded = true;
+  }
   function respondedStatus() {
     return responseStatus;
   }
@@ -69,7 +90,10 @@ export function createResponder(
     respond,
     redirect,
     isResponded,
+    isUpgraded,
     respondedStatus,
+    markAsResponded,
+    markAsUpgraded,
     ...cookie
   };
 }
