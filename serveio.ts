@@ -214,13 +214,13 @@ export async function readResponse(
       timeout,
       cancel
     });
-  } else if (contentLength != null){
+  } else if (contentLength != null) {
     body = bodyReader(reader, parseInt(contentLength), {
       timeout,
       cancel
     });
   } else {
-    throw new Error("unkown conetnt-lengh or chunked")
+    throw new Error("unkown conetnt-lengh or chunked");
   }
   return {
     proto,
@@ -235,7 +235,7 @@ export async function readResponse(
   };
 }
 
-export const kHttpStatusMessages: {[k:number]: string} = {
+export const kHttpStatusMessages: { [k: number]: string } = {
   100: "Continue",
   101: "Switching Protocols",
   102: "Processing",
@@ -450,7 +450,7 @@ export async function readTrailers(
     const m = decode(readLine.line)
       .trim()
       .match(/^([^ :]+?):(.+?)$/);
-    assert(m != null)
+    assert(m != null);
     const [_, field, value] = m;
     assert(
       trailerHeaderFields.includes(field),
@@ -476,10 +476,7 @@ export function parseKeepAlive(h: Headers): KeepAlive {
       max = parseInt(value);
     }
   }
-  assert(
-    Number.isInteger(timeout),
-    `"timeout" must be integer: ${timeout}`
-  );
+  assert(Number.isInteger(timeout), `"timeout" must be integer: ${timeout}`);
   assert(Number.isInteger(max), `"max" max be integer: ${max}`);
   return { timeout, max };
 }

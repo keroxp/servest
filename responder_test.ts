@@ -40,13 +40,13 @@ it("responder", t => {
       const res = createResponder(w);
       await res.respond({
         status: 200,
-        headers: new Headers(),
+        headers: new Headers()
       });
       await assertThrowsAsync(
         async () =>
           res.respond({
             status: 200,
-            headers: new Headers(),
+            headers: new Headers()
           }),
         Error,
         "responded"
@@ -62,7 +62,7 @@ it("responder", t => {
     assertEquals(status, 302);
     assertEquals(headers.get("location"), "/index.html");
   });
-
+  
   t.run("markResponded()", async () => {
     const w = new Buffer();
     const res = createResponder(w);

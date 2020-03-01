@@ -2,7 +2,7 @@
 
 export type SetupFunc = () => any | Promise<any>;
 export interface Testing {
-  run(desc: string, body: () => (void | Promise<void>)): void;
+  run(desc: string, body: () => void | Promise<void>): void;
   beforeAfterAll(func: () => SetupFunc | Promise<SetupFunc>): void;
   beforeAfterEach(func: () => SetupFunc | Promise<SetupFunc>): void;
 }

@@ -429,4 +429,3 @@ test(function serveioParseKeepAlive() {
   assertEquals(ka.timeout, 5);
   assertEquals(ka.max, 100);
 });
-

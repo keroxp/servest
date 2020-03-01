@@ -1,8 +1,9 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { Header } from "./header.tsx";
 import { Footer } from "./footer.tsx";
+import { FC } from "../../types/react/index.d.ts";
 
-export const Layout: React.FC = ({ children }) => (
+export const Layout: FC = ({ children }) => (
   <html lang="en">
     <head>
       <meta charSet="UTF-8" />

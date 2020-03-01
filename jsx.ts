@@ -1,6 +1,6 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import React from "./vendor/https/dev.jspm.io/react/index.js";
+import { FC } from "./types/react/index.d.ts";
 
-export type DFC<P = {}> = React.FC<P> & {
+export type DFC<P = {}> = FC<P> & {
   getInitialProps?: () => Promise<P>;
 };

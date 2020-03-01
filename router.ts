@@ -118,7 +118,7 @@ export function createRouter(
           status: 500,
           body: e.stack
         });
-        if (e.stack)error(e.stack);
+        if (e.stack) error(e.stack);
       } else {
         await req.respond({
           status: 500,
@@ -229,9 +229,13 @@ export function createRouter(
     opts?: ServeOptions
   ): ServeListener {
     const handler = createHandler();
-    const listener = listenAndServe(addr, req => {
-      return handler(req);
-    }, opts);
+    const listener = listenAndServe(
+      addr,
+      req => {
+        return handler(req);
+      },
+      opts
+    );
     info(`listening on ${addr}`);
     return listener;
   }

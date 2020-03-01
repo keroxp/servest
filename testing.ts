@@ -20,7 +20,7 @@ export function createRecorder({
   headers = new Headers(),
   body,
   proto = "http",
-  match = [url],
+  match = [url]
 }: {
   url: string;
   method?: string;
