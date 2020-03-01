@@ -130,7 +130,7 @@ export function bodyReader(
   opts?: {
     timeout?: number;
     cancel?: Promise<void>;
-  } 
+  }
 ): BodyReader {
   let total: number = 0;
   async function read(p: Uint8Array): Promise<number | EOF> {
@@ -151,7 +151,7 @@ export function bodyReader(
   }
   const timeout = opts?.timeout ?? kDefaultReadTimeout;
   const cancel = opts?.cancel;
-  const reader: Deno.Reader = timeoutReader({ read }, {timeout, cancel});
+  const reader: Deno.Reader = timeoutReader({ read }, { timeout, cancel });
   const holder: BodyHolder = {
     reader,
     total() {
@@ -212,7 +212,7 @@ export function chunkedBodyReader(
   }
   const timeout = opts?.timeout ?? kDefaultReadTimeout;
   const cancel = opts?.cancel;
-  const reader: Deno.Reader = timeoutReader({ read }, {timeout, cancel});
+  const reader: Deno.Reader = timeoutReader({ read }, { timeout, cancel });
   const holder: BodyHolder = {
     reader,
     total() {

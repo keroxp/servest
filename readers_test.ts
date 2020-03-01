@@ -120,4 +120,3 @@ it("chunkedBodyReader", t => {
     assertEquals(buf.toString(), "denoland");
   });
 });
-

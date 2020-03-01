@@ -112,8 +112,8 @@ export type ServeOptions = {
 };
 
 export type ServeListener = Deno.Closer;
-export type ServeHandler  = (req: ServerRequest) => Promise<void>;
-export type HostPort = { hostname?: string, port: number };
+export type ServeHandler = (req: ServerRequest) => Promise<void>;
+export type HostPort = { hostname?: string; port: number };
 function createListener(listenOptions: string | HostPort): Listener {
   if (typeof listenOptions === "string") {
     const [h, p] = listenOptions.split(":");
@@ -124,9 +124,9 @@ function createListener(listenOptions: string | HostPort): Listener {
     if (h) {
       opts.hostname = h;
     }
-    return Deno.listen({...opts, transport: "tcp"});
+    return Deno.listen({ ...opts, transport: "tcp" });
   } else {
-    return Deno.listen({...listenOptions, transport: "tcp"});
+    return Deno.listen({ ...listenOptions, transport: "tcp" });
   }
 }
 

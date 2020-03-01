@@ -1,11 +1,13 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
-export const SideBar: React.FC = ({ children }) => (
+import { FC } from "../../types/react/index.d.ts";
+
+export const SideBar: FC = ({ children }) => (
   <div className="sidebar">
     <nav className="sidebarInner">{children}</nav>
   </div>
 );
 
-export const SideBarSection: React.FC<{
+export const SideBarSection: FC<{
   title?: string;
 }> = ({ title, children }) => (
   <div className="sidebarSection">
@@ -13,9 +15,10 @@ export const SideBarSection: React.FC<{
     <div className="sidebarSectionInner">{children}</div>
   </div>
 );
-export const SideBarLink: React.FC<React.AnchorHTMLAttributes<
-  HTMLAnchorElement
->> = ({ children, ...rest }) => (
+export const SideBarLink: FC<React.AnchorHTMLAttributes<HTMLAnchorElement>> = ({
+  children,
+  ...rest
+}) => (
   <div className="sidebarLink">
     <a {...rest}>{children}</a>
   </div>

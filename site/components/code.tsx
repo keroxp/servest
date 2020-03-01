@@ -1,11 +1,12 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
+import { FC } from "../../types/react/index.d.ts";
 
 export type CodeState = {
   href?: string;
   code: string;
 };
 
-export const Code: React.FC<CodeState & {
+export const Code: FC<CodeState & {
   lang?: string;
 }> = ({ code, href, lang }) => {
   let cls = "";
@@ -13,8 +14,7 @@ export const Code: React.FC<CodeState & {
   if (href) {
     const { pathname } = new URL(href, "https://dummy");
     basename = pathname.split("/").pop()!;
-    cls =
-      basename.endsWith("jsx") || basename.endsWith("tsx") ? "jsx" : "ts";
+    cls = basename.endsWith("jsx") || basename.endsWith("tsx") ? "jsx" : "ts";
   }
   return (
     <div className="codeWindow">
