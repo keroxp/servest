@@ -19,7 +19,7 @@ it("router_util", t => {
       assertEquals(findLongestAndNearestMatch(path, pat).index, idx);
     });
   });
-  
+
   t.run("resolveIndexPath", async () => {
     for (const [dir, fp, exp] of [
       [".", "/README.md", "README.md"],
@@ -31,6 +31,4 @@ it("router_util", t => {
       assertEquals(await resolveIndexPath(dir, fp), exp);
     }
   });
-  
-  
-})
+});

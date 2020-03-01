@@ -58,4 +58,3 @@ it("serveStatic integration", t => {
     assertEquals(resp.status, 200);
   });
 });
-

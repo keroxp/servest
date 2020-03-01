@@ -1,7 +1,8 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { SideBar, SideBarLink, SideBarSection } from "./sidebar.tsx";
+import { FC } from "../../types/react/index.d.ts";
 
-export const Content: React.FC = ({ children }) => (
+export const Content: FC = ({ children }) => (
   <div className="content">
     <SideBar>
       <SideBarSection title={"Get Started"}>

@@ -14,7 +14,7 @@ import Reader = Deno.Reader;
 import { it } from "./test_util.ts";
 
 it("responder", t => {
-  t.run("httpServerResponder", async function () {
+  t.run("httpServerResponder", async function() {
     const w = new Buffer();
     const res = createResponder(w);
     assert(!res.isResponded());
@@ -33,27 +33,27 @@ it("responder", t => {
     await copy(sw, resp.body as Reader);
     assertEquals(sw.toString(), "ok");
   });
-  
+
   t.run("httpServerResponderShouldThrow", async function() {
     const w = new Buffer();
     {
       const res = createResponder(w);
       await res.respond({
         status: 200,
-        headers: new Headers(),
+        headers: new Headers()
       });
       await assertThrowsAsync(
         async () =>
           res.respond({
             status: 200,
-            headers: new Headers(),
+            headers: new Headers()
           }),
         Error,
         "responded"
       );
     }
   });
-  
+
   t.run("responder redirect should set Location header", async () => {
     const w = new Buffer();
     const res = createResponder(w);
@@ -62,5 +62,4 @@ it("responder", t => {
     assertEquals(status, 302);
     assertEquals(headers.get("location"), "/index.html");
   });
-  
 });

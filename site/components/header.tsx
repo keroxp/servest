@@ -1,6 +1,7 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
+import { FC } from "../../types/react/index.d.ts";
 
-export const Header: React.FC = () => (
+export const Header: FC = () => (
   <div className="header">
     <div className="inner">
       <div>

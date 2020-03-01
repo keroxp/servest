@@ -112,21 +112,21 @@ export type ServeOptions = {
 };
 
 export type ServeListener = Deno.Closer;
-export type ServeHandler  = (req: ServerRequest) => Promise<void>;
-
-function createListener(listenOptions: string | ListenOptions): Listener {
+export type ServeHandler = (req: ServerRequest) => Promise<void>;
+export type HostPort = { hostname?: string; port: number };
+function createListener(listenOptions: string | HostPort): Listener {
   if (typeof listenOptions === "string") {
     const [h, p] = listenOptions.split(":");
     if (!p) {
       throw new Error("server: port must be specified");
     }
-    listenOptions = { port: parseInt(p) };
+    const opts: HostPort = { port: parseInt(p) };
     if (h) {
-      listenOptions.hostname = h;
+      opts.hostname = h;
     }
-    return Deno.listen(listenOptions);
+    return Deno.listen({ ...opts, transport: "tcp" });
   } else {
-    return Deno.listen(listenOptions);
+    return Deno.listen({ ...listenOptions, transport: "tcp" });
   }
 }
 

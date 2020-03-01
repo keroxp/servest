@@ -1,6 +1,6 @@
+import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { Article } from "../components/article.tsx";
 import { Code } from "../components/code.tsx";
-import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { DFC } from "../../jsx.ts";
 import { fetchExample } from "../content.ts";
 import { Content } from "../components/content.tsx";
