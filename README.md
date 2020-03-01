@@ -48,10 +48,11 @@ router.handle("/", async req => {
 router.listen(":8899");
 ```
 
-## Loadmaps for v1
+## Roadmaps for v1
 
 - [ ] Security Middleware
 - [ ] Auth Middleware
+- [ ] WebSocket Integration
 - [x] HTTP testing api
 - [x] Serve JSX
 - [x] Cookie support
