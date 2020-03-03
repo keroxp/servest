@@ -48,15 +48,9 @@ router.handle("/", async req => {
 router.listen(":8899");
 ```
 
-## Roadmaps for v1
+## Roadmap to v1
 
-- [ ] Security Middleware
-- [ ] Auth Middleware
-- [x] WebSocket Integration
-- [x] HTTP testing api
-- [x] Serve JSX
-- [x] Cookie support
-- [x] Body parsers (json, form, multipart)
+[See this](https://github.com/keroxp/servest/issues/83)
 
 ## License
 
