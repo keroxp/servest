@@ -198,7 +198,6 @@ export function createRouter(
         if (wsHandler && acceptable(req)) {
           const sock = await acceptWebSocket(req);
           req.markAsResponded(101);
-          req.markAsUpgraded();
           wsHandler(sock, routedReq);
         }
         if (!req.isResponded()) {

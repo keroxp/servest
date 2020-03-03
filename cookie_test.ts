@@ -6,7 +6,7 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { it } from "./test_util.ts";
 import { cookieToString, parseCookie, parseSetCookie } from "./cookie.ts";
-import { dateToIMF } from "./util.ts";
+import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 import { createRouter } from "./router.ts";
 
 it("parseCookie", t => {
@@ -26,7 +26,7 @@ it("parseSetCookie", t => {
   const path = "/path";
   const sameSite = "Lax";
   t.run("basic", () => {
-    const e = `deno=land; Expires=${dateToIMF(
+    const e = `deno=land; Expires=${toIMF(
       expires
     )}; Max-Age=${maxAge}; Domain=${domain}; Path=${path}; Secure; HttpOnly; SameSite=${sameSite}`;
     const { name, value, ...opts } = parseSetCookie(e);
@@ -59,7 +59,7 @@ it("cookieToString", t => {
     });
     assertEquals(
       cookie,
-      `deno=land; Expires=${dateToIMF(
+      `deno=land; Expires=${toIMF(
         expires
       )}; Max-Age=${maxAge}; Domain=${domain}; Path=${path}; Secure; HttpOnly; SameSite=${sameSite}`
     );

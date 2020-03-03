@@ -235,8 +235,8 @@ export function handleKeepAliveConn(
     await handler(req);
     await responded;
     await req.finalize();
-    if (req.isUpgraded()) {
-      // Stop processing
+    if (req.respondedStatus() === 101) {
+      // If upgraded, stop processing
       return;
     }
     let keepAliveTimeout = originalOpts.keepAliveTimeout;
