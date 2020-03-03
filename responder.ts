@@ -3,11 +3,25 @@ import Writer = Deno.Writer;
 import { ServerResponse } from "./server.ts";
 import { cookieSetter, CookieSetter } from "./cookie.ts";
 import { writeResponse } from "./serveio.ts";
+import * as media_types from "./vendor/https/deno.land/std/media_types/mod.ts";
+import { basename } from "./vendor/https/deno.land/std/path/mod.ts";
 
 /** Basic responder for http response */
 export interface ServerResponder extends CookieSetter {
   /** Respond to request */
   respond(response: ServerResponse): Promise<void>;
+
+  /**
+   * Send file as a response. Content-Type will be guessed but may not be found.
+   * Default Content-Type is application/octet-stream
+   *  */
+  sendFile(
+    path: string,
+    opts?: {
+      contentDisposition?: "inline" | "attachment";
+      headers?: Headers;
+    }
+  ): Promise<void>;
 
   /** Redirect request with 302 (Found ) */
   redirect(
@@ -23,11 +37,6 @@ export interface ServerResponder extends CookieSetter {
 
   isResponded(): boolean;
 
-  /** Mark as connection upgraded */
-  markAsUpgraded(): void;
-
-  isUpgraded(): boolean;
-
   respondedStatus(): number | undefined;
 }
 
@@ -40,12 +49,8 @@ export function createResponder(
   const responseHeaders = new Headers();
   const cookie = cookieSetter(responseHeaders);
   let responseStatus: number | undefined;
-  let upgraded = false;
   function isResponded() {
     return responseStatus !== undefined;
-  }
-  function isUpgraded() {
-    return upgraded;
   }
   async function redirect(
     url: string,
@@ -61,9 +66,6 @@ export function createResponder(
     if (isResponded()) {
       throw new Error("Request already responded");
     }
-    if (isUpgraded()) {
-      throw new Error("Request upgraded");
-    }
     const { status, headers, body } = response;
     responseStatus = status;
     if (headers) {
@@ -77,11 +79,40 @@ export function createResponder(
       body
     });
   }
+  async function sendFile(
+    path: string,
+    opts?: {
+      contentDisposition?: "inline" | "attachment";
+      headers?: Headers;
+    }
+  ): Promise<void> {
+    const body = await Deno.open(path);
+    const headers = opts?.headers ?? new Headers();
+    try {
+      const contentType =
+        media_types.lookup(path) ?? "application/octet-stream";
+      headers.set("content-type", contentType);
+      const contentDisposition = opts?.contentDisposition;
+      if (contentDisposition === "inline") {
+        headers.set("content-disposition", contentDisposition);
+      } else if (contentDisposition === "attachment") {
+        const filename = basename(path);
+        headers.set(
+          "content-disposition",
+          `attachment; filename="${filename}"`
+        );
+      }
+      await onResponse({
+        status: 200,
+        headers,
+        body
+      });
+    } finally {
+      body.close();
+    }
+  }
   function markAsResponded(status: number) {
     responseStatus = status;
-  }
-  function markAsUpgraded() {
-    upgraded = true;
   }
   function respondedStatus() {
     return responseStatus;
@@ -89,11 +120,10 @@ export function createResponder(
   return {
     respond,
     redirect,
+    sendFile,
     isResponded,
-    isUpgraded,
     respondedStatus,
     markAsResponded,
-    markAsUpgraded,
     ...cookie
   };
 }

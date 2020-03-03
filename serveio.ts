@@ -26,7 +26,7 @@ import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
 import EOF = Deno.EOF;
-import { dateToIMF } from "./util.ts";
+import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 import { parseCookie } from "./cookie.ts";
 
 export const kDefaultKeepAliveTimeout = 75000; // ms
@@ -333,7 +333,7 @@ export async function writeHeaders(w: Writer, headers: Headers): Promise<void> {
   const lines: string[] = [];
   const writer = BufWriter.create(w);
   if (!headers.has("date")) {
-    headers.set("date", dateToIMF());
+    headers.set("date", toIMF(new Date()));
   }
   if (headers)
     for (const [key, value] of headers) {

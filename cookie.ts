@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { dateToIMF } from "./util.ts";
+import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 
 export type SetCookieOpts = {
   expires?: Date;
@@ -79,7 +79,7 @@ export function cookieToString(
   const out: string[] = [];
   out.push(`${encodeURIComponent(name)}=${encodeURIComponent(value)}`);
   if (opts.expires != null) {
-    out.push("Expires=" + dateToIMF(opts.expires));
+    out.push("Expires=" + toIMF(opts.expires));
   }
   if (opts.maxAge != null) {
     if (!Number.isInteger(opts.maxAge) || opts.maxAge <= 0) {
@@ -117,7 +117,8 @@ export function cookieSetter(responseHeaders: Headers): CookieSetter {
     if (opts.path) {
       out.push("Path=" + opts.path);
     }
-    out.push("Expires=" + dateToIMF(new Date(0)));
+    // Set past date
+    out.push("Expires=" + toIMF(new Date(0)));
     const v = out.join("; ");
     responseHeaders.append("Set-Cookie", v);
   }

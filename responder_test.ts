@@ -6,7 +6,7 @@ import {
   assertThrowsAsync
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
-import { readResponse } from "./serveio.ts";
+import { readResponse, readRequest } from "./serveio.ts";
 import { StringWriter } from "./vendor/https/deno.land/std/io/writers.ts";
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
@@ -14,7 +14,7 @@ import Reader = Deno.Reader;
 import { it } from "./test_util.ts";
 
 it("responder", t => {
-  t.run("httpServerResponder", async function() {
+  t.run("basic", async function() {
     const w = new Buffer();
     const res = createResponder(w);
     assert(!res.isResponded());
@@ -34,24 +34,68 @@ it("responder", t => {
     assertEquals(sw.toString(), "ok");
   });
 
-  t.run("httpServerResponderShouldThrow", async function() {
+  t.run("respond() should throw if already responded", async function() {
     const w = new Buffer();
-    {
-      const res = createResponder(w);
-      await res.respond({
-        status: 200,
-        headers: new Headers()
-      });
-      await assertThrowsAsync(
-        async () =>
-          res.respond({
-            status: 200,
-            headers: new Headers()
-          }),
-        Error,
-        "responded"
-      );
-    }
+    const res = createResponder(w);
+    await res.respond({
+      status: 200,
+      headers: new Headers()
+    });
+    await assertThrowsAsync(
+      async () =>
+        res.respond({
+          status: 200,
+          headers: new Headers()
+        }),
+      Error,
+      "responded"
+    );
+  });
+
+  t.run("sendFile() basic", async function() {
+    const w = new Buffer();
+    const res = createResponder(w);
+    await res.sendFile("./fixtures/sample.txt");
+    const resp = await readResponse(w);
+    assertEquals(resp.status, 200);
+    assertEquals(resp.headers.get("content-type"), "text/plain");
+    assertEquals(await resp.body?.text(), "sample");
+  });
+
+  t.run("sendFile() should throw if file not found", async () => {
+    const w = new Buffer();
+    const res = createResponder(w);
+    await assertThrowsAsync(
+      () => res.sendFile("./fixtures/not-found"),
+      Deno.errors.NotFound
+    );
+  });
+
+  t.run("sendFile() with attachment", async () => {
+    const w = new Buffer();
+    const res = createResponder(w);
+    await res.sendFile("./fixtures/sample.txt", {
+      contentDisposition: "inline"
+    });
+    const resp = await readResponse(w);
+    assertEquals(resp.status, 200);
+    assertEquals(resp.headers.get("content-disposition"), "inline");
+    assertEquals(await resp.body?.text(), "sample");
+  });
+
+  t.run("sendFile() with attachment", async () => {
+    const w = new Buffer();
+    const res = createResponder(w);
+    await res.sendFile("./fixtures/sample.txt", {
+      contentDisposition: "attachment"
+    });
+    const resp = await readResponse(w);
+    assertEquals(resp.status, 200);
+    assertEquals(
+      resp.headers.get("content-disposition"),
+      'attachment; filename="sample.txt"'
+    );
+    assertEquals(await resp.body?.text(), "sample");
   });
 
   t.run("responder redirect should set Location header", async () => {
@@ -73,17 +117,6 @@ it("responder", t => {
       () => res.respond({ status: 404, body: "404" }),
       Error,
       "already"
-    );
-  });
-  t.run("markAsUpgraded()", async () => {
-    const w = new Buffer();
-    const res = createResponder(w);
-    res.markAsUpgraded();
-    assertEquals(res.isUpgraded(), true);
-    await assertThrowsAsync(
-      () => res.respond({ status: 404, body: "404" }),
-      Error,
-      "upgraded"
     );
   });
 });

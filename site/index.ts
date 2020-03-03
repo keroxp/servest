@@ -29,16 +29,7 @@ router.get(new RegExp("^/@(?<version>.*?)/(?<pathname>.+?)$"), async req => {
 });
 router.handleError(async (e, req) => {
   if (e instanceof RoutingError) {
-    const body = await Deno.open(resolve("./public/error.html"), "r");
-    await req
-      .respond({
-        status: e.status,
-        headers: new Headers({
-          "content-type": "text/html; charset=UTF-8"
-        }),
-        body
-      })
-      .finally(() => body.close());
+    await req.sendFile(resolve("./public/error.html"));
   }
 });
 const port = Deno.env()["PORT"] || "8899";
