@@ -19,7 +19,8 @@
       "/media_types/mod.ts",
       "/mime/multipart.ts",
       "/util/async.ts",
-      "/ws/mod.ts"
+      "/ws/mod.ts",
+      "/ws/sha1.ts"
     ]
   },
   "https://dev.jspm.io/react": {

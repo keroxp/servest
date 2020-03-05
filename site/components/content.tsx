@@ -29,6 +29,7 @@ export const Content: FC = ({ children }) => (
         <SideBarLink href={"/testing-handler"}>Testing Handler</SideBarLink>
         <SideBarLink href={"/manage-cookie"}>Manage Cookie</SideBarLink>
         <SideBarLink href={"/handle-ws"}>Handle WebSocket</SideBarLink>
+        <SideBarLink href={"/basic-auth"}>Basic Auth</SideBarLink>
       </SideBarSection>
     </SideBar>
     {children}
