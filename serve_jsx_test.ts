@@ -10,8 +10,9 @@ import { pathResolver, readString } from "./util.ts";
 import { it } from "./test_util.ts";
 
 it("serveJsx", t => {
-  const func = serveJsx(pathResolver(import.meta)("./fixtures/public"), f =>
-    import(f)
+  const func = serveJsx(
+    pathResolver(import.meta)("./fixtures/public"),
+    f => import(f)
   );
   t.run("basic", async () => {
     const rec = createRecorder({
@@ -39,12 +40,8 @@ it("serveJsx", t => {
   });
   t.run("should throw if default export is not function", async () => {
     const rec = createRecorder({ url: "/not-component", method: "GET" });
-    await assertThrowsAsync(
-      async () => {
-        await func(rec);
-      },
-      Error,
-      "jsx: default export must be React component!"
-    );
+    await assertThrowsAsync(async () => {
+      await func(rec);
+    }, Error, "jsx: default export must be React component!");
   });
 });

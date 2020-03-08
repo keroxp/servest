@@ -8,21 +8,22 @@ import { Q } from "../components/common.tsx";
 
 const HandleWebSocket: DFC<{ codes: { [key: string]: string } }> = ({
   codes
-}) => (
-  <Content>
-    <Article>
-      <section id={"handle-ws"}>
-        <h2>Handle WebSocket</h2>
-        <p>
-          Servest provides WebSocket handler for Router API.
-          <Q>router.ws()</Q> is register for WebSocket route. <br />
-          Handler will be called after WebSocket upgrade finished.
-        </p>
-        <Code href={"/example/handle_ws.ts"} code={codes["handle_ws.ts"]} />
-      </section>
-    </Article>
-  </Content>
-);
+}) =>
+  (
+    <Content>
+      <Article>
+        <section id={"handle-ws"}>
+          <h2>Handle WebSocket</h2>
+          <p>
+            Servest provides WebSocket handler for Router API.
+            <Q>router.ws()</Q> is register for WebSocket route. <br />
+            Handler will be called after WebSocket upgrade finished.
+          </p>
+          <Code href={"/example/handle_ws.ts"} code={codes["handle_ws.ts"]} />
+        </section>
+      </Article>
+    </Content>
+  );
 
 HandleWebSocket.getInitialProps = async () => {
   const codes = Object.fromEntries(

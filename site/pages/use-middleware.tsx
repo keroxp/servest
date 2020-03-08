@@ -7,28 +7,29 @@ import { Content } from "../components/content.tsx";
 
 const UseMiddleware: DFC<{ codes: { [key: string]: string } }> = ({
   codes
-}) => (
-  <Content>
-    <Article>
-      <section id={"use-middleware"}>
-        <h2>Use middleware for Router</h2>
-        <p>
-          <code className={"q"}>HttpRouter.use()</code>
-          adds global http handlers (middleware) to the router.
-        </p>
-        <p>
-          Middleware is called on every request and behaves pre-processor for
-          requests. Here is an example of simple authentication middleware for
-          web API.
-        </p>
-        <Code
-          href={"/example/use_middleware.ts"}
-          code={codes["use_middleware.ts"]}
-        />
-      </section>
-    </Article>
-  </Content>
-);
+}) =>
+  (
+    <Content>
+      <Article>
+        <section id={"use-middleware"}>
+          <h2>Use middleware for Router</h2>
+          <p>
+            <code className={"q"}>HttpRouter.use()</code>
+            adds global http handlers (middleware) to the router.
+          </p>
+          <p>
+            Middleware is called on every request and behaves pre-processor for
+                      requests. Here is an example of simple authentication middleware for
+                      web API.
+          </p>
+          <Code
+            href={"/example/use_middleware.ts"}
+            code={codes["use_middleware.ts"]}
+          />
+        </section>
+      </Article>
+    </Content>
+  );
 
 UseMiddleware.getInitialProps = async () => {
   const codes = Object.fromEntries(

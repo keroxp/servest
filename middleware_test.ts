@@ -44,7 +44,12 @@ it("middleware", t => {
     assertEquals(req.isResponded(), false);
   });
   t.run("basicAuth failed", async () => {
-    const patterns = ["Basic hoge", `Basic ${btoa("deno:js")}`, `Basic ${btoa("deno:")}`, "Basic"];
+    const patterns = [
+      "Basic hoge",
+      `Basic ${btoa("deno:js")}`,
+      `Basic ${btoa("deno:")}`,
+      "Basic"
+    ];
     const auth = basicAuth({
       username: "deno",
       password: "land",
@@ -63,5 +68,5 @@ it("middleware", t => {
       const resp = await req.response();
       assertEquals(resp.status, 401);
     }
-  })
+  });
 });

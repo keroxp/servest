@@ -22,7 +22,7 @@ export async function parserMultipartRequest(
   req: { headers: Headers; body?: Reader },
   maxMemory: number = 1 << 10 // 10MB by default
 ): Promise<FormBody> {
-  //Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryO5quBRiT4G7Vm3R7
+  // Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryO5quBRiT4G7Vm3R7
   const contentType = req.headers.get("content-type");
   if (!req.body) {
     throw new Error("request has no body");

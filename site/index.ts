@@ -17,7 +17,8 @@ router.get(new RegExp("^/@(?<version>.*?)/(?<pathname>.+?)$"), async req => {
   if (!version) {
     version = "master";
   }
-  const u = `https://raw.githubusercontent.com/keroxp/servest/${version}/${pathname}`;
+  const u =
+    `https://raw.githubusercontent.com/keroxp/servest/${version}/${pathname}`;
   const resp = await fetch(u);
   if (resp.status === 200) {
     await req.respond(resp);

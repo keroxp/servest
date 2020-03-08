@@ -41,15 +41,11 @@ it("responder", t => {
       status: 200,
       headers: new Headers()
     });
-    await assertThrowsAsync(
-      async () =>
-        res.respond({
-          status: 200,
-          headers: new Headers()
-        }),
-      Error,
-      "responded"
-    );
+    await assertThrowsAsync(async () =>
+      res.respond({
+        status: 200,
+        headers: new Headers()
+      }), Error, "responded");
   });
 
   t.run("sendFile() basic", async function() {

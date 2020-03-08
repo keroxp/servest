@@ -1,5 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { MultipartWriter } from "./vendor/https/deno.land/std/mime/multipart.ts";
+import {
+  MultipartWriter
+} from "./vendor/https/deno.land/std/mime/multipart.ts";
 import {
   assert,
   assertEquals,
@@ -38,39 +40,27 @@ it("multipart", t => {
   });
   t.run("should throw if content-type is invalid", async () => {
     const body = new Buffer();
-    await assertThrowsAsync(
-      async () => {
-        await parserMultipartRequest({
-          headers: new Headers(),
-          body
-        });
-      },
-      Error,
-      "is not multipart"
-    );
-    await assertThrowsAsync(
-      async () => {
-        await parserMultipartRequest({
-          headers: new Headers({
-            "content-type": "application/json"
-          }),
-          body
-        });
-      },
-      Error,
-      "is not multipart"
-    );
-    await assertThrowsAsync(
-      async () => {
-        await parserMultipartRequest({
-          headers: new Headers({
-            "content-type": "multipart/form-data; "
-          }),
-          body
-        });
-      },
-      Error,
-      "doesn't have boundary"
-    );
+    await assertThrowsAsync(async () => {
+      await parserMultipartRequest({
+        headers: new Headers(),
+        body
+      });
+    }, Error, "is not multipart");
+    await assertThrowsAsync(async () => {
+      await parserMultipartRequest({
+        headers: new Headers({
+          "content-type": "application/json"
+        }),
+        body
+      });
+    }, Error, "is not multipart");
+    await assertThrowsAsync(async () => {
+      await parserMultipartRequest({
+        headers: new Headers({
+          "content-type": "multipart/form-data; "
+        }),
+        body
+      });
+    }, Error, "doesn't have boundary");
   });
 });
