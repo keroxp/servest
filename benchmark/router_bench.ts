@@ -10,6 +10,5 @@ router.handle("/", req =>
   req.respond({
     status: 200,
     body
-  })
-);
+  }));
 router.listen(addr);

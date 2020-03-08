@@ -3,7 +3,10 @@ import { ClientResponse } from "./server.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { readResponse, writeRequest } from "./serveio.ts";
 import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
-import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
+import {
+  BufReader,
+  BufWriter
+} from "./vendor/https/deno.land/std/io/bufio.ts";
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;
 import DialOptions = Deno.ConnectOptions;

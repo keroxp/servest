@@ -47,8 +47,7 @@ export function serveStatic(
       const stat = await Deno.stat(filepath);
       const ext = path.extname(filepath);
       const base = path.basename(filepath);
-      let contentType =
-        contentTypeMap.get(ext) ||
+      let contentType = contentTypeMap.get(ext) ||
         media_types.contentType(ext) ||
         "application/octet-stream";
       const headers = new Headers({

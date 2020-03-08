@@ -1,6 +1,11 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { TextProtoReader } from "./vendor/https/deno.land/std/textproto/mod.ts";
+import {
+  BufReader,
+  BufWriter
+} from "./vendor/https/deno.land/std/io/bufio.ts";
+import {
+  TextProtoReader
+} from "./vendor/https/deno.land/std/textproto/mod.ts";
 import {
   BodyReader,
   bodyReader,
@@ -115,7 +120,9 @@ export async function readRequest(
       const contentLength = parseInt(headers.get("content-length")!);
       assert(
         contentLength >= 0,
-        `content-length is missing or invalid: ${headers.get("content-length")}`
+        `content-length is missing or invalid: ${headers.get(
+          "content-length"
+        )}`
       );
       body = bodyReader(reader, contentLength, {
         timeout: opts.readTimeout,
@@ -329,16 +336,19 @@ export async function writeResponse(
 }
 
 /** write headers to writer */
-export async function writeHeaders(w: Writer, headers: Headers): Promise<void> {
+export async function writeHeaders(w: Writer, headers: Headers): Promise<
+  void
+> {
   const lines: string[] = [];
   const writer = BufWriter.create(w);
   if (!headers.has("date")) {
     headers.set("date", toIMF(new Date()));
   }
-  if (headers)
+  if (headers) {
     for (const [key, value] of headers) {
       lines.push(`${key}: ${value}`);
     }
+  }
   lines.push("\r\n");
   const headerText = lines.join("\r\n");
   await writer.write(encode(headerText));
@@ -352,8 +362,8 @@ export async function writeBody(
   contentLength?: number
 ): Promise<void> {
   let writer = BufWriter.create(w);
-  const hasContentLength =
-    typeof contentLength === "number" && Number.isInteger(contentLength);
+  const hasContentLength = typeof contentLength === "number" &&
+    Number.isInteger(contentLength);
   if (hasContentLength) {
     await Deno.copy(writer, body);
     await writer.flush();

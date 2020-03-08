@@ -1,5 +1,8 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { deferred, Deferred } from "./vendor/https/deno.land/std/util/async.ts";
+import {
+  deferred,
+  Deferred
+} from "./vendor/https/deno.land/std/util/async.ts";
 
 export function pathResolver(meta: ImportMeta): (p: string) => string {
   return p => new URL(p, meta.url).pathname;

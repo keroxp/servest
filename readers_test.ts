@@ -63,13 +63,9 @@ it("bodyReader", t => {
     const j = `{ deno: "land" `;
     const r = new StringReader(j);
     const br = bodyReader(r, j.length);
-    await assertThrowsAsync(
-      async () => {
-        await br.json();
-      },
-      SyntaxError,
-      "JSON"
-    );
+    await assertThrowsAsync(async () => {
+      await br.json();
+    }, SyntaxError, "JSON");
   });
   t.run("arrayBuffer()", async () => {
     const bin = new Deno.Buffer(new Uint8Array([0, 1, 2, 3]));

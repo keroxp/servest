@@ -1,5 +1,8 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { findLongestAndNearestMatch, resolveIndexPath } from "./router_util.ts";
+import {
+  findLongestAndNearestMatch,
+  resolveIndexPath
+} from "./router_util.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { it } from "./test_util.ts";
 
