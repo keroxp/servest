@@ -1,6 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import * as path from "./vendor/https/deno.land/std/path/mod.ts";
-
 /**
  * Find the match that appeared in the nearest position to the beginning of word.
  * If positions are same, the longest one will be picked.
@@ -17,7 +16,7 @@ export function findLongestAndNearestMatch(
   for (let i = 0; i < patterns.length; i++) {
     const pattern = patterns[i];
     if (pattern instanceof RegExp) {
-      // Regex pattern always match pathname in ignore case mode
+      // Regex pattern always matches pathname in ignore case mode
       const m = pathname.match(new RegExp(pattern, "i"));
       if (!m || m.index === undefined) {
         continue;
@@ -75,5 +74,15 @@ export async function resolveIndexPath(
     } else if (await fileExists(path.resolve(filepath + ext))) {
       return filepath + ext;
     }
+  }
+}
+
+export type PrefixMatcher = (m: string) => boolean;
+/** Make predicate that tests if string starts with pat or matches regex */
+export function prefixMatcher(pat: string | RegExp): PrefixMatcher {
+  if (typeof pat === "string") {
+    return m => m.startsWith(pat);
+  } else {
+    return m => m.match(pat) != null;
   }
 }

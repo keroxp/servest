@@ -1,12 +1,13 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   findLongestAndNearestMatch,
-  resolveIndexPath
-} from "./router_util.ts";
+  resolveIndexPath,
+  prefixMatcher
+} from "./matcher.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { it } from "./test_util.ts";
 
-it("router_util", t => {
+it("matcher", t => {
   ([
     ["/foo", ["/foo", "/bar", "/f"], 0],
     ["/foo", ["/foo", "/foo/bar"], 0],
@@ -35,5 +36,21 @@ it("router_util", t => {
     ) {
       assertEquals(await resolveIndexPath(dir, fp), exp);
     }
+  });
+
+  t.run("prefixMatcher string", () => {
+    const m = prefixMatcher("/user");
+    assertEquals(m("/user"), true);
+    assertEquals(m("users"), false);
+    assertEquals(m("/user/list"), true);
+    assertEquals(m("/"), false);
+  });
+
+  t.run("prefixMatcher RegExp", () => {
+    const m = prefixMatcher(/user/);
+    assertEquals(m("/user"), true);
+    assertEquals(m("users"), true);
+    assertEquals(m("/user/list"), true);
+    assertEquals(m("/"), false);
   });
 });

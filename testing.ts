@@ -1,5 +1,4 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { RoutedServerRequest } from "./app.ts";
 import {
   BufReader,
   BufWriter
@@ -10,6 +9,7 @@ import Reader = Deno.Reader;
 import { createResponder } from "./responder.ts";
 import { bodyReader, BodyReader, chunkedBodyReader } from "./readers.ts";
 import { parseCookie } from "./cookie.ts";
+import { RoutedServerRequest } from "./router.ts";
 
 export type ResponseRecorder = RoutedServerRequest & {
   /** Obtain recorded response */

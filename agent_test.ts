@@ -19,21 +19,21 @@ async function readString(r: Reader) {
 }
 
 function setupRouter(port: number): ServeListener {
-  const router = createApp();
-  router.handle("/get", async req => {
+  const app = createApp();
+  app.route("/get", async req => {
     return req.respond({
       status: 200,
       body: encode("ok")
     });
   });
-  router.handle("/post", async req => {
+  app.route("/post", async req => {
     return req.respond({
       status: 200,
       headers: req.headers,
       body: req.body
     });
   });
-  return router.listen({
+  return app.listen({
     hostname: "127.0.0.1",
     port
   });

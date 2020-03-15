@@ -2,19 +2,12 @@
 import {
   listenAndServe,
   listenAndServeTLS,
-  ServeHandler,
   ServeListener,
-  ServeOptions,
-  ServerRequest
+  ServeOptions
 } from "./server.ts";
-import { RoutingError } from "./error.ts";
-import { kHttpStatusMessages } from "./serveio.ts";
 import { createLogger, Logger, Loglevel, namedLogger } from "./logger.ts";
 import ListenOptions = Deno.ListenOptions;
 import ListenTLSOptions = Deno.ListenTLSOptions;
-import {
-  WebSocket
-} from "./vendor/https/deno.land/std/ws/mod.ts";
 import { createRouter, Router } from "./router.ts";
 
 export interface App extends Router {
@@ -25,31 +18,12 @@ export interface App extends Router {
   listenTLS(tlsOptions: ListenTLSOptions, opts?: ServeOptions): ServeListener;
 }
 
-export type RoutedServerRequest = ServerRequest & {
-  /** Match object for route with regexp pattern. */
-  match: RegExpMatchArray;
-};
-
-/** Basic handler for http request */
-export type HttpHandler = (req: RoutedServerRequest) => void | Promise<void>;
-
-export type WebSocketHandler = (
-  sock: WebSocket,
-  req: RoutedServerRequest
-) => void | Promise<void>;
-
-/** Global error handler for requests */
-export type ErrorHandler = (
-  e: any | RoutingError,
-  req: ServerRequest
-) => void | Promise<void>;
-
 export type AppOptions = {
   logger?: Logger;
   logLevel?: Loglevel;
 };
 
-/** Create HttpRouter */
+/** Create App */
 export function createApp(
   opts: AppOptions = {
     logger: createLogger()
@@ -61,7 +35,7 @@ export function createApp(
     addr: string | ListenOptions,
     opts?: ServeOptions
   ): ServeListener {
-    const listener = listenAndServe(addr, req => router(req), opts);
+    const listener = listenAndServe(addr, router.handle, opts);
     logger.info(`listening on ${addr}`);
     return listener;
   }
@@ -69,11 +43,11 @@ export function createApp(
     listenOptions: ListenTLSOptions,
     opts?: ServeOptions
   ): ServeListener {
-    const listener = listenAndServeTLS(listenOptions, router, opts);
+    const listener = listenAndServeTLS(listenOptions, router.handle, opts);
     logger.info(
       `listening on ${listenOptions.hostname || ""}:${listenOptions.port}`
     );
     return listener;
   }
-  return Object.assign(router, { listen, listenTLS });
+  return { ...router, listen, listenTLS };
 }
