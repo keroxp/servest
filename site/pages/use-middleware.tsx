@@ -19,8 +19,8 @@ const UseMiddleware: DFC<{ codes: { [key: string]: string } }> = ({
           </p>
           <p>
             Middleware is called on every request and behaves pre-processor for
-                      requests. Here is an example of simple authentication middleware for
-                      web API.
+                                              requests. Here is an example of simple authentication middleware for
+                                              web API.
           </p>
           <Code
             href={"/example/use_middleware.ts"}

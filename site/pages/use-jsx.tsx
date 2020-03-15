@@ -19,24 +19,26 @@ const UseJsx: DFC<{ codes: { [key: string]: string } }> = ({ codes }) =>
           <p>
             By default, JSX files (<code className="q">.jsx</code>,{" "}
             <code className="q">.tsx</code>) will be transformed by{" "}
-            <code className="q">React.createElement()
+            <code className="q">
+              React.createElement()
             </code>. So you must import
-                      React on the head of your jsx file.
+                                              React on the head of your jsx file.
           </p>
           <p>
             React is developed in Node.js and Browser ecosystem and there are no
-                      official ESM-based distribution. We recommend you get React for deno
-                      from <a href="https://jspm.io">https://jspm.io
+                                              official ESM-based distribution. We recommend you get React for deno
+                                              from <a href="https://jspm.io">
+              https://jspm.io
             </a>, which is ESModule
-                      CDN for CommonJS.
+                                              CDN for CommonJS.
           </p>
           <p>
             React is written by pure JavaScript and has no type definition by
-                      default. Optionally, you can use type definitions for React by
-                      annotating import statement with{" "}
+                                              default. Optionally, you can use type definitions for React by
+                                              annotating import statement with{" "}
             <code className="q">@deno-types</code>. This is Deno's extension
-                      method for mapping JavaScript file and type definition. You can find
-                      more detail information on{" "}
+                                              method for mapping JavaScript file and type definition. You can find
+                                              more detail information on{" "}
             <a
               href={"https://deno.land/manual.html#usingexternaltypedefinitions"}
             >
@@ -46,7 +48,7 @@ const UseJsx: DFC<{ codes: { [key: string]: string } }> = ({ codes }) =>
           </p>
           <p>
             Unfortunately, there are no pure ESM type definitions for React 😇. So
-                      we are providing patched type definitions for Deno.
+                                              we are providing patched type definitions for Deno.
             <ul>
               <li>
                 <b>React</b>:{" "}

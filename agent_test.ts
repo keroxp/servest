@@ -1,7 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
 import { createAgent } from "./agent.ts";
-import { createRouter } from "./router.ts";
+import { createApp } from "./app.ts";
 import {
   assertEquals,
   assertThrows
@@ -19,7 +19,7 @@ async function readString(r: Reader) {
 }
 
 function setupRouter(port: number): ServeListener {
-  const router = createRouter();
+  const router = createApp();
   router.handle("/get", async req => {
     return req.respond({
       status: 200,

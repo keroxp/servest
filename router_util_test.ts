@@ -24,13 +24,15 @@ it("router_util", t => {
   });
 
   t.run("resolveIndexPath", async () => {
-    for (const [dir, fp, exp] of [
-      [".", "/README.md", "README.md"],
-      ["./fixtures/public", "/", "fixtures/public/index.html"],
-      ["./fixtures/public", "/index", "fixtures/public/index.html"],
-      ["./fixtures/public", "/index.html", "fixtures/public/index.html"],
-      ["./fixtures/public", "/nofile", undefined]
-    ] as [string, string, string | undefined][]) {
+    for (
+      const [dir, fp, exp] of [
+        [".", "/README.md", "README.md"],
+        ["./fixtures/public", "/", "fixtures/public/index.html"],
+        ["./fixtures/public", "/index", "fixtures/public/index.html"],
+        ["./fixtures/public", "/index.html", "fixtures/public/index.html"],
+        ["./fixtures/public", "/nofile", undefined]
+      ] as [string, string, string | undefined][]
+    ) {
       assertEquals(await resolveIndexPath(dir, fp), exp);
     }
   });

@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { HttpHandler } from "./router.ts";
+import { HttpHandler } from "./app.ts";
 import { RoutingError } from "./error.ts";
 import { Sha1 } from "./vendor/https/deno.land/std/ws/sha1.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";

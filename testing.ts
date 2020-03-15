@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { RoutedServerRequest } from "./router.ts";
+import { RoutedServerRequest } from "./app.ts";
 import {
   BufReader,
   BufWriter

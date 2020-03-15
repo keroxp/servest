@@ -13,12 +13,12 @@ const ServerApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) =>
           <h2>Server API</h2>
           <p>
             Server API is low level HTTP interface for building customized HTTP
-                      server.
+                                              server.
           </p>
           <p>
             All HTTP requests connected to the address will be passed to callback
-                      function. Serve API automatically manages Keep-Alive connection and
-                      process requests from same connection serially.
+                                              function. Serve API automatically manages Keep-Alive connection and
+                                              process requests from same connection serially.
           </p>
           <Code
             href={"/example/simple_server.ts"}

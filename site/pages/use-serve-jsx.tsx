@@ -18,9 +18,9 @@ const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
           </p>
           <p>
             <a href={"/@/serve_jsx.ts"}>serveJsx</a> is built-in middleware to
-                      serve JSX files. It is similar to{" "}
+                                              serve JSX files. It is similar to{" "}
             <a href={"/@/serve_static.ts"}>serveStatic</a> but It uses dynamic
-                      import to build a response based on JSX file.
+                                              import to build a response based on JSX file.
           </p>
           <Code
             href={"/example/use_serve_jsx.ts"}
@@ -28,7 +28,7 @@ const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
           />
           <p>
             Here is a typical directory structure for using serveJsx along with
-                      serveStatic.
+                                              serveStatic.
           </p>
           <Code
             code={`.
@@ -42,18 +42,19 @@ const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
           />
           <p>
             JSX files that served as a page must export React component as
-                      default. If component needs asynchronous initialization for rendering
-                      in server side, you should define{" "}
+                                              default. If component needs asynchronous initialization for rendering
+                                              in server side, you should define{" "}
             <code className="q">getInitialProps</code> to the component.
           </p>
           <p>
-            It is async function that returns <code className="q">Promise
+            It is async function that returns <code className="q">
+              Promise
             </code>
             {" "}
             of property type of the component. This methodology is similar to{" "}
             <a href="https://nextjs.org/">Next.js</a> but totally different.
-                      Component will be rendered only on the server side and won't be
-                      hydrated on the client side.
+                                              Component will be rendered only on the server side and won't be
+                                              hydrated on the client side.
           </p>
           <Code
             href={"/example/pages/index.tsx"}

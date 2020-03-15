@@ -1,26 +1,25 @@
-// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import {
-  listenAndServe,
-  listenAndServeTLS,
-  ServeHandler,
-  ServeListener,
-  ServeOptions,
-  ServerRequest
-} from "./server.ts";
+  RoutedServerRequest,
+  HttpHandler,
+  WebSocketHandler,
+  ErrorHandler
+} from "./app.ts";
 import { findLongestAndNearestMatch } from "./router_util.ts";
-import { methodFilter } from "./middleware.ts";
-import { RoutingError } from "./error.ts";
+import { ServerRequest, ServeHandler } from "./server.ts";
 import { kHttpStatusMessages } from "./serveio.ts";
-import { createLogger, Logger, Loglevel, namedLogger } from "./logger.ts";
-import ListenOptions = Deno.ListenOptions;
-import ListenTLSOptions = Deno.ListenTLSOptions;
+import { RoutingError } from "./error.ts";
 import {
-  acceptable,
   acceptWebSocket,
-  WebSocket
+  acceptable
 } from "./vendor/https/deno.land/std/ws/mod.ts";
+import { namedLogger, NamedLogger } from "./logger.ts";
+import { methodFilter } from "./middleware.ts";
 
-export interface HttpRouter {
+export interface Router extends ServeHandler {
+  /**
+   * 
+   */
+  handleRequest(parentMatch: string, req: RoutedServerRequest): Promise<void>;
   /**
    * Set global middleware.
    * It will be called for each request on any routes.
@@ -59,51 +58,22 @@ export interface HttpRouter {
    * If error is ignored, it will be handled by built-in final error handler.
    * Only one handler can be set for one router. */
   handleError(handler: ErrorHandler): void;
-
-  /** Start listening with given addr */
-  listen(addr: string | ListenOptions, opts?: ServeOptions): ServeListener;
-
-  /** Start listening for HTTPS server */
-  listenTLS(tlsOptions: ListenTLSOptions, opts?: ServeOptions): ServeListener;
 }
 
-export type RoutedServerRequest = ServerRequest & {
-  /** Match object for route with regexp pattern. */
-  match: RegExpMatchArray;
-};
+function isRouter(x: any): x is Router {
+  return x != null && typeof x === "object" && typeof x.use === "function";
+}
 
-/** Basic handler for http request */
-export type HttpHandler = (req: RoutedServerRequest) => void | Promise<void>;
-
-export type WebSocketHandler = (
-  sock: WebSocket,
-  req: RoutedServerRequest
-) => void | Promise<void>;
-
-/** Global error handler for requests */
-export type ErrorHandler = (
-  e: any | RoutingError,
-  req: ServerRequest
-) => void | Promise<void>;
-
-export type RouterOptions = {
-  logger?: Logger;
-  logLevel?: Loglevel;
-};
-
-/** Create HttpRouter */
-export function createRouter(
-  opts: RouterOptions = {
-    logger: createLogger()
-  }
-): HttpRouter {
+export function createRouter(opts?: {
+  logger?: NamedLogger;
+}): Router {
+  const { info, error } = opts?.logger ?? namedLogger("servest:router");
   const middlewareList: HttpHandler[] = [];
   const routes: {
     pattern: string | RegExp;
     handlers: HttpHandler[];
     wsHandler?: WebSocketHandler;
   }[] = [];
-  const { info, error } = namedLogger("servest:router", opts.logger);
   const finalErrorHandler = async (e: any, req: ServerRequest) => {
     if (e instanceof RoutingError) {
       logRouteStatus(req, e.status);
@@ -132,9 +102,14 @@ export function createRouter(
   const logRouteStatus = (req: ServerRequest, status: number) => {
     info(`${status} ${req.method} ${req.url}`);
   };
+
   function handlerToString(handlers: HttpHandler[]): string {
-    return handlers.map(v => v.name).join(" ");
+    return handlers.map(v => {
+      if (isRouter(v)) return "Router";
+      else return v.name;
+    }).join(" ");
   }
+
   function handle(pattern: string | RegExp, ...handlers: HttpHandler[]) {
     info(`route: * ${pattern} ${handlerToString(handlers)}`);
     routes.push({ pattern, handlers });
@@ -172,81 +147,69 @@ export function createRouter(
     errorHandler = handler;
   }
 
-  function createHandler(): ServeHandler {
-    const handleInternal = async (req: ServerRequest) => {
-      for (const middleware of middlewareList) {
-        await middleware({ ...req, match: [] });
+  async function handleRequest(parentMatch: string, req: ServerRequest) {
+    for (const handler of middlewareList) {
+      if (isRouter(handler)) {
+        await handler.handleRequest(parentMatch, { ...req, match: [] });
+      } else {
+        await handler({ ...req, match: [] });
+      }
+      if (req.isResponded()) {
+        logRouteStatus(req, req.respondedStatus()!);
+        return;
+      }
+    }
+    const subpath = req.path.slice(parentMatch.length) || "/";
+    console.log(`parentMatsh=${parentMatch} req.path=${req.path} subpath=${subpath}`);
+    const { index, match } = findLongestAndNearestMatch(
+      subpath,
+      routes.map(v => v.pattern)
+    );
+    console.log(req.url, match);
+    if (index > -1 && match) {
+      const { handlers, wsHandler } = routes[index];
+      const routedReq = { ...req, match };
+      for (const handler of handlers) {
+        if (isRouter(handler)) {
+          await handler.handleRequest(parentMatch + match, routedReq);
+        } else {
+          await handler(routedReq);
+        }
         if (req.isResponded()) {
           logRouteStatus(req, req.respondedStatus()!);
-          return;
+          break;
         }
       }
-      const { index, match } = findLongestAndNearestMatch(
-        req.path,
-        routes.map(v => v.pattern)
-      );
-      if (index > -1 && match) {
-        const { handlers, wsHandler } = routes[index];
-        const routedReq = { ...req, match };
-        for (const handler of handlers) {
-          await handler(routedReq);
-          if (req.isResponded()) {
-            logRouteStatus(req, req.respondedStatus()!);
-            break;
-          }
-        }
-        if (wsHandler && acceptable(req)) {
-          const sock = await acceptWebSocket(req);
-          req.markAsResponded(101);
-          wsHandler(sock, routedReq);
-        }
-        if (!req.isResponded()) {
-          throw new RoutingError(404, kHttpStatusMessages[404]);
-        }
-      } else {
+      if (wsHandler && acceptable(req)) {
+        const sock = await acceptWebSocket(req);
+        req.markAsResponded(101);
+        wsHandler(sock, routedReq);
+      }
+      if (!req.isResponded()) {
         throw new RoutingError(404, kHttpStatusMessages[404]);
       }
-    };
-    return (req: ServerRequest) => {
-      const onError = async (e: any) => {
-        try {
-          await errorHandler(e, req);
-        } catch (e) {
-          if (!req.isResponded()) {
-            await finalErrorHandler(e, req);
-          }
-        } finally {
-          if (!req.isResponded()) {
-            await finalErrorHandler(e, req);
-          }
+    } else {
+      throw new RoutingError(404, kHttpStatusMessages[404]);
+    }
+  }
+  const ret = async (req: ServerRequest) => {
+    const onError = async (e: any) => {
+      try {
+        await errorHandler(e, req);
+      } catch (e) {
+        if (!req.isResponded()) {
+          await finalErrorHandler(e, req);
         }
-      };
-      return handleInternal(req).catch(onError);
+      } finally {
+        if (!req.isResponded()) {
+          await finalErrorHandler(e, req);
+        }
+      }
     };
-  }
-  function listen(
-    addr: string | ListenOptions,
-    opts?: ServeOptions
-  ): ServeListener {
-    const handler = createHandler();
-    const listener = listenAndServe(
-      addr,
-      req => {
-        return handler(req);
-      },
-      opts
-    );
-    info(`listening on ${addr}`);
-    return listener;
-  }
-  function listenTLS(
-    listenOptions: ListenTLSOptions,
-    opts?: ServeOptions
-  ): ServeListener {
-    const handler = createHandler();
-    const listener = listenAndServeTLS(listenOptions, handler, opts);
-    info(`listening on ${listenOptions.hostname || ""}:${listenOptions.port}`);
-    return listener;
-  }
-  return { handle, use, get, post, ws, handleError, listen, listenTLS };
+    await handleRequest("", req).catch(onError);
+  };
+  return Object.assign(
+    ret,
+    { handle, use, get, post, ws, handleError, handleRequest }
+  );
 }

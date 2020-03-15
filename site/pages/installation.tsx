@@ -17,7 +17,7 @@ const Installation: DFC<{
           <h3>With URL</h3>
           <p>
             Servest is hosted by <a href="/">https://servestjs.org</a> based on
-                      Github's source codes.
+                                              Github's source codes.
             <ul>
               <li>
                 <b>Latest</b>:{" "}

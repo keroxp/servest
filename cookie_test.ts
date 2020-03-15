@@ -7,7 +7,7 @@ import {
 import { it } from "./test_util.ts";
 import { cookieToString, parseCookie, parseSetCookie } from "./cookie.ts";
 import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
-import { createRouter } from "./router.ts";
+import { createApp } from "./app.ts";
 
 it("parseCookie", t => {
   t.run("basic", () => {
@@ -84,7 +84,7 @@ it("cookie integration", t => {
   const now = new Date();
   now.setMilliseconds(0);
   t.beforeAfterAll(() => {
-    const router = createRouter();
+    const router = createApp();
     router.get("/", req => {
       req.setCookie("deno", "land", {
         path: "/",

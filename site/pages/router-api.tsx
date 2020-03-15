@@ -13,11 +13,11 @@ const RouterApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) =>
           <h2>Router API</h2>
           <p>
             Router API is high level HTTP interface for building general purpose
-                      http servers. It is highly affected by{" "}
+                                              http servers. It is highly affected by{" "}
             <a href={"http://expressjs.com"}>Express</a> from{" "}
             <a href={"https://nodejs.org"}>Node.js</a>. Router maps route with
-                      handler. Handler will be called for each request matched to given
-                      pattern.
+                                              handler. Handler will be called for each request matched to given
+                                              pattern.
           </p>
           <Code
             href={"/example/routing_server.ts"}

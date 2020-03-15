@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { HttpHandler } from "./router.ts";
+import { HttpHandler } from "./app.ts";
 import * as path from "./vendor/https/deno.land/std/path/mod.ts";
 import * as media_types from "./vendor/https/deno.land/std/media_types/mod.ts";
 import { resolveIndexPath } from "./router_util.ts";
