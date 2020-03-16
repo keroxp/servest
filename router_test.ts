@@ -1,25 +1,15 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  assertEquals,
-  assertMatch
-} from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { it } from "./test_util.ts";
+import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
+import { it, makeGet, assertRoutingError } from "./test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 import { writeResponse } from "./serveio.ts";
-import { createRouter, RouteHandler, RoutedServerRequest, Router } from "./router.ts";
-import { createRecorder } from "./testing.ts";
+import {
+  createRouter,
+  RoutedServerRequest
+} from "./router.ts";
 setLevel(Loglevel.NONE);
 
-function makeGet(router: Router) {
-  return async function get(url: string) {
-    const rec = createRecorder({ method: "GET", url });
-    await router.handleRequest(rec);
-    return rec.response();
-  }
-}
-
 it("router", t => {
-  let errorHandled = false;
   const router = createRouter();
   const get = makeGet(router);
   t.beforeAfterAll(() => {
@@ -45,17 +35,10 @@ it("router", t => {
         body: JSON.stringify({ id })
       });
     });
-    router.handle("/no-response", async req => {});
-    router.handle("/throw", async req => {
-      throw new Error("throw");
-    });
     router.handle("/redirect", req => req.redirect("/index"));
     router.handle("/respond-raw", async req => {
       await writeResponse(req.bufWriter, { status: 200, body: "ok" });
       req.markAsResponded(200);
-    });
-    router.catch((e, req) => {
-      errorHandled = true;
     });
     return () => {};
   });
@@ -88,25 +71,6 @@ it("router", t => {
     assertEquals(res2.headers.get("content-type"), "application/json");
     assertEquals(json["id"], "123");
   });
-  t.run("should respond even if req.respond wasn't called", async () => {
-    const res = await get("/no-response");
-    // assertEquals(res.status, 404);
-    const text = await res.body.text();
-    assertEquals(text, "Not Found");
-  });
-  t.run("should respond for unknown path", async () => {
-    const res = await get("/not-found");
-    const text = await res.body.text();
-    assertEquals(res.status, 404);
-    assertEquals(text, "Not Found");
-  });
-  t.run("should handle global error", async () => {
-    const res = await get("/throw");
-    const text = await res.body.text();
-    assertEquals(res.status, 500);
-    assertMatch(text, /Error: throw/);
-    assertEquals(errorHandled, true);
-  });
   t.run("should redirect", async () => {
     const res = await get("/redirect");
     assertEquals(res.status, 302);
@@ -122,27 +86,76 @@ it("router", t => {
   );
 });
 
+it("router error", t => {
+  t.run("should throw RoutingError if handler won't respond", async () => {
+    const router = createRouter();
+    router.handle("/", () => {});
+    await assertRoutingError(() => makeGet(router)("/"), 404);
+  });
+  t.run("should throw RoutingError when no route is matched", async () => {
+    const router = createRouter();
+    router.handle("/", () => {});
+    await assertRoutingError(() => makeGet(router)("/about"), 404);
+  });
+  t.run("should call error handler", async () => {
+    const router = createRouter();
+    router.handle("/", () => {
+      throw new Error("Err");
+    });
+    let handled = false;
+    router.catch((_, req) => {
+      handled = true;
+      req.respond({ status: 200, body: "err" });
+    });
+    const resp = await makeGet(router)("/");
+    assertEquals(resp.status, 200);
+    assertEquals(await resp.body.text(), "err");
+    assertEquals(handled, true);
+  });
+  t.run("should re-throw error if error handler won't respond", async () => {
+    const router = createRouter();
+    router.handle("/", () => {
+      throw new Error("Err");
+    });
+    let handled = false;
+    let thrown: any;
+    router.catch((e) => {
+      thrown = e;
+      handled = true;
+    });
+    let reThrown: any;
+    try {
+      await makeGet(router)("/");
+    } catch (e) {
+      reThrown = e;
+    }
+    assertEquals(handled, true);
+    assertEquals(thrown, reThrown);
+  });
+});
+
 it("router nested", t => {
-  const handler = (name: string, subpath: string) => (req: RoutedServerRequest) => {
-    req.respond({ status: 200, body: `${name} ${subpath}` });
-  }
+  const handler = (name: string, subpath: string) =>
+    (req: RoutedServerRequest) => {
+      req.respond({ status: 200, body: `${name} ${subpath}` });
+    };
   const PostRoute = () => {
-    const route = createRouter({ name: "PostRoute" });
+    const route = createRouter();
     route.get("/", handler("PostRoute", "/"));
     route.get("/inbox", handler("PostRoute", "/inbox"));
     return route;
   };
   const UserRoutes = () => {
-    const users = createRouter({ name: "UserRoute" });
+    const users = createRouter();
     users.get("/", handler("UserRoute", "/"));
     users.get("/list", handler("UserRoute", "/list"));
     users.route("/posts", PostRoute());
     return users;
-  }
-  const router = createRouter({ name: "IndexRoute" });
-  router.get("/", handler("IndexRoute", "/"));
-  router.route("/users", UserRoutes());
-  const get = makeGet(router);
+  };
+  const app = createRouter();
+  app.get("/", handler("IndexRoute", "/"));
+  app.route("/users", UserRoutes());
+  const get = makeGet(app);
   t.run("basic", async () => {
     const res = await get("/");
     assertEquals(await res.body?.text(), "IndexRoute /");
@@ -175,34 +188,39 @@ it("router nested", t => {
 
 it("nested router bad", t => {
   t.run("prefix with /", async () => {
-    const router = createRouter();
+    const app = createRouter();
     const UserRoute = createRouter();
-    UserRoute.get("/", req => req.respond({ status: 200, body: "UserRoute /" }));
-    router.route("/users/", UserRoute);
-    const get = makeGet(router);
-    let resp = await get("/users");
-    assertEquals(resp.status, 404);
-    resp = await get("/users/");
+    UserRoute.get(
+      "/",
+      req => req.respond({ status: 200, body: "UserRoute /" })
+    );
+    app.route("/users/", UserRoute);
+    const get = makeGet(app);
+    assertRoutingError(() => get("/users"), 404);
+    const resp = await get("/users/");
     assertEquals(resp.status, 200);
   });
   t.run("prefix with / and ''", async () => {
-    const router = createRouter({name: "Index"});
-    const UserRoute = createRouter({ name: "Users" });
-    UserRoute.get("", req => req.respond({ status: 200, body: "UserRoute /" }));
-    router.route("/users/", UserRoute);
-    const get = makeGet(router);
-    let resp = await get("/users"); // doesn't match prefix
-    assertEquals(resp.status, 404);
-    resp = await get("/users/"); // match prefix but startsWith("") always false
-    assertEquals(resp.status, 404); 
+    const app = createRouter();
+    const UserRoute = createRouter();
+    UserRoute.get(
+      "",
+      req => req.respond({ status: 200, body: "UserRoute /" })
+    );
+    app.route("/users/", UserRoute);
+    const get = makeGet(app);
+    await assertRoutingError(() => get("/users"), 404);
+    await assertRoutingError(() => get("/users/"), 404);
   });
   t.run("prefix with ''", async () => {
-    const router = createRouter({name: "Index"});
-    const UserRoute = createRouter({name: "Users"});
-    UserRoute.get("/", req => req.respond({ status: 200, body: "UserRoute /" }));
-    router.route("", UserRoute);
-    const get = makeGet(router);
-    const resp = await get("/users/");
-    assertEquals(resp.status, 404);
+    const app = createRouter();
+    const UserRoute = createRouter();
+    UserRoute.get(
+      "/",
+      req => req.respond({ status: 200, body: "UserRoute /" })
+    );
+    app.route("", UserRoute);
+    const get = makeGet(app);
+    assertRoutingError(() => get("/users/"), 404);
   });
 });

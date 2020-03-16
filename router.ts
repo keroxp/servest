@@ -1,24 +1,20 @@
 import {
-  findLongestAndNearestMatch,
-  PrefixMatcher,
-  prefixMatcher
+  findLongestAndNearestMatch
 } from "./matcher.ts";
-import { ServerRequest, ServeHandler, ServeHandlerIface } from "./server.ts";
-import { kHttpStatusMessages } from "./serveio.ts";
+import { ServerRequest, ServeHandler } from "./server.ts";
 import { RoutingError } from "./error.ts";
 import {
   acceptWebSocket,
   acceptable,
   WebSocket
 } from "./vendor/https/deno.land/std/ws/mod.ts";
-import { namedLogger, NamedLogger } from "./logger.ts";
 import { methodFilter } from "./middleware.ts";
 
 export interface RoutedServerRequest extends ServerRequest {
   /** Match object for route with regexp pattern. */
   match: RegExpMatchArray;
 }
- /** Router handler */
+/** Router handler */
 export type RouteHandler = ServeHandler<RoutedServerRequest>;
 
 /** WebSocket Handler */
@@ -33,7 +29,7 @@ export type ErrorHandler = (
   req: ServerRequest
 ) => void | Promise<void>;
 
-export interface Router extends ServeHandlerIface {
+export interface Router {
   /**
    * Set global middleware.
    * It will be called for each request on any routes.
@@ -60,7 +56,7 @@ export interface Router extends ServeHandlerIface {
    * Examples
    *   router.route("/users", ...)   => Called if request path STARTS WITH "/users".
    */
-  route(prefix: string, ...handlers: (RouteHandler|Router)[]): void;
+  route(prefix: string, ...handlers: (RouteHandler | Router)[]): void;
 
   /**
    * Register GET route. This is shortcut for handle();
@@ -86,23 +82,17 @@ export interface Router extends ServeHandlerIface {
    * Only one handler can be set for one router. */
   catch(handler: ErrorHandler): void;
 
-  // internal
-  handleRoute(prefix: string, req: ServerRequest): Promise<void>
-}
+  finally(handler: ServeHandler): void;
 
-function isServeHandlerIface(x: any): x is ServeHandlerIface {
-  return x != null && typeof x === "object" && typeof x.handle === "function";
+  // internal
+  handleRoute(prefix: string, req: ServerRequest): Promise<void>;
 }
 
 function isRouter(x: any): x is Router {
-  return typeof x.handleRoute === "function" && isServeHandlerIface(x);
+  return typeof x?.handleRoute === "function";
 }
 
-export function createRouter(opts?: {
-  logger?: NamedLogger;
-  name?: string;
-}): Router {
-  const { info, error } = opts?.logger ?? namedLogger("servest:router");
+export function createRouter(): Router {
   const middlewareList: ServeHandler[] = [];
   const routes: {
     pattern: string | RegExp;
@@ -113,34 +103,9 @@ export function createRouter(opts?: {
     prefix: string;
     handlers: RouteHandler[];
   }[] = [];
-  const finalErrorHandler = async (e: any, req: ServerRequest) => {
-    if (e instanceof RoutingError) {
-      logRouteStatus(req, e.status);
-      await req.respond({
-        status: e.status,
-        body: e.message
-      });
-    } else {
-      logRouteStatus(req, 500);
-      if (e instanceof Error) {
-        await req.respond({
-          status: 500,
-          body: e.stack
-        });
-        if (e.stack) error(e.stack);
-      } else {
-        await req.respond({
-          status: 500,
-          body: kHttpStatusMessages[500]
-        });
-        error(e);
-      }
-    }
-  };
-  let errorHandler: ErrorHandler = finalErrorHandler;
-  const logRouteStatus = (req: ServerRequest, status: number) => {
-    info(`${status} ${req.method} ${req.url}`);
-  };
+
+  let errorHandler: ErrorHandler | undefined;
+  let finalHandler: ServeHandler | undefined;
 
   function handle(pattern: string | RegExp, ...handlers: RouteHandler[]) {
     routes.push({ pattern, handlers });
@@ -179,44 +144,42 @@ export function createRouter(opts?: {
     errorHandler = handler;
   }
 
-  async function chainRoutes(    
+  function _finally(handler: ServeHandler) {
+    finalHandler = handler;
+  }
+
+  async function chainRoutes(
     prefix: string,
     req: RoutedServerRequest,
-    handlers: (RouteHandler|Router)[]
+    handlers: (RouteHandler | Router)[]
   ): Promise<boolean> {
     for (const handler of handlers) {
-      if (isRouter(handler)){
+      if (isRouter(handler)) {
         await handler.handleRoute(prefix, req);
-      } else if (isServeHandlerIface(handler)) {
-        await handler.handleRequest(req);
       } else {
-        await handler(req)
+        await handler(req);
       }
       if (req.isResponded()) {
-        logRouteStatus(req, req.respondedStatus()!);
         return true;
       }
     }
     return false;
   }
-  async function handleRoute(parentMatch: string, req: ServerRequest): Promise<void> {
+  async function handleRouteInternal(
+    parentMatch: string,
+    req: ServerRequest
+  ): Promise<void> {
     for (const handler of middlewareList) {
-      if (isServeHandlerIface(handler)) {
-        await handler.handleRequest(req);
-      } else {
-        await handler(req)
-      }
+      await handler(req);
       if (req.isResponded()) {
-        logRouteStatus(req, req.respondedStatus()!);
         return;
-      }    
+      }
     }
-
     const subpath = req.path.slice(parentMatch.length) || "/";
     for (const { prefix, handlers } of prefixers) {
       if (subpath.startsWith(prefix)) {
         const routedReq: RoutedServerRequest = { ...req, match: [prefix] };
-        if (await chainRoutes(parentMatch+prefix, routedReq, handlers)) {
+        if (await chainRoutes(parentMatch + prefix, routedReq, handlers)) {
           return;
         }
       }
@@ -237,27 +200,37 @@ export function createRouter(opts?: {
         wsHandler(sock, routedReq);
       }
       if (!req.isResponded()) {
-        throw new RoutingError(404, kHttpStatusMessages[404]);
+        throw new RoutingError(404);
       }
     } else {
-      throw new RoutingError(404, kHttpStatusMessages[404]);
+      throw new RoutingError(404);
     }
   }
-  const handleRequest = async (req: ServerRequest) => {
-    const onError = async (e: any) => {
-      try {
+  const handleRoute = async (parentMatch: string, req: ServerRequest) => {
+    try {
+      await handleRouteInternal(parentMatch, req);
+    } catch (e) {
+      if (errorHandler) {
         await errorHandler(e, req);
-      } catch (e) {
         if (!req.isResponded()) {
-          await finalErrorHandler(e, req);
+          throw e;
         }
-      } finally {
-        if (!req.isResponded()) {
-          await finalErrorHandler(e, req);
-        }
+      } else {
+        throw e;
       }
-    };
-    await handleRoute("", req).catch(onError);
+    } finally {
+      finalHandler?.(req);
+    }
   };
-  return { handleRequest, handleRoute, use, handle, route, get, post, ws, catch: _catch };
+  return {
+    handleRoute,
+    use,
+    handle,
+    route,
+    get,
+    post,
+    ws,
+    catch: _catch,
+    finally: _finally
+  };
 }

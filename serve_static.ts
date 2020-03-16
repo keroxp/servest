@@ -2,7 +2,7 @@
 import * as path from "./vendor/https/deno.land/std/path/mod.ts";
 import * as media_types from "./vendor/https/deno.land/std/media_types/mod.ts";
 import { resolveIndexPath } from "./matcher.ts";
-import { ServeHandlerFunc } from "./server.ts";
+import { ServeHandler } from "./server.ts";
 
 export type ServeStaticOptions = {
   /**
@@ -27,7 +27,7 @@ export type ServeStaticOptions = {
 export function serveStatic(
   dir: string,
   opts: ServeStaticOptions = {}
-): ServeHandlerFunc {
+): ServeHandler {
   const contentTypeMap = new Map<string, string>([
     [".ts", "application/javascript"],
     [".tsx", "application/javascript"],

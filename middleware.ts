@@ -2,25 +2,25 @@
 import { RoutingError } from "./error.ts";
 import { Sha1 } from "./vendor/https/deno.land/std/ws/sha1.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { ServeHandlerFunc } from "./server.ts";
+import { ServeHandler } from "./server.ts";
 
 /** Deny request with 404 if method doesn't match */
-export const methodFilter = (...method: string[]): ServeHandlerFunc =>
+export const methodFilter = (...method: string[]): ServeHandler =>
   async req => {
     if (!method.includes(req.method)) {
-      throw new RoutingError(404, `Cannot ${req.method} ${req.path}`);
+      throw new RoutingError(404);
     }
   };
 
 /** Deny requests with 400 if content-type doesn't match */
 export const contentTypeFilter = (
   ...types: (string | RegExp)[]
-): ServeHandlerFunc =>
+): ServeHandler =>
   async req => {
     if (types.some(v => req.headers.get("content-type")?.match(v))) {
       return;
     }
-    throw new RoutingError(400, `Invalid content type`);
+    throw new RoutingError(400);
   };
 
 function timeSafeCompare(secret: string, other: string): boolean {
@@ -36,7 +36,7 @@ export function basicAuth({ username, password, message }: {
   username: string;
   password: string;
   message?: string;
-}): ServeHandlerFunc {
+}): ServeHandler {
   assert(username, "username must be defined and not be empty");
   assert(password, "password must be defined and not be ampty");
   //  WWW-Authenticate: Basic realm="SECRET AREA"

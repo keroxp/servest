@@ -1,7 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import React from "./vendor/https/dev.jspm.io/react/index.js";
 import ReactDOMServer from "./vendor/https/dev.jspm.io/react-dom/server.js";
-import { ServeHandlerFunc } from "./server.ts";
+import { ServeHandler } from "./server.ts";
 import { resolveIndexPath } from "./matcher.ts";
 import { DFC } from "./jsx.ts";
 
@@ -16,7 +16,7 @@ export function serveJsx(
   dir: string,
   onImport: (file: string) => Promise<any>,
   parentComponent: any = React.Fragment
-): ServeHandlerFunc {
+): ServeHandler {
   return async function serveJsx(req) {
     const p = await resolveIndexPath(dir, req.path, [".tsx", ".jsx"]);
     if (p) {

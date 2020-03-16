@@ -1,5 +1,15 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 
+import { Router } from "./router.ts";
+import { createRecorder } from "./testing.ts";
+import {
+  assertEquals,
+  assert,
+  assertThrowsAsync
+} from "./vendor/https/deno.land/std/testing/asserts.ts";
+import { RoutingError } from "./error.ts";
+import { kHttpStatusMessages } from "./serveio.ts";
+
 export type SetupFunc = () => any | Promise<any>;
 export interface Testing {
   run(desc: string, body: () => void | Promise<void>): void;
@@ -51,4 +61,19 @@ export function it(
     });
   }
   func({ beforeAfterAll, beforeAfterEach, run });
+}
+
+export function makeGet(router: Router) {
+  return async function get(url: string) {
+    const rec = createRecorder({ method: "GET", url });
+    await router.handleRoute("", rec);
+    return rec.response();
+  };
+}
+
+export async function assertRoutingError(
+  f: () => Promise<any>,
+  status: number
+) {
+  await assertThrowsAsync(f, RoutingError, kHttpStatusMessages[status]);
 }

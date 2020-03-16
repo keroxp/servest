@@ -115,14 +115,8 @@ export type ServeOptions = {
 };
 
 export type ServeListener = Deno.Closer;
-export type ServeHandler<T extends ServerRequest = ServerRequest> =
-  ServeHandlerFunc<T> | ServeHandlerIface<T>;
-export type ServeHandlerFunc<T extends ServerRequest = ServerRequest> = (
-  req: T
-) => void | Promise<void>;
-export interface ServeHandlerIface<T extends ServerRequest = ServerRequest> {
-  handleRequest(req: T): void | Promise<void>;
-}
+export type ServeHandler<T extends ServerRequest = ServerRequest> = (req: T) =>
+  void | Promise<void>;
 
 export type HostPort = { hostname?: string; port: number };
 function createListener(listenOptions: string | HostPort): Listener {
@@ -243,11 +237,7 @@ export function handleKeepAliveConn(
       conn,
       ...responder
     };
-    if (typeof handler === "function") {
-      await handler(req);
-    } else {
-      await handler.handleRequest(req);
-    }
+    await handler(req);
     await responded;
     await req.finalize();
     if (req.respondedStatus() === 101) {
