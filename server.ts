@@ -121,7 +121,7 @@ export type ServeHandlerFunc<T extends ServerRequest = ServerRequest> = (
   req: T
 ) => void | Promise<void>;
 export interface ServeHandlerIface<T extends ServerRequest = ServerRequest> {
-  handle(req: T): void | Promise<void>;
+  handleRequest(req: T): void | Promise<void>;
 }
 
 export type HostPort = { hostname?: string; port: number };
@@ -246,7 +246,7 @@ export function handleKeepAliveConn(
     if (typeof handler === "function") {
       await handler(req);
     } else {
-      await handler.handle(req);
+      await handler.handleRequest(req);
     }
     await responded;
     await req.finalize();
