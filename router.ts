@@ -1,5 +1,5 @@
 import {
-  findLongestAndNearestMatch
+  findLongestAndNearestMatches
 } from "./matcher.ts";
 import { ServerRequest, ServeHandler } from "./server.ts";
 import { RoutingError } from "./error.ts";
@@ -8,7 +8,6 @@ import {
   acceptable,
   WebSocket
 } from "./vendor/https/deno.land/std/ws/mod.ts";
-import { methodFilter } from "./middleware.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
 /** Router handler */
@@ -30,7 +29,16 @@ export type ErrorHandler = (
   req: ServerRequest
 ) => void | Promise<void>;
 
-export interface Router {
+export interface Route {
+  // internal
+  handleRoute(prefix: string, req: ServerRequest): Promise<void>;
+}
+
+function isRoute(x: any): x is Route {
+  return typeof x?.handleRoute === "function";
+}
+
+export interface Router extends Route {
   /**
    * Set global middleware.
    * It will be called for each request on any routes.
@@ -78,25 +86,25 @@ export interface Router {
 
   /**
    * Set global error handler.
-   * All unhandled promise rejections while processing requests will be passed into this handler.
-   * If error is ignored, it will be handled by built-in final error handler.
-   * Only one handler can be set for one router. */
+   * All unhandled promise rejections occured on processing requests will be passed .
+   * Only one handler can be set for one router.
+   */
   catch(handler: ErrorHandler): void;
 
+  /**
+   * Set global finalizer.
+   * Every request will reach this handler.
+   * Note that request may already has been responded by other handlers.
+   * Only one handler can be set for one router.
+   */
   finally(handler: ServeHandler): void;
-
-  // internal
-  handleRoute(prefix: string, req: ServerRequest): Promise<void>;
-}
-
-function isRouter(x: any): x is Router {
-  return typeof x?.handleRoute === "function";
 }
 
 export function createRouter(): Router {
   const middlewareList: ServeHandler[] = [];
   const routes: {
     pattern: string | RegExp;
+    methods?: string[];
     handlers: RouteHandler[];
     wsHandler?: WebSocketHandler;
   }[] = [];
@@ -119,12 +127,13 @@ export function createRouter(): Router {
   function get(pattern: string | RegExp, ...handlers: RouteHandler[]) {
     routes.push({
       pattern,
-      handlers: [methodFilter("GET", "HEAD"), ...handlers]
+      methods: ["GET", "HEAD"],
+      handlers
     });
   }
 
   function post(pattern: string | RegExp, ...handlers: RouteHandler[]) {
-    routes.push({ pattern, handlers: [methodFilter("POST"), ...handlers] });
+    routes.push({ pattern, methods: ["POST"], handlers });
   }
 
   function use(...handlers: ServeHandler[]) {
@@ -156,7 +165,7 @@ export function createRouter(): Router {
     handlers: (RouteHandler | Router)[]
   ): Promise<boolean> {
     for (const handler of handlers) {
-      if (isRouter(handler)) {
+      if (isRoute(handler)) {
         await handler.handleRoute(prefix, req);
       } else {
         await handler(req, params);
@@ -194,19 +203,24 @@ export function createRouter(): Router {
         }
       }
     }
-    const { index, match } = findLongestAndNearestMatch(
+    const matches = findLongestAndNearestMatches(
       subpath,
       routes.map(v => v.pattern)
     );
-    if (index > -1 && match) {
-      const { handlers, wsHandler } = routes[index];
-      if (await chainRoutes(parentMatch + match, req, { match }, handlers)) {
-        return;
-      }
-      if (wsHandler && acceptable(req)) {
-        const sock = await acceptWebSocket(req);
-        req.markAsResponded(101);
-        wsHandler(sock, req, { match });
+    if (matches.length > 0) {
+      for (const [i, match] of matches) {
+        const { methods, handlers, wsHandler } = routes[i];
+        if (methods && !methods.includes(req.method)) {
+          continue;
+        }
+        if (await chainRoutes(parentMatch + match, req, { match }, handlers)) {
+          return;
+        }
+        if (wsHandler && acceptable(req)) {
+          const sock = await acceptWebSocket(req);
+          req.markAsResponded(101);
+          wsHandler(sock, req, { match });
+        }
       }
       if (!req.isResponded()) {
         throw new RoutingError(404);

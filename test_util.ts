@@ -63,9 +63,9 @@ export function it(
   func({ beforeAfterAll, beforeAfterEach, run });
 }
 
-export function makeGet(router: Router) {
+export function makeGet(router: Router, method = "GET") {
   return async function get(url: string) {
-    const rec = createRecorder({ method: "GET", url });
+    const rec = createRecorder({ method, url });
     await router.handleRoute("", rec);
     return rec.response();
   };

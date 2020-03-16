@@ -18,24 +18,24 @@ export default () =>
           </p>
           <p>
             Unfortunately, there are several bugs and TBD features and undesirable
-                                              API designs (for me) in them.
+                      API designs (for me) in them.
           </p>
           <p>
             I decided to make my own http module for doing everything freely in my
-                                              concept and decisions. Some progressive and highly abstracted features
-                                              are tend to be refused in the conservative context like a standard
-                                              module. <b>"Being standard"</b>
+                      concept and decisions. Some progressive and highly abstracted features
+                      are tend to be refused in the conservative context like a standard
+                      module. <b>"Being standard"</b>
             must be tough situation and many
-                                              people request it be stable and unchanged. In that situation, some
-                                              experimental but maybe innovative features are omitted.
+                      people request it be stable and unchanged. In that situation, some
+                      experimental but maybe innovative features are omitted.
           </p>
           <p>
             So I'd started making the handy and less opinionated next generation
-                                              http module at one day.
+                      http module at one day.
           </p>
           <p style={{ textAlign: "center" }}>
             October 2019, By <a href={"https://github.com/keroxp"}>@keroxp</a>,
-                                              author of Servest
+                      author of Servest
           </p>
         </section>
       </Article>

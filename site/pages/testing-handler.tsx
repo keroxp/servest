@@ -19,7 +19,7 @@ const ServerApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) =>
           </p>
           <p>
             It behaves as an actual HTTP request for handlers and is useful for
-                                              unit testing.
+                      unit testing.
           </p>
           <Code
             href={"/example/testing_handler.ts"}

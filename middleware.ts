@@ -4,14 +4,6 @@ import { Sha1 } from "./vendor/https/deno.land/std/ws/sha1.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { ServeHandler } from "./server.ts";
 
-/** Deny request with 404 if method doesn't match */
-export const methodFilter = (...method: string[]): ServeHandler =>
-  async req => {
-    if (!method.includes(req.method)) {
-      throw new RoutingError(404);
-    }
-  };
-
 /** Deny requests with 400 if content-type doesn't match */
 export const contentTypeFilter = (
   ...types: (string | RegExp)[]

@@ -4,7 +4,7 @@ import { it, makeGet, assertRoutingError } from "./test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 import { writeResponse } from "./serveio.ts";
 import {
-  createRouter,
+  createRouter
 } from "./router.ts";
 import { ServerRequest } from "./server.ts";
 
@@ -26,7 +26,7 @@ it("router", t => {
     router.handle(new RegExp("^/Var"), async req => {
       await req.respond({ status: 200, body: req.url });
     });
-    router.handle(new RegExp("/foo/(?<id>.+)"), async (req,params) => {
+    router.handle(new RegExp("/foo/(?<id>.+)"), async (req, params) => {
       const { id } = params.match.groups!;
       await req.respond({
         status: 200,
@@ -85,6 +85,22 @@ it("router", t => {
       assertEquals(await res.body?.text(), "ok");
     }
   );
+});
+
+it("same path routes", t => {
+  t.run("/", async () => {
+    const router = createRouter();
+    router.get("/", req => {
+      req.respond({ status: 200, body: "get /" });
+    });
+    router.post("/", req => {
+      req.respond({ status: 200, body: "post /" });
+    });
+    let resp = await makeGet(router)("/");
+    assertEquals(await resp.body?.text(), "get /");
+    resp = await makeGet(router, "POST")("/");
+    assertEquals(await resp.body?.text(), "post /");
+  });
 });
 
 it("router error", t => {

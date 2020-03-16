@@ -14,7 +14,7 @@ const ReadingBody: DFC<{ codes: { [key: string]: string } }> = ({ codes }) =>
           <h2>Reading Body</h2>
           <p>
             <Q>ServerRequest.body</Q> implements <Q>Deno.Reader</Q> and also
-                                              provides handy parser methods for major content types.
+                      provides handy parser methods for major content types.
           </p>
           <p>
             <ul>
