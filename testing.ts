@@ -3,15 +3,14 @@ import {
   BufReader,
   BufWriter
 } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { IncomingHttpResponse } from "./server.ts";
+import { IncomingHttpResponse, ServerRequest } from "./server.ts";
 import { readResponse, setupBody } from "./serveio.ts";
 import Reader = Deno.Reader;
 import { createResponder } from "./responder.ts";
 import { bodyReader, BodyReader, chunkedBodyReader } from "./readers.ts";
 import { parseCookie } from "./cookie.ts";
-import { RoutedServerRequest } from "./router.ts";
 
-export type ResponseRecorder = RoutedServerRequest & {
+export type ResponseRecorder = ServerRequest & {
   /** Obtain recorded response */
   response(): Promise<IncomingHttpResponse>;
 };
@@ -22,15 +21,13 @@ export function createRecorder({
   method = "GET",
   headers = new Headers(),
   body,
-  proto = "http",
-  match = [url]
+  proto = "http"
 }: {
   url: string;
   method?: string;
   proto?: string;
   headers?: Headers;
   body?: string | Uint8Array | Reader;
-  match?: RegExpMatchArray;
 }): ResponseRecorder {
   const conn: Deno.Conn = {
     localAddr: { transport: "tcp", hostname: "0.0.0.0", port: 80 },
@@ -78,7 +75,6 @@ export function createRecorder({
     bufReader,
     conn,
     cookies,
-    match,
     ...responder
   };
 }

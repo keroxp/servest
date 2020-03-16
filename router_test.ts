@@ -5,8 +5,9 @@ import { Loglevel, setLevel } from "./logger.ts";
 import { writeResponse } from "./serveio.ts";
 import {
   createRouter,
-  RoutedServerRequest
 } from "./router.ts";
+import { ServerRequest } from "./server.ts";
+
 setLevel(Loglevel.NONE);
 
 it("router", t => {
@@ -25,8 +26,8 @@ it("router", t => {
     router.handle(new RegExp("^/Var"), async req => {
       await req.respond({ status: 200, body: req.url });
     });
-    router.handle(new RegExp("/foo/(?<id>.+)"), async req => {
-      const { id } = req.match.groups!;
+    router.handle(new RegExp("/foo/(?<id>.+)"), async (req,params) => {
+      const { id } = params.match.groups!;
       await req.respond({
         status: 200,
         headers: new Headers({
@@ -136,7 +137,7 @@ it("router error", t => {
 
 it("router nested", t => {
   const handler = (name: string, subpath: string) =>
-    (req: RoutedServerRequest) => {
+    (req: ServerRequest) => {
       req.respond({ status: 200, body: `${name} ${subpath}` });
     };
   const PostRoute = () => {

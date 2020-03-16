@@ -9,18 +9,19 @@ import {
   WebSocket
 } from "./vendor/https/deno.land/std/ws/mod.ts";
 import { methodFilter } from "./middleware.ts";
+import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
-export interface RoutedServerRequest extends ServerRequest {
-  /** Match object for route with regexp pattern. */
-  match: RegExpMatchArray;
-}
 /** Router handler */
-export type RouteHandler = ServeHandler<RoutedServerRequest>;
-
+export type RouteHandler = (req: ServerRequest, params: RouteParams) => void
+  | Promise<void>;
+export type RouteParams = {
+  match: RegExpMatchArray;
+};
 /** WebSocket Handler */
 export type WebSocketHandler = (
   sock: WebSocket,
-  req: RoutedServerRequest
+  req: ServerRequest,
+  params: RouteParams
 ) => void | Promise<void>;
 
 /** Global error handler for requests */
@@ -150,14 +151,15 @@ export function createRouter(): Router {
 
   async function chainRoutes(
     prefix: string,
-    req: RoutedServerRequest,
+    req: ServerRequest,
+    params: RouteParams,
     handlers: (RouteHandler | Router)[]
   ): Promise<boolean> {
     for (const handler of handlers) {
       if (isRouter(handler)) {
         await handler.handleRoute(prefix, req);
       } else {
-        await handler(req);
+        await handler(req, params);
       }
       if (req.isResponded()) {
         return true;
@@ -178,8 +180,16 @@ export function createRouter(): Router {
     const subpath = req.path.slice(parentMatch.length) || "/";
     for (const { prefix, handlers } of prefixers) {
       if (subpath.startsWith(prefix)) {
-        const routedReq: RoutedServerRequest = { ...req, match: [prefix] };
-        if (await chainRoutes(parentMatch + prefix, routedReq, handlers)) {
+        const match = subpath.match(new RegExp(`^${prefix}`));
+        assert(match != null);
+        if (
+          await chainRoutes(
+            parentMatch + prefix,
+            req,
+            { match },
+            handlers
+          )
+        ) {
           return;
         }
       }
@@ -190,14 +200,13 @@ export function createRouter(): Router {
     );
     if (index > -1 && match) {
       const { handlers, wsHandler } = routes[index];
-      const routedReq = { ...req, match };
-      if (await chainRoutes(parentMatch + match, routedReq, handlers)) {
+      if (await chainRoutes(parentMatch + match, req, { match }, handlers)) {
         return;
       }
-      if (wsHandler && acceptable(routedReq)) {
-        const sock = await acceptWebSocket(routedReq);
-        routedReq.markAsResponded(101);
-        wsHandler(sock, routedReq);
+      if (wsHandler && acceptable(req)) {
+        const sock = await acceptWebSocket(req);
+        req.markAsResponded(101);
+        wsHandler(sock, req, { match });
       }
       if (!req.isResponded()) {
         throw new RoutingError(404);

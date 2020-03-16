@@ -115,8 +115,7 @@ export type ServeOptions = {
 };
 
 export type ServeListener = Deno.Closer;
-export type ServeHandler<T extends ServerRequest = ServerRequest> = (req: T) =>
-  void | Promise<void>;
+export type ServeHandler = (req: ServerRequest) => void | Promise<void>;
 
 export type HostPort = { hostname?: string; port: number };
 function createListener(listenOptions: string | HostPort): Listener {

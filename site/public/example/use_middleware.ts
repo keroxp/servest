@@ -1,8 +1,8 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createRouter } from "../../../router.ts";
-const router = createRouter();
+import { createApp } from "../../../app.ts";
+const app = createApp();
 // Called for every request
-router.use(async req => {
+app.use(async req => {
   // Do authentication before handling request on routes
   const token = req.query.get("auth_token");
   if (token !== "valid_token") {
@@ -11,4 +11,4 @@ router.use(async req => {
   }
   // Go through the next middleware
 });
-router.listen(":8899");
+app.listen(":8899");

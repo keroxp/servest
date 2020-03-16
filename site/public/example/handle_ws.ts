@@ -1,4 +1,4 @@
-import { createRouter } from "../../../router.ts";
+import { createApp } from "../../../app.ts";
 import { WebSocket } from "https://deno.land/std/ws/mod.ts";
 
 function handleHandshake(sock: WebSocket) {
@@ -11,6 +11,6 @@ function handleHandshake(sock: WebSocket) {
   }
   handleMessage(sock);
 }
-const router = createRouter();
-router.ws("/ws", handleHandshake);
-router.listen(":8899");
+const app = createApp();
+app.ws("/ws", handleHandshake);
+app.listen(":8899");
