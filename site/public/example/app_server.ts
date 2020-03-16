@@ -15,8 +15,8 @@ app.get("/", async req => {
 // Define route with regexp pattern.
 // Called if request path matches regex.
 // If multiple route matches path, the longest match route will be called.
-app.get(new RegExp("^/foo/(.+)"), async req => {
-  const [_, id] = req.match;
+app.get(new RegExp("^/foo/(.+)"), async (req, { match }) => {
+  const [_, id] = match;
   await req.respond({
     status: 200,
     headers: new Headers({

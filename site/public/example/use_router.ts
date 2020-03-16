@@ -19,7 +19,7 @@ function UserRoutes() {
   });
   router.post("/", (req) => {
     // POST /users
-  })
+  });
   router.get("/sign_in", (req) => {
     // POST /sign_in,
   });
@@ -27,12 +27,12 @@ function UserRoutes() {
     const router = createRouter();
     router.get("/", req => {
       // GET /users/posts
-    })
+    });
     router.get("/inbox", req => {
       // GET /users/posts/indbox
     });
     return router;
-  } 
+  }
   // Router can be nested
   router.route("/posts", UserPostRoutes());
   return router;
