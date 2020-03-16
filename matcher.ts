@@ -83,13 +83,3 @@ export async function resolveIndexPath(
     }
   }
 }
-
-export type PrefixMatcher = (m: string) => boolean;
-/** Make predicate that tests if string starts with pat or matches regex */
-export function prefixMatcher(pat: string | RegExp): PrefixMatcher {
-  if (typeof pat === "string") {
-    return m => m.startsWith(pat);
-  } else {
-    return m => m.match(pat) != null;
-  }
-}

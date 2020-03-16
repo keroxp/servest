@@ -1,22 +1,10 @@
-import { methodFilter, basicAuth } from "./middleware.ts";
+import { basicAuth } from "./middleware.ts";
 import { it } from "./test_util.ts";
 import {
-  assertEquals,
-  assertThrowsAsync
+  assertEquals
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createRecorder } from "./testing.ts";
-import { RoutingError } from "./error.ts";
 it("middleware", t => {
-  t.run("methodFilter", async () => {
-    const filter = methodFilter("POST");
-    const req = createRecorder({
-      url: "/",
-      method: "GET"
-    });
-    await assertThrowsAsync(async () => {
-      await filter(req);
-    }, RoutingError);
-  });
   t.run("basicAuth", async () => {
     const auth = basicAuth({
       username: "deno",

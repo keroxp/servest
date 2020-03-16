@@ -1,8 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   findLongestAndNearestMatches,
-  resolveIndexPath,
-  prefixMatcher
+  resolveIndexPath
 } from "./matcher.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { it } from "./test_util.ts";
@@ -41,21 +40,5 @@ it("matcher", t => {
     ) {
       assertEquals(await resolveIndexPath(dir, fp), exp);
     }
-  });
-
-  t.run("prefixMatcher string", () => {
-    const m = prefixMatcher("/user");
-    assertEquals(m("/user"), true);
-    assertEquals(m("users"), false);
-    assertEquals(m("/user/list"), true);
-    assertEquals(m("/"), false);
-  });
-
-  t.run("prefixMatcher RegExp", () => {
-    const m = prefixMatcher(/user/);
-    assertEquals(m("/user"), true);
-    assertEquals(m("users"), true);
-    assertEquals(m("/user/list"), true);
-    assertEquals(m("/"), false);
   });
 });
