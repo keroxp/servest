@@ -1,13 +1,13 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createRouter } from "../../../router.ts";
 import { RoutingError } from "../../../error.ts";
+import { createApp } from "../../../app.ts";
 
-const router = createRouter();
-router.handle("/", async req => {
+const app = createApp();
+app.handle("/", async req => {
   throw new Error("error");
 });
-// Define global error handler for router
-router.handleError(async (e, req) => {
+// Define global error handler for app
+app.catch(async (e, req) => {
   // All uncaught errors and unhandled promise rejections will be here.
   // Do your custom request finalization.
   if (e instanceof RoutingError && e.status === 404) {
@@ -33,4 +33,4 @@ router.handleError(async (e, req) => {
     });
   }
 });
-router.listen(":8899");
+app.listen(":8899");

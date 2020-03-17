@@ -1,16 +1,16 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createRouter } from "../../../router.ts";
 import { contentTypeFilter } from "../../../middleware.ts";
-const router = createRouter();
-router.post("/json", contentTypeFilter("application/json"), async req => {
+import { createApp } from "../../../app.ts";
+const app = createApp();
+app.post("/json", contentTypeFilter("application/json"), async req => {
   const bodyJson = (await req.body!.json()) as { name: string; id: string };
   // ...respond
 });
-router.post("/text", contentTypeFilter("text/plain"), async req => {
+app.post("/text", contentTypeFilter("text/plain"), async req => {
   const bodyText = await req.body!.text();
   // ...respond
 });
-router.post(
+app.post(
   "/multipart",
   contentTypeFilter("multipart/form-data"),
   async req => {
@@ -25,7 +25,7 @@ router.post(
     }
   }
 );
-router.post(
+app.post(
   "/form-urlencoded",
   contentTypeFilter("application/x-www-form-urlencoded"),
   async req => {
@@ -35,9 +35,9 @@ router.post(
     // ...respond
   }
 );
-router.post("/raw", async req => {
+app.post("/raw", async req => {
   const buf = await req.body!.arrayBuffer();
   // ...respond
 });
 // Start listening on port 8899
-router.listen(":8899");
+app.listen(":8899");

@@ -1,7 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createRouter } from "../../../router.ts";
-const router = createRouter();
-router.handle("/", async req => {
+import { createApp } from "../../../app.ts";
+const app = createApp();
+app.handle("/", async req => {
   await req.respond({
     status: 200,
     headers: new Headers({
@@ -10,4 +10,4 @@ router.handle("/", async req => {
     body: "Hello, Servest!"
   });
 });
-router.listen(":8899");
+app.listen(":8899");

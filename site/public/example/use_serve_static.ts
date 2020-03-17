@@ -1,9 +1,9 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createRouter } from "../../../router.ts";
 import { serveStatic } from "../../../serve_static.ts";
-const router = createRouter();
+import { createApp } from "../../../app.ts";
+const app = createApp();
 // All requests will be processed and matched files in "public" directory
 // are served automatically
 // Otherwise, request will be passed to next handler
-router.use(serveStatic("./public"));
-router.listen(":8899");
+app.use(serveStatic("./public"));
+app.listen(":8899");

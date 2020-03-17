@@ -38,7 +38,8 @@ export const Layout: FC = ({ children }) =>
         </div>
 
         <script
-          src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/prism.min.js" />
+          src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/prism.min.js"
+        />
         <script
           src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.17.1/plugins/autoloader/prism-autoloader.min.js"
           integrity="sha256-ht8ay6ZTPZfuixYB99I5oRpCLsCq7Do2LjEYLwbe+X8="

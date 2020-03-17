@@ -1,35 +1,37 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import * as path from "./vendor/https/deno.land/std/path/mod.ts";
-
 /**
  * Find the match that appeared in the nearest position to the beginning of word.
  * If positions are same, the longest one will be picked.
  * Return -1 and null if no match found.
  * */
-export function findLongestAndNearestMatch(
+export function findLongestAndNearestMatches(
   pathname: string,
   patterns: (string | RegExp)[]
-): { index: number; match: RegExpMatchArray | null } {
+): [number, RegExpMatchArray][] {
   let lastMatchIndex = pathname.length;
   let lastMatchLength = 0;
-  let match: RegExpMatchArray | null = null;
-  let index = -1;
+  let ret: [number, RegExpMatchArray][] = [];
   for (let i = 0; i < patterns.length; i++) {
     const pattern = patterns[i];
     if (pattern instanceof RegExp) {
-      // Regex pattern always match pathname in ignore case mode
-      const m = pathname.match(new RegExp(pattern, "i"));
-      if (!m || m.index === undefined) {
+      // Regex pattern always matches pathname in ignore case mode
+      const match = pathname.match(new RegExp(pattern, "i"));
+      if (!match || match.index == null) {
         continue;
       }
+      const { index } = match;
+      const [tgt] = match;
       if (
-        m.index < lastMatchIndex ||
-        (m.index === lastMatchIndex && m[0].length > lastMatchLength)
+        index <= lastMatchIndex ||
+        (index === lastMatchIndex && tgt.length >= lastMatchLength)
       ) {
-        index = i;
-        match = m;
-        lastMatchIndex = m.index;
-        lastMatchLength = m[0].length;
+        if (tgt.length > lastMatchLength || index < lastMatchIndex) {
+          ret = [];
+        }
+        ret.push([i, match]);
+        lastMatchIndex = index;
+        lastMatchLength = tgt.length;
       }
     } else if (
       // req.url is raw requested url string that
@@ -37,15 +39,19 @@ export function findLongestAndNearestMatch(
       // However router compares them by normalized strings
       // "/path" matches both  "/path" and "/Path".
       pathname.toLowerCase() === pattern.toLowerCase() &&
-      pattern.length > lastMatchLength
+      pattern.length >= lastMatchLength
     ) {
-      index = i;
-      match = [pattern];
+      if (pattern.length > lastMatchLength) {
+        ret = [];
+      }
+      const reg = new RegExp(pathname, "i");
+      const match = pathname.match(reg)!;
+      ret.push([i, match]);
       lastMatchIndex = 0;
       lastMatchLength = pattern.length;
     }
   }
-  return { index, match };
+  return ret;
 }
 
 export async function resolveIndexPath(

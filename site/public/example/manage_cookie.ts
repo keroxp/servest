@@ -1,7 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { HttpHandler } from "../../../router.ts";
+import { RouteHandler } from "../../../router.ts";
 
-const handle: HttpHandler = req => {
+const handle: RouteHandler = req => {
   // Get cookie from request
   const deno = req.cookies.get("deno");
   // Set cookie

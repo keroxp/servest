@@ -1,11 +1,12 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createRouter, RoutedServerRequest } from "../../../router.ts";
-const router = createRouter();
+import { createApp } from "../../../app.ts";
+import { ServerRequest } from "../../../server.ts";
+const app = createApp();
 type User = {
   id: string;
   name: string;
 };
-const sessionMap: WeakMap<RoutedServerRequest, User> = new WeakMap();
+const sessionMap: WeakMap<ServerRequest, User> = new WeakMap();
 const sessionDB = new Map<string, User>();
 async function setSession(sid: string, user: User) {
   // save session to Database
@@ -26,7 +27,7 @@ async function authenticate(
   }
   return 401;
 }
-router.use(async req => {
+app.use(async req => {
   const sid = req.cookies.get("sid");
   if (!sid) {
     return req.redirect("/login");
@@ -38,8 +39,8 @@ router.use(async req => {
   // save session to store
   sessionMap.set(req, session);
 });
-router.get("/", async req => {
-  const [_, id] = req.match;
+app.get("/", async (req, { match }) => {
+  const [_, id] = match;
   await req.respond({
     status: 200,
     headers: new Headers({
@@ -48,7 +49,7 @@ router.get("/", async req => {
     body: JSON.stringify({ id })
   });
 });
-router.get("/login", async req => {
+app.get("/login", async req => {
   await req.respond({
     status: 200,
     headers: new Headers({
@@ -80,7 +81,7 @@ router.get("/login", async req => {
     `
   });
 });
-router.post("/login/auth", async req => {
+app.post("/login/auth", async req => {
   const form = await req.body!.formData(req.headers);
   const userId = form.field("id");
   const password = form.field("password");
@@ -97,8 +98,8 @@ router.post("/login/auth", async req => {
   req.cookies.set("sid", sid);
   return req.redirect("/");
 });
-router.get("/logout", async req => {
+app.get("/logout", async req => {
   req.clearCookie("sid");
   return req.redirect("/login");
 });
-router.listen(":8899");
+app.listen(":8899");

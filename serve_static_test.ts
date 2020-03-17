@@ -6,7 +6,7 @@ import {
 import { createRecorder } from "./testing.ts";
 import { serveStatic } from "./serve_static.ts";
 import { it } from "./test_util.ts";
-import { createRouter } from "./router.ts";
+import { createApp } from "./app.ts";
 
 it("serveStatic", t => {
   const func = serveStatic("./fixtures/public", {
@@ -36,7 +36,7 @@ it("serveStatic", t => {
 
 it("serveStatic integration", t => {
   t.beforeAfterAll(() => {
-    const router = createRouter();
+    const router = createApp();
     router.use(serveStatic("./fixtures/public"));
     const l = router.listen(":9988");
     return () => l.close();
