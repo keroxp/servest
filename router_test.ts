@@ -149,6 +149,20 @@ it("router error", t => {
     assertEquals(handled, true);
     assertEquals(thrown, reThrown);
   });
+  t.run("should call final handler", async () => {
+    const router = createRouter();
+    router.get("/", req => {
+      req.respond({ status: 200, body: "ok" });
+    });
+    let handled = false;
+    router.finally(req => {
+      handled = true;
+    });
+    const resp = await makeGet(router)("/");
+    assertEquals(resp.status, 200);
+    assertEquals(await resp.body?.text(), "ok");
+    assertEquals(handled, true);
+  });
 });
 
 it("router nested", t => {
