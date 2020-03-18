@@ -3,8 +3,6 @@
 import { Router } from "./router.ts";
 import { createRecorder } from "./testing.ts";
 import {
-  assertEquals,
-  assert,
   assertThrowsAsync
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { RoutingError } from "./error.ts";
@@ -63,7 +61,7 @@ export function it(
   func({ beforeAfterAll, beforeAfterEach, run });
 }
 
-export function makeGet(router: Router, method = "GET") {
+export function makeGet<T>(router: Router<T>, method = "GET") {
   return async function get(url: string) {
     const rec = createRecorder({ method, url });
     await router.handleRoute("", rec);

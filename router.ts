@@ -11,8 +11,10 @@ import {
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
 /** Router handler */
-export type RouteHandler = (req: ServerRequest, params: RouteParams) => void
-  | Promise<void>;
+export interface RouteHandler<T extends KV = {}> {
+  (req: ServerRequest, params: T & RouteParams): void | Promise<void>;
+}
+
 export type RouteParams = {
   match: RegExpMatchArray;
 };
@@ -38,12 +40,17 @@ function isRoute(x: any): x is Route {
   return typeof x?.handleRoute === "function";
 }
 
-export interface Router extends Route {
+type KV = { [key: string]: any };
+export type RequestMapper<T extends KV> = (req: ServerRequest) => T | Promise<
+  T
+>;
+
+export interface Router<T extends KV = {}> extends Route {
   /**
    * Set global middleware.
    * It will be called for each request on any routes.
    * */
-  use(...handlers: ServeHandler[]): void;
+  use(middleware: ServeHandler): void;
 
   /**
    * Register route with given pattern.
@@ -52,7 +59,7 @@ export interface Router extends Route {
    *   router.handle("/", ...)   => Called if request path exactly matches "/".
    *   router.handle(/^\//, ...) => Called if request path matches given regexp.
    * */
-  handle(pattern: string | RegExp, ...handlers: RouteHandler[]): void;
+  handle(pattern: string | RegExp, ...handlers: RouteHandler<T>[]): void;
 
   /**
    * Register route with given prefixer.
@@ -65,22 +72,22 @@ export interface Router extends Route {
    * Examples
    *   router.route("/users", ...)   => Called if request path STARTS WITH "/users".
    */
-  route(prefix: string, ...handlers: (RouteHandler | Router)[]): void;
+  route(prefix: string, ...handlers: (RouteHandler<T> | Router<any>)[]): void;
 
   /**
    * Register GET route. This is shortcut for handle();
    * Handlers will be called on GET and HEAD method.
    * */
-  get(pattern: string | RegExp, ...handlers: RouteHandler[]): void;
+  get(pattern: string | RegExp, ...handlers: RouteHandler<T>[]): void;
 
   /** Register POST route. This is shortcut for handle() */
-  post(pattern: string | RegExp, ...handlers: RouteHandler[]): void;
+  post(pattern: string | RegExp, ...handlers: RouteHandler<T>[]): void;
 
   /** Accept ws upgrade */
   ws(pattern: string | RegExp, handler: WebSocketHandler): void;
   ws(
     pattern: string | RegExp,
-    handlers: RouteHandler[],
+    handlers: RouteHandler<T>[],
     handler: WebSocketHandler
   ): void;
 
@@ -100,31 +107,74 @@ export interface Router extends Route {
   finally(handler: ServeHandler): void;
 }
 
+interface RouterBuilder<T extends {}> {
+  use<P extends KV>(mapper: RequestMapper<P>): RouterBuilder<T & P>;
+  build(): Router<T>;
+}
+
+function composeMapper<T extends KV, P extends KV>(
+  base: RequestMapper<T>,
+  add: RequestMapper<P>
+): RequestMapper<T & P> {
+  return async (req) => {
+    const b = await base(req);
+    const e = await add(req);
+    return { ...b, ...e };
+  };
+}
+
+export function createRouterBuilder(): RouterBuilder<{}> {
+  return _createRouterBuilder(() => ({}));
+}
+
+function _createRouterBuilder<T extends KV>(
+  mapper: RequestMapper<T>
+): RouterBuilder<T> {
+  function use<P extends KV>(add: RequestMapper<P>): RouterBuilder<T & P> {
+    return _createRouterBuilder(composeMapper(mapper, add));
+  }
+  function build(): Router<T> {
+    return _createRouter({ mapper });
+  }
+  return { use, build };
+}
+
 export function createRouter(): Router {
+  return _createRouter({ mapper: () => ({}) });
+}
+
+function _createRouter<T extends KV>(opts: {
+  mapper: RequestMapper<T>;
+}): Router<T> {
   const middlewareList: ServeHandler[] = [];
+  const mapper = opts.mapper;
   const routes: {
     pattern: string | RegExp;
     methods?: string[];
-    handlers: RouteHandler[];
+    handlers: RouteHandler<any>[];
     wsHandler?: WebSocketHandler;
   }[] = [];
   const prefixers: {
     prefix: string;
-    handlers: RouteHandler[];
+    handlers: RouteHandler<any>[];
   }[] = [];
 
   let errorHandler: ErrorHandler | undefined;
   let finalHandler: ServeHandler | undefined;
 
-  function handle(pattern: string | RegExp, ...handlers: RouteHandler[]) {
+  function use(...handlers: ServeHandler[]) {
+    middlewareList.push(...handlers);
+  }
+
+  function handle(pattern: string | RegExp, ...handlers: RouteHandler<T>[]) {
     routes.push({ pattern, handlers });
   }
 
-  function route(prefix: string, ...handlers: RouteHandler[]) {
+  function route(prefix: string, ...handlers: RouteHandler<T>[]) {
     prefixers.push({ prefix, handlers });
   }
 
-  function get(pattern: string | RegExp, ...handlers: RouteHandler[]) {
+  function get(pattern: string | RegExp, ...handlers: RouteHandler<T>[]) {
     routes.push({
       pattern,
       methods: ["GET", "HEAD"],
@@ -132,12 +182,8 @@ export function createRouter(): Router {
     });
   }
 
-  function post(pattern: string | RegExp, ...handlers: RouteHandler[]) {
+  function post(pattern: string | RegExp, ...handlers: RouteHandler<T>[]) {
     routes.push({ pattern, methods: ["POST"], handlers });
-  }
-
-  function use(...handlers: ServeHandler[]) {
-    middlewareList.push(...handlers);
   }
 
   function ws(pattern: string | RegExp, ...args: any[]) {
@@ -161,8 +207,8 @@ export function createRouter(): Router {
   async function chainRoutes(
     prefix: string,
     req: ServerRequest,
-    params: RouteParams,
-    handlers: (RouteHandler | Router)[]
+    params: T & RouteParams,
+    handlers: (RouteHandler<T> | Router<T>)[]
   ): Promise<boolean> {
     for (const handler of handlers) {
       if (isRoute(handler)) {
@@ -180,6 +226,7 @@ export function createRouter(): Router {
     parentMatch: string,
     req: ServerRequest
   ): Promise<void> {
+    const params = await mapper(req);
     for (const handler of middlewareList) {
       await handler(req);
       if (req.isResponded()) {
@@ -195,7 +242,7 @@ export function createRouter(): Router {
           await chainRoutes(
             parentMatch + prefix,
             req,
-            { match },
+            { match, ...params },
             handlers
           )
         ) {
@@ -213,7 +260,14 @@ export function createRouter(): Router {
         if (methods && !methods.includes(req.method)) {
           continue;
         }
-        if (await chainRoutes(parentMatch + match, req, { match }, handlers)) {
+        if (
+          await chainRoutes(
+            parentMatch + match,
+            req,
+            { match, ...params },
+            handlers
+          )
+        ) {
           return;
         }
         if (wsHandler && acceptable(req)) {

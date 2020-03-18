@@ -63,7 +63,7 @@ export function createApp(
   };
   const handleRoute = async (p: string, req: ServerRequest) => {
     try {
-      await router.handleRoute(p, req);
+      await router.handleRoute(p, req, {});
     } catch (e) {
       if (!req.isResponded()) {
         await finalErrorHandler(e, req);

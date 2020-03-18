@@ -1,10 +1,14 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
+import {
+  assertEquals,
+  assertMatch
+} from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { it, makeGet, assertRoutingError } from "./test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 import { writeResponse } from "./serveio.ts";
 import {
-  createRouter
+  createRouter,
+  createRouterBuilder
 } from "./router.ts";
 import { ServerRequest } from "./server.ts";
 
@@ -253,5 +257,32 @@ it("nested router bad", t => {
     app.route("", UserRoute);
     const get = makeGet(app);
     assertRoutingError(() => get("/users/"), 404);
+  });
+});
+
+it("router builder", t => {
+  t.run("basic", async () => {
+    const router = createRouterBuilder()
+      .use(req => ({ node: "js" }))
+      .use(req => ({ deno: "land" }))
+      .use(req => {
+        const url = req.url;
+        return { url };
+      })
+      .use(req => {
+        return { nest: { is: { ok: true } } };
+      })
+      .build();
+    router.get("/", (req, params) => {
+      req.respond({ status: 200, body: JSON.stringify(params) });
+    });
+    const resp = await makeGet(router)("/");
+    assertEquals(await resp.body?.json(), {
+      match: ["/"],
+      node: "js",
+      deno: "land",
+      url: "/",
+      nest: { is: { ok: true } }
+    });
   });
 });
