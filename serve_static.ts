@@ -51,7 +51,7 @@ export function serveStatic(
         media_types.contentType(ext) ||
         "application/octet-stream";
       const headers = new Headers({
-        "content-length": stat.len + "",
+        "content-length": stat.size + "",
         "content-type": contentType
       });
       const contentDisposition = contentDispositionMap.get(ext);

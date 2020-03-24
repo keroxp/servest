@@ -1,1 +1,1 @@
-export * from "https://deno.land/std@v0.36.0/io/writers.ts";
+export * from "https://deno.land/std@v0.37.1/io/writers.ts";

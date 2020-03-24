@@ -33,10 +33,7 @@ function setupRouter(port: number): ServeListener {
       body: req.body
     });
   });
-  return app.listen({
-    hostname: "127.0.0.1",
-    port
-  });
+  return app.listen({ port });
 }
 
 it("agent", t => {
