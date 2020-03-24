@@ -24,7 +24,7 @@
     ]
   },
   "https://dev.jspm.io/react": {
-    "version": "@16.10.2",
+    "version": "@16.13",
     "modules": [
       "/index.js"
     ],
@@ -33,7 +33,7 @@
     }
   },
   "https://dev.jspm.io/react-dom": {
-    "version": "@16.10.2",
+    "version": "@16.13",
     "modules": [
       "/server.js"
     ],
@@ -48,7 +48,7 @@
     ]
   },
   "https://dev.jspm.io/csstype": {
-    "version": "@2.6.7",
+    "version": "@2.6.9",
     "modules": [
       "/index.d.ts"
     ]

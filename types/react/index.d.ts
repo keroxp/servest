@@ -22,6 +22,7 @@
 //                 Sebastian Silbermann <https://github.com/eps1lon>
 //                 Kyle Scully <https://github.com/zieka>
 //                 Cong Zhang <https://github.com/dancerphil>
+//                 Dimitri Mitropoulos <https://github.com/dimitropoulos>
 // Definitions: https://github.com/DefinitelyTyped/DefinitelyTyped
 // TypeScript Version: 2.8
 
@@ -83,19 +84,54 @@ declare namespace React {
     | ((props: P) => ReactElement | null)
     | (new (props: P) => Component<P, any>);
 
-  type Key = string | number;
-
   interface RefObject<T> {
     readonly current: T | null;
   }
-
-  type Ref<T> =
-    | { bivarianceHack(instance: T | null): void }["bivarianceHack"]
-    | RefObject<T>
-    | null;
+  type RefCallback<T> = {
+    bivarianceHack(instance: T | null): void;
+  }["bivarianceHack"];
+  type Ref<T> = RefCallback<T> | RefObject<T> | null;
   type LegacyRef<T> = string | Ref<T>;
+  /**
+   * Gets the instance type for a React element. The instance will be different for various component types:
+   *
+   * - React class components will be the class instance. So if you had `class Foo extends React.Component<{}> {}`
+   *   and used `React.ElementRef<typeof Foo>` then the type would be the instance of `Foo`.
+   * - React stateless functional components do not have a backing instance and so `React.ElementRef<typeof Bar>`
+   *   (when `Bar` is `function Bar() {}`) will give you the `undefined` type.
+   * - JSX intrinsics like `div` will give you their DOM instance. For `React.ElementRef<'div'>` that would be
+   *   `HTMLDivElement`. For `React.ElementRef<'input'>` that would be `HTMLInputElement`.
+   * - React stateless functional components that forward a `ref` will give you the `ElementRef` of the forwarded
+   *   to component.
+   *
+   * `C` must be the type _of_ a React component so you need to use typeof as in React.ElementRef<typeof MyComponent>.
+   *
+   * @todo In Flow, this works a little different with forwarded refs and the `AbstractComponent` that
+   *       `React.forwardRef()` returns.
+   */
+  type ElementRef<
+    C extends
+      | ForwardRefExoticComponent<any>
+      | { new (props: any): Component<any> }
+      | ((props: any, context?: any) => ReactElement | null)
+      | keyof JSX.IntrinsicElements
+  > = C extends ForwardRefExoticComponent<infer FP>
+    ? FP extends RefAttributes<infer FC>
+      ? FC
+      : never
+    : C extends { new (props: any): Component<any> }
+    ? InstanceType<C>
+    : C extends (props: any, context?: any) => ReactElement | null
+    ? undefined
+    : C extends keyof JSX.IntrinsicElements
+    ? JSX.IntrinsicElements[C] extends DOMAttributes<infer E>
+      ? E
+      : never
+    : never;
 
   type ComponentState = any;
+
+  type Key = string | number;
 
   /**
    * @internal You shouldn't need to use this type since you never see these attributes
@@ -126,12 +162,11 @@ declare namespace React {
 interface ReactComponentElement<
         T extends keyof JSX.IntrinsicElements | JSXElementConstructor<any>,
         P = Pick<ComponentProps<T>, Exclude<keyof ComponentProps<T>, 'key' | 'ref'>>
-    > extends ReactElement<P, T> { } 
-*/
+    > extends ReactElement<P, Exclude<T, number>> { }
 
-  /**
-   * @deprecated Please use `FunctionComponentElement`
-   */
+    /**
+     * @deprecated Please use `FunctionComponentElement`
+     */
   type SFCElement<P> = FunctionComponentElement<P>;
 
   interface FunctionComponentElement<P>
@@ -631,13 +666,27 @@ interface ReactComponentElement<
     displayName?: string;
   }
 
-  interface RefForwardingComponent<T, P = {}> {
+  interface ForwardRefRenderFunction<T, P = {}> {
     (props: PropsWithChildren<P>, ref: Ref<T>): ReactElement | null;
-    propTypes?: WeakValidationMap<P>;
-    contextTypes?: ValidationMap<any>;
-    defaultProps?: Partial<P>;
     displayName?: string;
+    // explicit rejected with `never` required due to
+    // https://github.com/microsoft/TypeScript/issues/36826
+    /**
+     * defaultProps are not supported on render functions
+     */
+    defaultProps?: never;
+    /**
+     * propTypes are not supported on render functions
+     */
+    propTypes?: never;
   }
+
+  /**
+   * @deprecated Use ForwardRefRenderingFunction. forwardRef doesn't accept a
+   *             "real" component.
+   */
+  interface RefForwardingComponent<T, P = {}>
+    extends ForwardRefRenderFunction<T, P> {}
 
   interface ComponentClass<P = {}, S = ComponentState>
     extends StaticLifecycle<P, S> {
@@ -887,7 +936,7 @@ interface ReactComponentElement<
   }
 
   function forwardRef<T, P = {}>(
-    Component: RefForwardingComponent<T, P>
+    render: ForwardRefRenderFunction<T, P>
   ): ForwardRefExoticComponent<PropsWithoutRef<P> & RefAttributes<T>>;
 
   /** Ensures that the props do not include ref at all */
@@ -2209,6 +2258,8 @@ interface ReactComponentElement<
     crossOrigin?: "anonymous" | "use-credentials" | "";
     decoding?: "async" | "auto" | "sync";
     height?: number | string;
+    loading?: "eager" | "lazy";
+    referrerPolicy?: "no-referrer" | "origin" | "unsafe-url";
     sizes?: string;
     src?: string;
     srcSet?: string;
@@ -2656,6 +2707,7 @@ interface ReactComponentElement<
     overlineThickness?: number | string;
     paintOrder?: number | string;
     panose1?: number | string;
+    path?: string;
     pathLength?: number | string;
     patternContentUnits?: string;
     patternTransform?: number | string;
@@ -3247,12 +3299,15 @@ type NotExactlyAnyPropertyKeys<T> = Exclude<keyof T, ExactlyAnyPropertyKeys<T>>;
 // Try to resolve ill-defined props like for JS users: props can be any, or sometimes objects with properties of type any
 type MergePropTypes<P, T> =
   // Distribute over P in case it is a union type
-  P extends any // If props is type any, use propTypes definitions
-    ? IsExactlyAny<P> extends true
-      ? T // If declared props have indexed properties, ignore inferred props entirely as keyof gets widened
-      : string extends keyof P
-      ? P // Prefer declared types which are not exactly any
-      : Pick<P, NotExactlyAnyPropertyKeys<P>> &
+  P extends any
+    ? // If props is type any, use propTypes definitions
+      IsExactlyAny<P> extends true
+      ? T
+      : // If declared props have indexed properties, ignore inferred props entirely as keyof gets widened
+      string extends keyof P
+      ? P
+      : // Prefer declared types which are not exactly any
+        Pick<P, NotExactlyAnyPropertyKeys<P>> &
           // For props which are exactly any, use the type inferred from propTypes if present
           Pick<T, Exclude<keyof T, NotExactlyAnyPropertyKeys<P>>> &
           // Keep leftover props not specified in propTypes
