@@ -1,1 +1,1 @@
-export * from "https://deno.land/std@v0.36.0/mime/multipart.ts";
+export * from "https://deno.land/std@v0.37.1/mime/multipart.ts";

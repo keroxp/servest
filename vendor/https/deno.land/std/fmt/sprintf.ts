@@ -1,1 +1,1 @@
-export * from "https://deno.land/std@v0.36.0/fmt/sprintf.ts";
+export * from "https://deno.land/std@v0.37.1/fmt/sprintf.ts";

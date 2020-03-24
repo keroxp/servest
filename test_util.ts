@@ -33,30 +33,36 @@ export function it(
     beforeEachFunc = func;
   }
   function run(desc2: string, func2: () => any | Promise<any>) {
-    Deno.test(`${desc} ${desc2}`, async () => {
-      if (ignore) {
-        console.warn("ignored");
-        return;
-      }
-      if (testCnt === 0 && beforeAllFunc) {
-        afterAllFunc = await beforeAllFunc();
-      }
-      testCnt++;
-      try {
-        if (beforeEachFunc) {
-          afterEachFunc = await beforeEachFunc();
+    Deno.test({
+      name: `${desc} ${desc2}`,
+      disableResourceSanitizer: true,
+      disableOpSanitizer: true,
+      fn: async () => {
+        if (ignore) {
+          console.warn("ignored");
+          return;
         }
-        await func2();
-      } finally {
-        if (afterEachFunc) {
-          await afterEachFunc();
+        if (testCnt === 0 && beforeAllFunc) {
+          afterAllFunc = await beforeAllFunc();
         }
-        setTimeout(async () => {
-          testCnt--;
-          if (testCnt === 0 && afterAllFunc) {
-            await afterAllFunc();
+        testCnt++;
+        try {
+          if (beforeEachFunc) {
+            afterEachFunc = await beforeEachFunc();
           }
-        }, 0);
+          await func2();
+        } finally {
+          if (afterEachFunc) {
+            await afterEachFunc();
+          }
+          testCnt--;
+          // @ts-ignore
+          queueMicrotask(async () => {
+            if (testCnt === 0 && afterAllFunc) {
+              await afterAllFunc();
+            }
+          });
+        }
       }
     });
   }

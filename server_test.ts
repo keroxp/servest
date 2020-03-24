@@ -10,48 +10,13 @@ import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
 import { createAgent } from "./agent.ts";
 import { readResponse, writeRequest } from "./serveio.ts";
 import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
+import { deferred, delay } from "./vendor/https/deno.land/std/util/async.ts";
 import Buffer = Deno.Buffer;
-let port = 8880;
-const { test } = Deno;
+import { it } from "./test_util.ts";
 
-test(async function server() {
-  const listener = listenAndServe(
-    {
-      hostname: "0.0.0.0",
-      port
-    },
-    async req => {
-      await req.respond({
-        status: 200,
-        headers: new Headers({
-          "content-type": "text/plain",
-          "content-length": "5"
-        }),
-        body: new StringReader("hello")
-      });
-    }
-  );
-  const agent = createAgent("http://127.0.0.1:" + port);
-  try {
-    const { headers, status, body } = await agent.send({
-      path: "/",
-      method: "GET"
-    });
-    assertEquals(headers.get("content-length"), "5");
-    assertEquals(status, 200);
-    assertEquals(headers.get("content-type"), "text/plain");
-    const dest = new StringWriter();
-    await Deno.copy(dest, body);
-    assertEquals(dest.toString(), "hello");
-  } finally {
-    agent.conn.close();
-    listener.close();
-  }
-});
-/*
+let port = 8880;
+
 it("server", t => {
-  port++;
   t.beforeAfterAll(() => {
     const l = listenAndServe(
       { port },
@@ -66,6 +31,35 @@ it("server", t => {
       }
     );
     return () => l.close();
+  });
+  t.run("basic", async function server() {
+    port++;
+    const listener = listenAndServe({ port }, async req => {
+      await req.respond({
+        status: 200,
+        headers: new Headers({
+          "content-type": "text/plain",
+          "content-length": "5"
+        }),
+        body: new StringReader("hello")
+      });
+    });
+    const agent = createAgent("http://127.0.0.1:" + port);
+    try {
+      const { headers, status, body } = await agent.send({
+        path: "/",
+        method: "GET"
+      });
+      assertEquals(headers.get("content-length"), "5");
+      assertEquals(status, 200);
+      assertEquals(headers.get("content-type"), "text/plain");
+      const dest = new StringWriter();
+      await Deno.copy(dest, body);
+      assertEquals(dest.toString(), "hello");
+    } finally {
+      agent.conn.close();
+      listener.close();
+    }
   });
   t.run("keepAliveTimeout", async () => {
     const agent = createAgent(`http://127.0.0.1:${port}`);
@@ -89,82 +83,118 @@ it("server", t => {
       agent.conn.close();
     }
   });
-});
- */
-test(async function serverKeepAliveTimeoutMax() {
-  port++;
-  const listener = listenAndServe(
-    {
-      hostname: "0.0.0.0",
-      port
-    },
-    async req => {
-      await req.respond({
-        status: 200,
-        headers: new Headers(),
-        body: encode("ok")
-      });
+  t.run(
+    "serverKeepAliveTimeoutMax",
+    async function serverKeepAliveTimeoutMax() {
+      port++;
+      const listener = listenAndServe(
+        {
+          hostname: "0.0.0.0",
+          port
+        },
+        async req => {
+          await req.respond({
+            status: 200,
+            headers: new Headers(),
+            body: encode("ok")
+          });
+        }
+      );
+      const agent = createAgent(`http://127.0.0.1:${port}`);
+      try {
+        const req = {
+          path: "/",
+          method: "POST",
+          headers: new Headers({
+            host: "deno.land",
+            "Keep-Alive": "max=0, timeout=1000"
+          }),
+          body: encode("hello")
+        };
+        const { status, finalize } = await agent.send(req);
+        await finalize();
+        assertEquals(200, status);
+        await assertThrowsAsync(async () => {
+          await agent.send(req);
+        });
+      } finally {
+        agent.conn.close();
+        listener.close();
+      }
     }
   );
-  const agent = createAgent(`http://127.0.0.1:${port}`);
-  try {
-    const req = {
-      path: "/",
-      method: "POST",
-      headers: new Headers({
-        host: "deno.land",
-        "Keep-Alive": "max=0, timeout=1000"
-      }),
-      body: encode("hello")
-    };
-    const { status, finalize } = await agent.send(req);
-    await finalize();
-    assertEquals(200, status);
-    await assertThrowsAsync(async () => {
-      await agent.send(req);
-    });
-  } finally {
-    agent.conn.close();
-    listener.close();
-  }
-});
-
-test(async function serverConnectionClose() {
-  port++;
-  const listener = listenAndServe(
-    {
-      hostname: "0.0.0.0",
-      port
-    },
-    async req => {
-      await req.respond({
-        status: 200,
-        headers: new Headers(),
-        body: encode("ok")
+  t.run("serverConnectionClose", async function serverConnectionClose() {
+    port++;
+    const listener = listenAndServe(
+      {
+        hostname: "0.0.0.0",
+        port
+      },
+      async req => {
+        await req.respond({
+          status: 200,
+          headers: new Headers(),
+          body: encode("ok")
+        });
+      }
+    );
+    const agent = createAgent(`http://127.0.0.1:${port}`);
+    try {
+      const req = {
+        path: "/",
+        method: "POST",
+        headers: new Headers({
+          host: "deno.land",
+          connection: "close"
+        }),
+        body: encode("hello")
+      };
+      const { status, finalize } = await agent.send(req);
+      await finalize();
+      assertEquals(200, status);
+      await assertThrowsAsync(async () => {
+        await agent.send(req);
       });
+    } finally {
+      agent.conn.close();
+      listener.close();
     }
-  );
-  const agent = createAgent(`http://127.0.0.1:${port}`);
-  try {
-    const req = {
-      path: "/",
-      method: "POST",
-      headers: new Headers({
-        host: "deno.land",
-        connection: "close"
-      }),
-      body: encode("hello")
-    };
-    const { status, finalize } = await agent.send(req);
-    await finalize();
-    assertEquals(200, status);
-    await assertThrowsAsync(async () => {
-      await agent.send(req);
+  });
+  t.run("handleKeepAliveConn should respond exclusively", async () => {
+    const r = new Buffer();
+    const w = new Buffer();
+    await writeRequest(r, {
+      method: "GET",
+      url: "http://localhost/?q=1"
     });
-  } finally {
-    agent.conn.close();
-    listener.close();
-  }
+    await writeRequest(r, {
+      method: "GET",
+      url: "http://localhost/?q=2"
+    });
+    await writeRequest(r, {
+      method: "GET",
+      url: "http://localhost/?q=3"
+    });
+    const d = deferred<void>();
+    let latch = 3;
+    handleKeepAliveConn(dummyConn(r, w), async req => {
+      const url = new URL(req.url, "http://dummy");
+      const i = url.searchParams.get("q")!;
+      req.respond({ status: 200, body: "resp:" + i }).then(() => {
+        if (--latch === 0) {
+          d.resolve();
+        }
+      });
+    });
+    await d;
+    const responseReader = new BufReader(w);
+    const resp1 = await readResponse(responseReader);
+    assertEquals(await resp1.body.text(), "resp:1");
+    const resp2 = await readResponse(responseReader);
+    assertEquals(await resp2.body.text(), "resp:2");
+    const resp3 = await readResponse(responseReader);
+    assertEquals(await resp3.body.text(), "resp:3");
+  });
 });
 
 function dummyConn(r: Deno.Reader, w: Deno.Writer): Deno.Conn {
@@ -180,39 +210,3 @@ function dummyConn(r: Deno.Reader, w: Deno.Writer): Deno.Conn {
     write: p => w.write(p)
   };
 }
-
-test("handleKeepAliveConn should respond exclusively", async () => {
-  const r = new Buffer();
-  const w = new Buffer();
-  await writeRequest(r, {
-    method: "GET",
-    url: "http://localhost/?q=1"
-  });
-  await writeRequest(r, {
-    method: "GET",
-    url: "http://localhost/?q=2"
-  });
-  await writeRequest(r, {
-    method: "GET",
-    url: "http://localhost/?q=3"
-  });
-  const d = deferred<void>();
-  let latch = 3;
-  handleKeepAliveConn(dummyConn(r, w), async req => {
-    const url = new URL(req.url, "http://dummy");
-    const i = url.searchParams.get("q")!;
-    req.respond({ status: 200, body: "resp:" + i }).then(() => {
-      if (--latch === 0) {
-        d.resolve();
-      }
-    });
-  });
-  await d;
-  const responseReader = new BufReader(w);
-  const resp1 = await readResponse(responseReader);
-  assertEquals(await resp1.body.text(), "resp:1");
-  const resp2 = await readResponse(responseReader);
-  assertEquals(await resp2.body.text(), "resp:2");
-  const resp3 = await readResponse(responseReader);
-  assertEquals(await resp3.body.text(), "resp:3");
-});

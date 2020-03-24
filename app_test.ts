@@ -9,17 +9,13 @@ import { Loglevel, setLevel } from "./logger.ts";
 import { connectWebSocket } from "./vendor/https/deno.land/std/ws/mod.ts";
 setLevel(Loglevel.NONE);
 
-it("app/ws", t => {
+it("app", t => {
   const app = createApp();
   app.handle("/no-response", () => {});
   app.handle("/throw", () => {
     throw new Error("throw");
   });
   const get = makeGet(app);
-  app.ws("/ws", async sock => {
-    await sock.send("Hello");
-    await sock.close(1000);
-  });
   t.beforeAfterAll(() => {
     const l = app.listen({ port: 8899 });
     return () => l.close();
@@ -38,8 +34,19 @@ it("app/ws", t => {
     assertEquals(res.status, 500);
     assertMatch(text, /Error: throw/);
   });
+});
+it("app/ws", t => {
+  const app = createApp();
+  app.ws("/ws", async sock => {
+    await sock.send("Hello");
+    await sock.close(1000);
+  });
+  t.beforeAfterAll(() => {
+    const l = app.listen({ port: 8890 });
+    return () => l.close();
+  });
   t.run("should accept ws", async () => {
-    const sock = await connectWebSocket("ws://127.0.0.1:8899/ws");
+    const sock = await connectWebSocket("ws://127.0.0.1:8890/ws");
     const it = sock.receive();
     const { value: msg1 } = await it.next();
     assertEquals(msg1, "Hello");
@@ -48,5 +55,6 @@ it("app/ws", t => {
     const { done } = await it.next();
     assertEquals(done, true);
     assertEquals(sock.isClosed, true);
+    sock.closeForce();
   });
 });

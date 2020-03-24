@@ -50,14 +50,14 @@ EXAMPLE:
       console.log(`Restarting...`);
       proc.close();
     }
-    proc = Deno.run({ args: [cmd] });
+    proc = Deno.run({ cmd: [cmd] });
   }
   setInterval(async () => {
     const files = await watch(...globs);
     if (files.length > 0) {
       let errored = false;
       for (const file of files) {
-        const compile = Deno.run({ args: [Deno.execPath(), "fetch", file] });
+        const compile = Deno.run({ cmd: [Deno.execPath(), "fetch", file] });
         const { code } = await compile.status();
         if (code !== 0) {
           errored = true;
