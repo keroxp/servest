@@ -32,8 +32,8 @@ export type AppOptions = {
 /** Create App */
 export function createApp(
   opts: AppOptions = {
-    logger: createLogger()
-  }
+    logger: createLogger(),
+  },
 ): App {
   const { info, error } = namedLogger("servest:router", opts.logger);
   const router = createRouter();
@@ -41,13 +41,13 @@ export function createApp(
     if (e instanceof RoutingError) {
       await req.respond({
         status: e.status,
-        body: e.message
+        body: e.message,
       });
     } else {
       if (e instanceof Error) {
         await req.respond({
           status: 500,
-          body: e.stack
+          body: e.stack,
         });
         if (e.stack) {
           error(e.stack);
@@ -55,7 +55,7 @@ export function createApp(
       } else {
         await req.respond({
           status: 500,
-          body: kHttpStatusMessages[500]
+          body: kHttpStatusMessages[500],
         });
         error(e);
       }
@@ -77,20 +77,20 @@ export function createApp(
   };
   function listen(
     addr: string | ListenOptions,
-    opts?: ServeOptions
+    opts?: ServeOptions,
   ): ServeListener {
-    const listener = listenAndServe(addr, req => handleRoute("", req), opts);
+    const listener = listenAndServe(addr, (req) => handleRoute("", req), opts);
     info(`listening on ${addr}`);
     return listener;
   }
   function listenTLS(
     listenOptions: ListenTLSOptions,
-    opts?: ServeOptions
+    opts?: ServeOptions,
   ): ServeListener {
     const listener = listenAndServeTLS(
       listenOptions,
-      req => handleRoute("", req),
-      opts
+      (req) => handleRoute("", req),
+      opts,
     );
     info(`listening on ${listenOptions.hostname || ""}:${listenOptions.port}`);
     return listener;

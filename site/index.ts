@@ -11,7 +11,7 @@ import { createApp } from "../app.ts";
 const app = createApp({ logLevel: Loglevel.INFO });
 const resolve = pathResolver(import.meta);
 app.use(serveStatic(resolve("./public")));
-app.use(serveJsx(resolve("./pages"), f => import(f), Layout));
+app.use(serveJsx(resolve("./pages"), (f) => import(f), Layout));
 app.get(
   new RegExp("^/@(?<version>.*?)/(?<pathname>.+?)$"),
   async (req, { match }) => {
@@ -29,7 +29,7 @@ app.get(
     } else {
       throw new Error(await resp.body.text());
     }
-  }
+  },
 );
 app.catch(async (e, req) => {
   if (e instanceof RoutingError) {

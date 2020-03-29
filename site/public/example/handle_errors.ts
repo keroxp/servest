@@ -3,7 +3,7 @@ import { RoutingError } from "../../../error.ts";
 import { createApp } from "../../../app.ts";
 
 const app = createApp();
-app.handle("/", async req => {
+app.handle("/", async (req) => {
   throw new Error("error");
 });
 // Define global error handler for app
@@ -19,9 +19,9 @@ app.catch(async (e, req) => {
       await req.respond({
         status: 404,
         headers: new Headers({
-          "content-type": "text/html"
+          "content-type": "text/html",
         }),
-        body: errorPage
+        body: errorPage,
       });
     } finally {
       errorPage.close();
@@ -29,7 +29,7 @@ app.catch(async (e, req) => {
   } else {
     await req.respond({
       status: 500,
-      body: "Internal Server Error"
+      body: "Internal Server Error",
     });
   }
 });

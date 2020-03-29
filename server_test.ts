@@ -16,39 +16,39 @@ import { it } from "./test_util.ts";
 
 let port = 8880;
 
-it("server", t => {
+it("server", (t) => {
   t.beforeAfterAll(() => {
     const l = listenAndServe(
       { port },
-      async req => {
+      async (req) => {
         await req.respond({
           status: 200,
-          body: "ok"
+          body: "ok",
         });
       },
       {
-        keepAliveTimeout: 10
-      }
+        keepAliveTimeout: 10,
+      },
     );
     return () => l.close();
   });
   t.run("basic", async function server() {
     port++;
-    const listener = listenAndServe({ port }, async req => {
+    const listener = listenAndServe({ port }, async (req) => {
       await req.respond({
         status: 200,
         headers: new Headers({
           "content-type": "text/plain",
-          "content-length": "5"
+          "content-length": "5",
         }),
-        body: new StringReader("hello")
+        body: new StringReader("hello"),
       });
     });
     const agent = createAgent("http://127.0.0.1:" + port);
     try {
       const { headers, status, body } = await agent.send({
         path: "/",
-        method: "GET"
+        method: "GET",
       });
       assertEquals(headers.get("content-length"), "5");
       assertEquals(status, 200);
@@ -68,9 +68,9 @@ it("server", t => {
         path: "/",
         method: "POST",
         headers: new Headers({
-          host: "deno.land"
+          host: "deno.land",
         }),
-        body: "hello"
+        body: "hello",
       };
       const { status, finalize } = await agent.send(req);
       await finalize();
@@ -90,15 +90,15 @@ it("server", t => {
       const listener = listenAndServe(
         {
           hostname: "0.0.0.0",
-          port
+          port,
         },
-        async req => {
+        async (req) => {
           await req.respond({
             status: 200,
             headers: new Headers(),
-            body: encode("ok")
+            body: encode("ok"),
           });
-        }
+        },
       );
       const agent = createAgent(`http://127.0.0.1:${port}`);
       try {
@@ -107,9 +107,9 @@ it("server", t => {
           method: "POST",
           headers: new Headers({
             host: "deno.land",
-            "Keep-Alive": "max=0, timeout=1000"
+            "Keep-Alive": "max=0, timeout=1000",
           }),
-          body: encode("hello")
+          body: encode("hello"),
         };
         const { status, finalize } = await agent.send(req);
         await finalize();
@@ -121,22 +121,22 @@ it("server", t => {
         agent.conn.close();
         listener.close();
       }
-    }
+    },
   );
   t.run("serverConnectionClose", async function serverConnectionClose() {
     port++;
     const listener = listenAndServe(
       {
         hostname: "0.0.0.0",
-        port
+        port,
       },
-      async req => {
+      async (req) => {
         await req.respond({
           status: 200,
           headers: new Headers(),
-          body: encode("ok")
+          body: encode("ok"),
         });
-      }
+      },
     );
     const agent = createAgent(`http://127.0.0.1:${port}`);
     try {
@@ -145,9 +145,9 @@ it("server", t => {
         method: "POST",
         headers: new Headers({
           host: "deno.land",
-          connection: "close"
+          connection: "close",
         }),
-        body: encode("hello")
+        body: encode("hello"),
       };
       const { status, finalize } = await agent.send(req);
       await finalize();
@@ -165,19 +165,19 @@ it("server", t => {
     const w = new Buffer();
     await writeRequest(r, {
       method: "GET",
-      url: "http://localhost/?q=1"
+      url: "http://localhost/?q=1",
     });
     await writeRequest(r, {
       method: "GET",
-      url: "http://localhost/?q=2"
+      url: "http://localhost/?q=2",
     });
     await writeRequest(r, {
       method: "GET",
-      url: "http://localhost/?q=3"
+      url: "http://localhost/?q=3",
     });
     const d = deferred<void>();
     let latch = 3;
-    handleKeepAliveConn(dummyConn(r, w), async req => {
+    handleKeepAliveConn(dummyConn(r, w), async (req) => {
       const url = new URL(req.url, "http://dummy");
       const i = url.searchParams.get("q")!;
       req.respond({ status: 200, body: "resp:" + i }).then(() => {
@@ -206,7 +206,7 @@ function dummyConn(r: Deno.Reader, w: Deno.Writer): Deno.Conn {
     closeRead(): void {},
     localAddr: addr,
     remoteAddr: addr,
-    read: p => r.read(p),
-    write: p => w.write(p)
+    read: (p) => r.read(p),
+    write: (p) => w.write(p),
   };
 }

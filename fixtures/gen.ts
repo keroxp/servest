@@ -19,8 +19,8 @@ async function basicRequestGet() {
     url: "http://deno.land/index.html?deno=land&msg=gogo",
     method: "GET",
     headers: new Headers({
-      "Content-Type": "text/plain"
-    })
+      "Content-Type": "text/plain",
+    }),
   });
   f.close();
 }
@@ -31,11 +31,11 @@ async function basicRequestPost() {
     url: "http://deno.land/index.html",
     method: "POST",
     headers: new Headers({
-      "Content-Type": "text/plain"
+      "Content-Type": "text/plain",
     }),
     body: encode(
-      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
-    )
+      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
+    ),
   });
   f.close();
 }
@@ -44,15 +44,15 @@ async function chunkedRequestPost() {
   const f = await Deno.open("./fixtures/request_post_chunked.txt", "w");
   const headers = new Headers({
     "Content-Type": "text/plain",
-    "Transfer-Encoding": "chunked"
+    "Transfer-Encoding": "chunked",
   });
   await writeRequest(f, {
     url: "http://deno.land/index.html",
     method: "POST",
     headers,
     body: new StringReader(
-      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
-    )
+      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
+    ),
   });
   f.close();
 }
@@ -60,28 +60,28 @@ async function chunkedRequestPost() {
 async function chunkedRequestPostWithTrailers() {
   const f = await Deno.open(
     "./fixtures/request_post_chunked_trailers.txt",
-    "w"
+    "w",
   );
   const headers = new Headers({
     "Content-Type": "text/plain",
     "Transfer-Encoding": "chunked",
-    Trailer: "X-Deno, X-Node"
+    Trailer: "X-Deno, X-Node",
   });
   await writeRequest(f, {
     url: "http://deno.land/index.html",
     method: "POST",
     headers,
     body: new StringReader(
-      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
-    )
+      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
+    ),
   });
   await writeTrailers(
     f,
     headers,
     new Headers({
       "X-Deno": "land",
-      "X-Node": "js"
-    })
+      "X-Node": "js",
+    }),
   );
   f.close();
 }
@@ -91,11 +91,11 @@ async function basicResponse() {
   await writeResponse(f, {
     status: 200,
     headers: new Headers({
-      "Content-Type": "text/plain"
+      "Content-Type": "text/plain",
     }),
     body: encode(
-      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
-    )
+      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
+    ),
   });
   f.close();
 }
@@ -104,22 +104,22 @@ async function chunkedResponse() {
   const f = await Deno.open("./fixtures/response_chunked.txt", "w");
   const headers = new Headers({
     "Content-Type": "text/plain",
-    Trailer: "X-Deno, X-Node"
+    Trailer: "X-Deno, X-Node",
   });
   await writeResponse(f, {
     status: 200,
     headers,
     body: new StringReader(
-      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
-    )
+      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
+    ),
   });
   await writeTrailers(
     f,
     headers,
     new Headers({
       "X-Deno": "land",
-      "X-Node": "js"
-    })
+      "X-Node": "js",
+    }),
   );
   f.close();
 }

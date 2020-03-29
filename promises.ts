@@ -5,7 +5,7 @@ export class TimeoutError extends Error {}
 /** returns curried promise factory that  */
 export function promiseInterrupter({
   timeout = -1,
-  cancel
+  cancel,
 }: {
   timeout?: number;
   cancel?: Promise<void>;

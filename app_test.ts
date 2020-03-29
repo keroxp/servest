@@ -9,7 +9,7 @@ import { Loglevel, setLevel } from "./logger.ts";
 import { connectWebSocket } from "./vendor/https/deno.land/std/ws/mod.ts";
 setLevel(Loglevel.NONE);
 
-it("app", t => {
+it("app", (t) => {
   const app = createApp();
   app.handle("/no-response", () => {});
   app.handle("/throw", () => {
@@ -35,9 +35,9 @@ it("app", t => {
     assertMatch(text, /Error: throw/);
   });
 });
-it("app/ws", t => {
+it("app/ws", (t) => {
   const app = createApp();
-  app.ws("/ws", async sock => {
+  app.ws("/ws", async (sock) => {
     await sock.send("Hello");
     await sock.close(1000);
   });

@@ -2,18 +2,18 @@
 import { contentTypeFilter } from "../../../middleware.ts";
 import { createApp } from "../../../app.ts";
 const app = createApp();
-app.post("/json", contentTypeFilter("application/json"), async req => {
+app.post("/json", contentTypeFilter("application/json"), async (req) => {
   const bodyJson = (await req.body!.json()) as { name: string; id: string };
   // ...respond
 });
-app.post("/text", contentTypeFilter("text/plain"), async req => {
+app.post("/text", contentTypeFilter("text/plain"), async (req) => {
   const bodyText = await req.body!.text();
   // ...respond
 });
 app.post(
   "/multipart",
   contentTypeFilter("multipart/form-data"),
-  async req => {
+  async (req) => {
     const bodyForm = await req.body!.formData(req.headers);
     const name = bodyForm.field("name");
     const file = bodyForm.file("file");
@@ -23,19 +23,19 @@ app.post(
       // Clean up stored temp files
       await bodyForm.removeAllTempFiles();
     }
-  }
+  },
 );
 app.post(
   "/form-urlencoded",
   contentTypeFilter("application/x-www-form-urlencoded"),
-  async req => {
+  async (req) => {
     const bodyForm = await req.body!.formData(req.headers);
     const name = bodyForm.field("name");
     const id = bodyForm.field("id");
     // ...respond
-  }
+  },
 );
-app.post("/raw", async req => {
+app.post("/raw", async (req) => {
   const buf = await req.body!.arrayBuffer();
   // ...respond
 });

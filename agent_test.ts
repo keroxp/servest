@@ -20,23 +20,23 @@ async function readString(r: Reader) {
 
 function setupRouter(port: number): ServeListener {
   const app = createApp();
-  app.route("/get", async req => {
+  app.route("/get", async (req) => {
     return req.respond({
       status: 200,
-      body: encode("ok")
+      body: encode("ok"),
     });
   });
-  app.route("/post", async req => {
+  app.route("/post", async (req) => {
     return req.respond({
       status: 200,
       headers: req.headers,
-      body: req.body
+      body: req.body,
     });
   });
   return app.listen({ port });
 }
 
-it("agent", t => {
+it("agent", (t) => {
   let port = 8700;
   t.beforeAfterAll(() => {
     const listener = setupRouter(port);
@@ -48,7 +48,7 @@ it("agent", t => {
       {
         const res = await agent.send({
           path: "/get",
-          method: "GET"
+          method: "GET",
         });
         assertEquals(res.status, 200);
         assertEquals(await readString(res.body), "ok");
@@ -57,7 +57,7 @@ it("agent", t => {
         const res = await agent.send({
           path: "/post",
           method: "POST",
-          body: encode("denoland")
+          body: encode("denoland"),
         });
         assertEquals(res.status, 200);
         assertEquals(await readString(res.body), "denoland");
@@ -72,7 +72,7 @@ it("agent", t => {
       {
         const res = await agent.send({
           path: "/get?deno=land",
-          method: "GET"
+          method: "GET",
         });
         assertEquals(res.status, 200);
         const resp = JSON.parse(await readString(res.body));
@@ -83,9 +83,9 @@ it("agent", t => {
           path: "/post",
           method: "POST",
           headers: new Headers({
-            "content-type": "application/x-www-form-urlencoded; charset=UTF-8"
+            "content-type": "application/x-www-form-urlencoded; charset=UTF-8",
           }),
-          body: "deno=land"
+          body: "deno=land",
         });
         assertEquals(res.status, 200);
         const body = await readString(res.body);
@@ -104,7 +104,7 @@ it("agent", t => {
       const { body } = await agent.send({
         path: "/post",
         method: "POST",
-        body: encode("denoland")
+        body: encode("denoland"),
       });
       assertEquals(await readString(body), "denoland");
     } finally {

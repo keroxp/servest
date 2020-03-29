@@ -21,7 +21,7 @@ export function createRecorder({
   method = "GET",
   headers = new Headers(),
   body,
-  proto = "http"
+  proto = "http",
 }: {
   url: string;
   method?: string;
@@ -41,7 +41,7 @@ export function createRecorder({
     },
     async write(p: Uint8Array): Promise<number> {
       return 0;
-    }
+    },
   };
   const buf = new Deno.Buffer();
   const bufReader = new BufReader(buf);
@@ -75,6 +75,6 @@ export function createRecorder({
     bufReader,
     conn,
     cookies,
-    ...responder
+    ...responder,
   };
 }

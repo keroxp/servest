@@ -48,7 +48,7 @@ function bodyParser(holder: BodyHolder): BodyParser {
   async function formDataInternal(
     headers: Headers,
     body: Reader,
-    maxMemory?: number
+    maxMemory?: number,
   ) {
     const contentType = headers.get("content-type") || "";
     if (contentType.match(/^multipart\/form-data/)) {
@@ -56,17 +56,17 @@ function bodyParser(holder: BodyHolder): BodyParser {
     } else if (contentType.match(/^application\/x-www-form-urlencoded/)) {
       return parseUrlEncodedForm({
         headers,
-        body
+        body,
       });
     } else {
       throw new Error(
-        "request is not multipart/form-data nor application/x-www-form-urlencoded"
+        "request is not multipart/form-data nor application/x-www-form-urlencoded",
       );
     }
   }
   async function formData(
     headers: Headers,
-    maxMemory?: number
+    maxMemory?: number,
   ): Promise<FormBody> {
     if (formBody) {
       return formBody;
@@ -79,7 +79,7 @@ function bodyParser(holder: BodyHolder): BodyParser {
     return (formBody = await formDataInternal(
       headers,
       holder.reader,
-      maxMemory
+      maxMemory,
     ));
   }
 
@@ -132,7 +132,7 @@ export function bodyReader(
   opts?: {
     timeout?: number;
     cancel?: Promise<void>;
-  }
+  },
 ): BodyReader {
   let total: number = 0;
   async function read(p: Uint8Array): Promise<number | EOF> {
@@ -158,7 +158,7 @@ export function bodyReader(
     reader,
     total() {
       return total;
-    }
+    },
   };
   let transformer = bodyParser(holder);
 
@@ -170,7 +170,7 @@ export function chunkedBodyReader(
   opts?: {
     timeout?: number;
     cancel?: Promise<void>;
-  }
+  },
 ): BodyReader {
   let bufReader = BufReader.create(r);
   let tpReader = new TextProtoReader(bufReader);
@@ -219,7 +219,7 @@ export function chunkedBodyReader(
     reader,
     total() {
       return total;
-    }
+    },
   };
   const transformer = bodyParser(holder);
   return { ...reader, ...transformer };
@@ -230,13 +230,13 @@ function timeoutReader(
   opts?: {
     timeout: number;
     cancel?: Promise<void>;
-  }
+  },
 ): Reader {
   if (!opts) return r;
   let timeoutOrCancel = promiseInterrupter(opts);
   return {
     async read(p: Uint8Array): Promise<number | EOF> {
       return await timeoutOrCancel(r.read(p));
-    }
+    },
   };
 }

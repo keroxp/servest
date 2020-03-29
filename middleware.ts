@@ -8,8 +8,8 @@ import { ServeHandler } from "./server.ts";
 export const contentTypeFilter = (
   ...types: (string | RegExp)[]
 ): ServeHandler =>
-  async req => {
-    if (types.some(v => req.headers.get("content-type")?.match(v))) {
+  async (req) => {
+    if (types.some((v) => req.headers.get("content-type")?.match(v))) {
       return;
     }
     throw new RoutingError(400);
@@ -38,9 +38,9 @@ export function basicAuth({ username, password, message }: {
       return req.respond({
         status: 401,
         headers: new Headers({
-          "www-authenticate": 'Basic realm="RECRET AREA"'
+          "www-authenticate": 'Basic realm="RECRET AREA"',
         }),
-        body: message ?? "Authentication Required"
+        body: message ?? "Authentication Required",
       });
     } else {
       const unauthorized = () =>

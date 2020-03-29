@@ -21,7 +21,7 @@ import { ServerResponse } from "./server.ts";
 import { readString } from "./util.ts";
 import { it } from "./test_util.ts";
 
-it("serveio", t => {
+it("serveio", (t) => {
   t.run("serveioReadRequestGet", async function serveioReadRequestGet() {
     const f = await Deno.open("./fixtures/request_get.txt");
     const req = await readRequest(f);
@@ -53,7 +53,7 @@ it("serveio", t => {
       assert(req.body === void 0);
       assert(req.trailers === void 0);
       f.close();
-    }
+    },
   );
 
   t.run(
@@ -64,7 +64,7 @@ it("serveio", t => {
       assertEquals(req.method, "GET");
       assertEquals(
         req.url,
-        "/%E3%81%A7%E3%81%AE%E3%81%8F%E3%81%AB?deno=%F0%9F%A6%95"
+        "/%E3%81%A7%E3%81%AE%E3%81%8F%E3%81%AB?deno=%F0%9F%A6%95",
       );
       assertEquals(req.proto, "HTTP/1.1");
       assertEquals(req.path, "/%E3%81%A7%E3%81%AE%E3%81%8F%E3%81%AB");
@@ -74,7 +74,7 @@ it("serveio", t => {
       assert(req.body === void 0);
       assert(req.trailers === void 0);
       f.close();
-    }
+    },
   );
 
   t.run("serveioReadRequestPost", async function serveioReadRequestPost() {
@@ -89,7 +89,7 @@ it("serveio", t => {
     assertEquals(req.headers.get("content-length"), "69");
     assertEquals(
       await readString(req.body!),
-      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
+      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
     );
     assert(req.trailers === void 0);
     f.close();
@@ -108,18 +108,18 @@ it("serveio", t => {
       assertEquals(req.headers.get("transfer-encoding"), "chunked");
       assertEquals(
         await readString(req.body!),
-        "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
+        "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
       );
       assertEquals(req.trailers, void 0);
       f.close();
-    }
+    },
   );
 
   t.run(
     "serveioReadRequestPostChunkedWithTrailers",
     async function serveioReadRequestPostChunkedWithTrailers() {
       const f = await Deno.open(
-        "./fixtures/request_post_chunked_trailers.txt"
+        "./fixtures/request_post_chunked_trailers.txt",
       );
       const req = await readRequest(f);
       assertEquals(req.method, "POST");
@@ -130,7 +130,7 @@ it("serveio", t => {
       assertEquals(req.headers.get("transfer-encoding"), "chunked");
       assertEquals(
         await readString(req.body!),
-        "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
+        "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
       );
       assertEquals(req.trailers, void 0);
       assertEquals(typeof req.finalize, "function");
@@ -139,10 +139,10 @@ it("serveio", t => {
       assertEquals(req.trailers?.get("x-deno"), "land");
       assertEquals(req.trailers?.get("x-node"), "js");
       f.close();
-    }
+    },
   );
 
-  t.run("serveioReadResponse", async function() {
+  t.run("serveioReadResponse", async function () {
     const f = await Deno.open("./fixtures/response.txt");
     const res = await readResponse(f);
     assertEquals(res.proto, "HTTP/1.1");
@@ -152,14 +152,14 @@ it("serveio", t => {
     assertEquals(res.headers.get("content-length"), "69");
     assertEquals(
       await readString(res.body),
-      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
+      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
     );
     assertEquals(res.trailers, void 0);
     assertEquals(typeof res.finalize, "function");
     f.close();
   });
 
-  t.run("serveioReadResponseChunked", async function() {
+  t.run("serveioReadResponseChunked", async function () {
     const f = await Deno.open("./fixtures/response_chunked.txt");
     const res = await readResponse(f);
     assertEquals(res.proto, "HTTP/1.1");
@@ -169,7 +169,7 @@ it("serveio", t => {
     assertEquals(res.headers.get("transfer-encoding"), "chunked");
     assertEquals(
       await readString(res.body),
-      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio"
+      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
     );
     assertEquals(res.trailers, void 0);
     await res.finalize();
@@ -185,9 +185,9 @@ it("serveio", t => {
       url: "http://localhost",
       method: "POST",
       headers: new Headers({
-        "content-type": "text/plain"
+        "content-type": "text/plain",
       }),
-      body: "ok"
+      body: "ok",
     });
     const req = await readRequest(buf);
     assertEquals(req.url, "/");
@@ -204,14 +204,14 @@ it("serveio", t => {
       headers: new Headers({
         "content-type": "text/plain",
         "transfer-encoding": "chunked",
-        trailer: "deno,node"
+        trailer: "deno,node",
       }),
       body: "ok",
       trailers: () =>
         new Headers({
           deno: "land",
-          node: "js"
-        })
+          node: "js",
+        }),
     });
     const req = await readRequest(buf);
     assertEquals(req.url, "/");
@@ -229,11 +229,11 @@ it("serveio", t => {
       ServerResponse["body"],
       string | null,
       string | undefined,
-      string
+      string,
     ][] = [
       ["ok", "2", undefined, "text/plain; charset=UTF-8"],
       [encode("ok"), "2", "text/plain", "text/plain"],
-      [new StringReader("ok"), null, undefined, "application/octet-stream"]
+      [new StringReader("ok"), null, undefined, "application/octet-stream"],
     ];
     for (const [body, len, contentType, expContentType] of list) {
       const buf = new Buffer();
@@ -244,7 +244,7 @@ it("serveio", t => {
       await writeResponse(buf, {
         status: 200,
         headers,
-        body
+        body,
       });
       const res = await readResponse(buf);
       assertEquals(res.status, 200);
@@ -256,11 +256,11 @@ it("serveio", t => {
     }
   });
 
-  t.run("serveioWriteResponseWithoutHeaders", async function() {
+  t.run("serveioWriteResponseWithoutHeaders", async function () {
     const buf = new Buffer();
     await writeResponse(buf, {
       status: 200,
-      body: encode("ok")
+      body: encode("ok"),
     });
     const res = await readResponse(buf);
     assertEquals(res.status, 200);
@@ -270,20 +270,20 @@ it("serveio", t => {
     assertEquals(resBody.toString(), "ok");
   });
 
-  t.run("serveioWriteResponseWithTrailers", async function() {
+  t.run("serveioWriteResponseWithTrailers", async function () {
     const buf = new Buffer();
     await writeResponse(buf, {
       status: 200,
       body: encode("ok"),
       headers: new Headers({
         trailer: "deno,node",
-        "transfer-encoding": "chunked"
+        "transfer-encoding": "chunked",
       }),
       trailers: () =>
         new Headers({
           deno: "land",
-          node: "js"
-        })
+          node: "js",
+        }),
     });
     const res = await readResponse(buf);
     assertEquals(res.status, 200);
@@ -298,7 +298,7 @@ it("serveio", t => {
     assertEquals(res.trailers?.get("node"), "js");
   });
 });
-it("serveio/setupBody", t => {
+it("serveio/setupBody", (t) => {
   t.run("len,string,no-header", () => {
     const h = new Headers();
     const [r, l] = setupBody("ok", h);
@@ -377,7 +377,7 @@ it("serveio/setupBody", t => {
   t.run("chunked,string,header", () => {
     const h = new Headers({
       "content-type": "application/json",
-      "transfer-encoding": "chunked"
+      "transfer-encoding": "chunked",
     });
     const [r, l] = setupBody("[]", h);
     assertEquals(r instanceof Buffer, true);
@@ -399,7 +399,7 @@ it("serveio/setupBody", t => {
     const ct = "text/plain";
     const h = new Headers({
       "transfer-encoding": "chunked",
-      "content-type": ct
+      "content-type": ct,
     });
     const [r, l] = setupBody(new Uint8Array([0, 1]), h);
     assertEquals(r instanceof Buffer, true);
@@ -422,7 +422,7 @@ it("serveio/setupBody", t => {
     const ct = "text/plain";
     const h = new Headers({
       "transfer-encoding": "chunked",
-      "content-type": ct
+      "content-type": ct,
     });
     const body = new Buffer(new Uint8Array([0, 1]));
     const [r, l] = setupBody(body, h);
@@ -434,12 +434,12 @@ it("serveio/setupBody", t => {
   });
 });
 
-it("serveio/keep-alive", t => {
-  t.run("serveioParseKeepAlive", function() {
+it("serveio/keep-alive", (t) => {
+  t.run("serveioParseKeepAlive", function () {
     const ka = parseKeepAlive(
       new Headers({
-        "keep-alive": "timeout=5, max=100"
-      })
+        "keep-alive": "timeout=5, max=100",
+      }),
     );
     assertEquals(ka.timeout, 5);
     assertEquals(ka.max, 100);

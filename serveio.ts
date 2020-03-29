@@ -58,7 +58,7 @@ export function initServeOptions(opts: ServeOptions = {}): ServeOptions {
  * */
 export async function readRequest(
   r: Reader,
-  opts: ServeOptions = {}
+  opts: ServeOptions = {},
 ): Promise<IncomingHttpRequest> {
   opts = initServeOptions(opts);
   const reader = BufReader.create(r);
@@ -67,7 +67,7 @@ export async function readRequest(
   // use keepAliveTimeout for reading request line
   const resLine = await promiseInterrupter({
     timeout: opts.keepAliveTimeout,
-    cancel: opts.cancel
+    cancel: opts.cancel,
   })(tpReader.readLine());
   if (resLine === EOF) {
     throw EOF;
@@ -80,7 +80,7 @@ export async function readRequest(
   // read header
   const headers = await promiseInterrupter({
     timeout: opts.readTimeout,
-    cancel: opts.cancel
+    cancel: opts.cancel,
   })(tpReader.readMIMEHeader());
   if (headers === EOF) {
     throw EOF;
@@ -114,19 +114,19 @@ export async function readRequest(
       }
       body = chunkedBodyReader(reader, {
         timeout: opts.readTimeout,
-        cancel: opts.cancel
+        cancel: opts.cancel,
       });
     } else {
       const contentLength = parseInt(headers.get("content-length")!);
       assert(
         contentLength >= 0,
         `content-length is missing or invalid: ${headers.get(
-          "content-length"
-        )}`
+          "content-length",
+        )}`,
       );
       body = bodyReader(reader, contentLength, {
         timeout: opts.readTimeout,
-        cancel: opts.cancel
+        cancel: opts.cancel,
       });
     }
   }
@@ -143,14 +143,14 @@ export async function readRequest(
     get trailers() {
       return trailers;
     },
-    finalize
+    finalize,
   };
 }
 
 /** write http request. Host, Content-Length, Transfer-Encoding headers are set if needed */
 export async function writeRequest(
   w: Writer,
-  req: ClientRequest
+  req: ClientRequest,
 ): Promise<void> {
   const writer = BufWriter.create(w);
   let { method, body, headers } = req;
@@ -161,7 +161,7 @@ export async function writeRequest(
   }
   // start line
   await writer.write(
-    encode(`${method} ${url.pathname}${url.search || ""} HTTP/1.1\r\n`)
+    encode(`${method} ${url.pathname}${url.search || ""} HTTP/1.1\r\n`),
   );
   // header
   if (!headers.has("host")) {
@@ -186,7 +186,7 @@ export async function writeRequest(
 /** read http response from reader */
 export async function readResponse(
   r: Reader,
-  { timeout, cancel }: { timeout?: number; cancel?: Promise<void> } = {}
+  { timeout, cancel }: { timeout?: number; cancel?: Promise<void> } = {},
 ): Promise<IncomingHttpResponse> {
   const reader = BufReader.create(r);
   const tp = new TextProtoReader(reader);
@@ -219,12 +219,12 @@ export async function readResponse(
     }
     body = chunkedBodyReader(reader, {
       timeout,
-      cancel
+      cancel,
     });
   } else if (contentLength != null) {
     body = bodyReader(reader, parseInt(contentLength), {
       timeout,
-      cancel
+      cancel,
     });
   } else {
     throw new Error("unkown conetnt-lengh or chunked");
@@ -238,7 +238,7 @@ export async function readResponse(
     get trailers() {
       return trailers;
     },
-    finalize
+    finalize,
   };
 }
 
@@ -257,12 +257,12 @@ export const kHttpStatusMessages: { [k: number]: string } = {
   401: "Unauthorized",
   403: "Forbidden",
   404: "Not Found",
-  500: "Internal Server Error"
+  500: "Internal Server Error",
 };
 
 function bodyToReader(
   body: string | Uint8Array | Reader,
-  headers: Headers
+  headers: Headers,
 ): [Reader, number | undefined] {
   if (typeof body === "string") {
     const bin = encode(body);
@@ -280,7 +280,7 @@ function bodyToReader(
 
 export function setupBody(
   body: string | Uint8Array | Reader,
-  headers: Headers
+  headers: Headers,
 ): [Reader, number | undefined] {
   let [r, len] = bodyToReader(body, headers);
   const transferEncoding = headers.get("transfer-encoding");
@@ -308,7 +308,7 @@ export function setupBody(
 /** write http response to writer. Content-Length, Transfer-Encoding headers are set if needed */
 export async function writeResponse(
   w: Writer,
-  res: ServerResponse
+  res: ServerResponse,
 ): Promise<void> {
   const writer = BufWriter.create(w);
   if (!res.headers) {
@@ -359,7 +359,7 @@ export async function writeHeaders(w: Writer, headers: Headers): Promise<
 export async function writeBody(
   w: Writer,
   body: Reader,
-  contentLength?: number
+  contentLength?: number,
 ): Promise<void> {
   let writer = BufWriter.create(w);
   const hasContentLength = typeof contentLength === "number" &&
@@ -391,41 +391,41 @@ export async function writeBody(
 const kProhibitedTrailerHeaders = [
   "transfer-encoding",
   "content-length",
-  "trailer"
+  "trailer",
 ];
 
 /** write trailer headers to writer. it mostly should be called after writeResponse */
 export async function writeTrailers(
   w: Writer,
   headers: Headers,
-  trailers: Headers
+  trailers: Headers,
 ): Promise<void> {
   const trailer = headers.get("trailer");
   if (trailer === null) {
     throw new AssertionError(
-      'response headers must have "trailer" header field'
+      'response headers must have "trailer" header field',
     );
   }
   const transferEncoding = headers.get("transfer-encoding");
   if (transferEncoding === null || !transferEncoding.match(/^chunked/)) {
     throw new AssertionError(
-      `trailer headers is only allowed for "transfer-encoding: chunked": got "${transferEncoding}"`
+      `trailer headers is only allowed for "transfer-encoding: chunked": got "${transferEncoding}"`,
     );
   }
   const writer = BufWriter.create(w);
   const trailerHeaderFields = trailer
     .split(",")
-    .map(s => s.trim().toLowerCase());
+    .map((s) => s.trim().toLowerCase());
   for (const f of trailerHeaderFields) {
     assert(
       !kProhibitedTrailerHeaders.includes(f),
-      `"${f}" is prohibited for trailer header`
+      `"${f}" is prohibited for trailer header`,
     );
   }
   for (const [key, value] of trailers) {
     assert(
       trailerHeaderFields.includes(key),
-      `Not trailed header field: ${key}`
+      `Not trailed header field: ${key}`,
     );
     await writer.write(encode(`${key}: ${value}\r\n`));
   }
@@ -435,7 +435,7 @@ export async function writeTrailers(
 /** read trailer headers from reader. it should mostly be called after readRequest */
 export async function readTrailers(
   r: Reader,
-  headers: Headers
+  headers: Headers,
 ): Promise<Headers> {
   const h = new Headers();
   const reader = BufReader.create(r);
@@ -445,11 +445,11 @@ export async function readTrailers(
   }
   const trailerHeaderFields = trailer
     .split(",")
-    .map(s => s.trim().toLowerCase());
+    .map((s) => s.trim().toLowerCase());
   for (const field of trailerHeaderFields) {
     assert(
       kProhibitedTrailerHeaders.indexOf(field) < 0,
-      `"${field}" is prohibited for trailer field`
+      `"${field}" is prohibited for trailer field`,
     );
   }
   for (let i = 0; i < trailerHeaderFields.length; i++) {
@@ -464,7 +464,7 @@ export async function readTrailers(
     const [_, field, value] = m;
     assert(
       trailerHeaderFields.includes(field),
-      `unexpected trailer field: ${field}`
+      `unexpected trailer field: ${field}`,
     );
     h.set(field.trim(), value.trim());
   }
@@ -478,7 +478,7 @@ export function parseKeepAlive(h: Headers): KeepAlive {
   if (keepAlive === null) {
     throw new AssertionError("keep-alive must be set");
   }
-  const kv = keepAlive.split(",").map(s => s.trim().split("="));
+  const kv = keepAlive.split(",").map((s) => s.trim().split("="));
   for (const [key, value] of kv) {
     if (key === "timeout") {
       timeout = parseInt(value);

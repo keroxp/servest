@@ -12,7 +12,7 @@ import * as fs from "./vendor/https/deno.land/std/fs/mod.ts";
 import Buffer = Deno.Buffer;
 import { it } from "./test_util.ts";
 
-it("multipart", t => {
+it("multipart", (t) => {
   t.run("basic", async () => {
     const buf = new Buffer();
     const w = new MultipartWriter(buf);
@@ -24,11 +24,11 @@ it("multipart", t => {
     const m = await parserMultipartRequest(
       {
         headers: new Headers({
-          "content-type": w.formDataContentType()
+          "content-type": w.formDataContentType(),
         }),
-        body: buf
+        body: buf,
       },
-      1000
+      1000,
     );
     assertEquals(m.field("hoge"), undefined);
     assertEquals(m.field("deno"), "land");
@@ -43,23 +43,23 @@ it("multipart", t => {
     await assertThrowsAsync(async () => {
       await parserMultipartRequest({
         headers: new Headers(),
-        body
+        body,
       });
     }, Error, "is not multipart");
     await assertThrowsAsync(async () => {
       await parserMultipartRequest({
         headers: new Headers({
-          "content-type": "application/json"
+          "content-type": "application/json",
         }),
-        body
+        body,
       });
     }, Error, "is not multipart");
     await assertThrowsAsync(async () => {
       await parserMultipartRequest({
         headers: new Headers({
-          "content-type": "multipart/form-data; "
+          "content-type": "multipart/form-data; ",
         }),
-        body
+        body,
       });
     }, Error, "doesn't have boundary");
   });

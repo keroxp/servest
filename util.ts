@@ -5,7 +5,7 @@ import {
 } from "./vendor/https/deno.land/std/util/async.ts";
 
 export function pathResolver(meta: ImportMeta): (p: string) => string {
-  return p => new URL(p, meta.url).pathname;
+  return (p) => new URL(p, meta.url).pathname;
 }
 
 export async function readString(r: Deno.Reader): Promise<string> {
@@ -19,7 +19,7 @@ export interface PromiseWaitQueue<T, P> {
 }
 
 export function promiseWaitQueue<T, P>(
-  creator: (t: T) => Promise<P>
+  creator: (t: T) => Promise<P>,
 ): PromiseWaitQueue<T, P> {
   const queue: {
     d: Deferred<P>;

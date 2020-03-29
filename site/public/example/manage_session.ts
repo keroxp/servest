@@ -19,7 +19,7 @@ async function getSession(sid: string): Promise<User | undefined> {
 async function authenticate(
   userId: string,
   password: string,
-  name: string
+  name: string,
 ): Promise<User | 401> {
   // do authenticate via Database
   if (userId === "deno" && password === "land") {
@@ -27,7 +27,7 @@ async function authenticate(
   }
   return 401;
 }
-app.use(async req => {
+app.use(async (req) => {
   const sid = req.cookies.get("sid");
   if (!sid) {
     return req.redirect("/login");
@@ -44,16 +44,16 @@ app.get("/", async (req, { match }) => {
   await req.respond({
     status: 200,
     headers: new Headers({
-      "content-type": "application/json"
+      "content-type": "application/json",
     }),
-    body: JSON.stringify({ id })
+    body: JSON.stringify({ id }),
   });
 });
-app.get("/login", async req => {
+app.get("/login", async (req) => {
   await req.respond({
     status: 200,
     headers: new Headers({
-      "content-type": "text/plain"
+      "content-type": "text/plain",
     }),
     body: `
 <html lang="en">
@@ -78,10 +78,10 @@ app.get("/login", async req => {
   </form>
 </body>
 </html>
-    `
+    `,
   });
 });
-app.post("/login/auth", async req => {
+app.post("/login/auth", async (req) => {
   const form = await req.body!.formData(req.headers);
   const userId = form.field("id");
   const password = form.field("password");
@@ -98,7 +98,7 @@ app.post("/login/auth", async req => {
   req.cookies.set("sid", sid);
   return req.redirect("/");
 });
-app.get("/logout", async req => {
+app.get("/logout", async (req) => {
   req.clearCookie("sid");
   return req.redirect("/login");
 });

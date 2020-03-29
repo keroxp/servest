@@ -10,20 +10,20 @@ import { ServerRequest } from "./server.ts";
 
 setLevel(Loglevel.NONE);
 
-it("router", t => {
+it("router", (t) => {
   const router = createRouter();
   const get = makeGet(router);
   t.beforeAfterAll(() => {
-    router.handle("/index", async req => {
+    router.handle("/index", async (req) => {
       await req.respond({
         status: 200,
-        body: "ok"
+        body: "ok",
       });
     });
-    router.handle("/Index", async req => {
+    router.handle("/Index", async (req) => {
       await req.respond({ status: 200, body: "ok" });
     });
-    router.handle(new RegExp("^/Var"), async req => {
+    router.handle(new RegExp("^/Var"), async (req) => {
       await req.respond({ status: 200, body: req.url });
     });
     router.handle(new RegExp("/foo/(?<id>.+)"), async (req, params) => {
@@ -31,13 +31,13 @@ it("router", t => {
       await req.respond({
         status: 200,
         headers: new Headers({
-          "content-type": "application/json"
+          "content-type": "application/json",
         }),
-        body: JSON.stringify({ id })
+        body: JSON.stringify({ id }),
       });
     });
-    router.handle("/redirect", req => req.redirect("/index"));
-    router.handle("/respond-raw", async req => {
+    router.handle("/redirect", (req) => req.redirect("/index"));
+    router.handle("/respond-raw", async (req) => {
       await writeResponse(req.bufWriter, { status: 200, body: "ok" });
       req.markAsResponded(200);
     });
@@ -83,17 +83,17 @@ it("router", t => {
       const res = await get("/respond-raw");
       assertEquals(res.status, 200);
       assertEquals(await res.body?.text(), "ok");
-    }
+    },
   );
 });
 
-it("same path routes", t => {
+it("same path routes", (t) => {
   t.run("/", async () => {
     const router = createRouter();
-    router.get("/", req => {
+    router.get("/", (req) => {
       req.respond({ status: 200, body: "get /" });
     });
-    router.post("/", req => {
+    router.post("/", (req) => {
       req.respond({ status: 200, body: "post /" });
     });
     let resp = await makeGet(router)("/");
@@ -103,7 +103,7 @@ it("same path routes", t => {
   });
 });
 
-it("router error", t => {
+it("router error", (t) => {
   t.run("should throw RoutingError if handler won't respond", async () => {
     const router = createRouter();
     router.handle("/", () => {});
@@ -151,11 +151,11 @@ it("router error", t => {
   });
   t.run("should call final handler", async () => {
     const router = createRouter();
-    router.get("/", req => {
+    router.get("/", (req) => {
       req.respond({ status: 200, body: "ok" });
     });
     let handled = false;
-    router.finally(req => {
+    router.finally((req) => {
       handled = true;
     });
     const resp = await makeGet(router)("/");
@@ -165,7 +165,7 @@ it("router error", t => {
   });
 });
 
-it("router nested", t => {
+it("router nested", (t) => {
   const handler = (name: string, subpath: string) =>
     (req: ServerRequest) => {
       req.respond({ status: 200, body: `${name} ${subpath}` });
@@ -217,13 +217,13 @@ it("router nested", t => {
   });
 });
 
-it("nested router bad", t => {
+it("nested router bad", (t) => {
   t.run("prefix with /", async () => {
     const app = createRouter();
     const UserRoute = createRouter();
     UserRoute.get(
       "/",
-      req => req.respond({ status: 200, body: "UserRoute /" })
+      (req) => req.respond({ status: 200, body: "UserRoute /" }),
     );
     app.route("/users/", UserRoute);
     const get = makeGet(app);
@@ -236,7 +236,7 @@ it("nested router bad", t => {
     const UserRoute = createRouter();
     UserRoute.get(
       "",
-      req => req.respond({ status: 200, body: "UserRoute /" })
+      (req) => req.respond({ status: 200, body: "UserRoute /" }),
     );
     app.route("/users/", UserRoute);
     const get = makeGet(app);
@@ -248,7 +248,7 @@ it("nested router bad", t => {
     const UserRoute = createRouter();
     UserRoute.get(
       "/",
-      req => req.respond({ status: 200, body: "UserRoute /" })
+      (req) => req.respond({ status: 200, body: "UserRoute /" }),
     );
     app.route("", UserRoute);
     const get = makeGet(app);

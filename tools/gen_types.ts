@@ -14,44 +14,44 @@ async function main() {
 
 async function updateReact(version: string) {
   const resp = await fetch(
-    `https://dev.jspm.io/@types/react${version}/index.d.ts`
+    `https://dev.jspm.io/@types/react${version}/index.d.ts`,
   );
   let text = await resp.text();
   text = text.replace(
     '/// <reference path="global.d.ts" />',
-    'import "./global.d.ts"'
+    'import "./global.d.ts"',
   );
   text = text.replace(
     "from 'csstype'",
-    "from '../../vendor/https/dev.jspm.io/csstype/index.d.ts'"
+    "from '../../vendor/https/dev.jspm.io/csstype/index.d.ts'",
   );
   text = text.replace(
     "from 'prop-types'",
-    "from '../../vendor/https/dev.jspm.io/@types/prop-types/index.d.ts'"
+    "from '../../vendor/https/dev.jspm.io/@types/prop-types/index.d.ts'",
   );
   text = text.replace(
     "interface ReactComponentElement",
-    "/* FIXME: keroxp) Broken on ts 3.7.2 2019/11/16\ninterface ReactComponentElement"
+    "/* FIXME: keroxp) Broken on ts 3.7.2 2019/11/16\ninterface ReactComponentElement",
   );
   text = text.replace(
     "extends ReactElement<P, T> { }",
-    "extends ReactElement<P, T> { } \n*/"
+    "extends ReactElement<P, T> { } \n*/",
   );
   await Deno.writeFile(
     resolvePath("../types/react/index.d.ts"),
-    encoder.encode(text)
+    encoder.encode(text),
   );
 }
 
 async function updateReactDom(version: string) {
   const resp = await fetch(
-    `https://dev.jspm.io/@types/react-dom${version}/server/index.d.ts`
+    `https://dev.jspm.io/@types/react-dom${version}/server/index.d.ts`,
   );
   let text = await resp.text();
   text = text.replace("from 'react'", "from '../../react/index.d.ts'");
   await Deno.writeFile(
     resolvePath("../types/react-dom/server/index.d.ts"),
-    encoder.encode(text)
+    encoder.encode(text),
   );
 }
 

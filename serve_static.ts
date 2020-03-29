@@ -26,12 +26,12 @@ export type ServeStaticOptions = {
  * */
 export function serveStatic(
   dir: string,
-  opts: ServeStaticOptions = {}
+  opts: ServeStaticOptions = {},
 ): ServeHandler {
   const contentTypeMap = new Map<string, string>([
     [".ts", "application/javascript"],
     [".tsx", "application/javascript"],
-    ...(opts.contentTypeMap || new Map<string, string>()).entries()
+    ...(opts.contentTypeMap || new Map<string, string>()).entries(),
   ]);
   const contentDispositionMap = opts.contentDispositionMap || new Map([]);
   const filter = opts.filter || (() => true);
@@ -39,7 +39,7 @@ export function serveStatic(
     if (req.method === "GET" || req.method === "HEAD") {
       const filepath = await resolveIndexPath(
         dir,
-        decodeURIComponent(req.path)
+        decodeURIComponent(req.path),
       );
       if (!filepath || !(await filter(filepath))) {
         return;
@@ -52,7 +52,7 @@ export function serveStatic(
         "application/octet-stream";
       const headers = new Headers({
         "content-length": stat.size + "",
-        "content-type": contentType
+        "content-type": contentType,
       });
       const contentDisposition = contentDispositionMap.get(ext);
       if (contentDisposition === "attachment") {
@@ -63,7 +63,7 @@ export function serveStatic(
       if (req.method === "HEAD") {
         return req.respond({
           status: 200,
-          headers
+          headers,
         });
       } else {
         const file = await Deno.open(filepath, "r");

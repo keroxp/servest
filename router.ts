@@ -11,7 +11,8 @@ import {
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
 /** Router handler */
-export type RouteHandler = (req: ServerRequest, params: RouteParams) => void
+export type RouteHandler = (req: ServerRequest, params: RouteParams) =>
+  | void
   | Promise<void>;
 export type RouteParams = {
   match: RegExpMatchArray;
@@ -20,13 +21,13 @@ export type RouteParams = {
 export type WebSocketHandler = (
   sock: WebSocket,
   req: ServerRequest,
-  params: RouteParams
+  params: RouteParams,
 ) => void | Promise<void>;
 
 /** Global error handler for requests */
 export type ErrorHandler = (
   e: any | RoutingError,
-  req: ServerRequest
+  req: ServerRequest,
 ) => void | Promise<void>;
 
 export interface Route {
@@ -81,7 +82,7 @@ export interface Router extends Route {
   ws(
     pattern: string | RegExp,
     handlers: RouteHandler[],
-    handler: WebSocketHandler
+    handler: WebSocketHandler,
   ): void;
 
   /**
@@ -128,7 +129,7 @@ export function createRouter(): Router {
     routes.push({
       pattern,
       methods: ["GET", "HEAD"],
-      handlers
+      handlers,
     });
   }
 
@@ -162,7 +163,7 @@ export function createRouter(): Router {
     prefix: string,
     req: ServerRequest,
     params: RouteParams,
-    handlers: (RouteHandler | Router)[]
+    handlers: (RouteHandler | Router)[],
   ): Promise<boolean> {
     for (const handler of handlers) {
       if (isRoute(handler)) {
@@ -178,7 +179,7 @@ export function createRouter(): Router {
   }
   async function handleRouteInternal(
     parentMatch: string,
-    req: ServerRequest
+    req: ServerRequest,
   ): Promise<void> {
     for (const handler of middlewareList) {
       await handler(req);
@@ -196,7 +197,7 @@ export function createRouter(): Router {
             parentMatch + prefix,
             req,
             { match },
-            handlers
+            handlers,
           )
         ) {
           return;
@@ -205,7 +206,7 @@ export function createRouter(): Router {
     }
     const matches = findLongestAndNearestMatches(
       subpath,
-      routes.map(v => v.pattern)
+      routes.map((v) => v.pattern),
     );
     if (matches.length > 0) {
       for (const [i, match] of matches) {
@@ -254,6 +255,6 @@ export function createRouter(): Router {
     post,
     ws,
     catch: _catch,
-    finally: _finally
+    finally: _finally,
   };
 }

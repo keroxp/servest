@@ -15,7 +15,7 @@ export async function fetchDir(dir: string): Promise<number> {
   const tempFile = path.resolve(tempDir, "_mod.ts");
   await Deno.writeFile(tempFile, encoder.encode(codes.join("\n")));
   const proc = await Deno.run({
-    cmd: [Deno.execPath(), "fetch", path.resolve(tempFile)]
+    cmd: [Deno.execPath(), "fetch", path.resolve(tempFile)],
   });
   const { code } = await proc.status();
   await Deno.remove(tempDir, { recursive: true });

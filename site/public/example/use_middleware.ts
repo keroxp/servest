@@ -2,7 +2,7 @@
 import { createApp } from "../../../app.ts";
 const app = createApp();
 // Called for every request
-app.use(async req => {
+app.use(async (req) => {
   // Do authentication before handling request on routes
   const token = req.query.get("auth_token");
   if (token !== "valid_token") {

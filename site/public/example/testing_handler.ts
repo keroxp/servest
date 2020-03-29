@@ -3,7 +3,7 @@ import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 import { createRecorder } from "../../../testing.ts";
 import { ServeHandler } from "../../../server.ts";
 
-const handleRequest: ServeHandler = async req => {
+const handleRequest: ServeHandler = async (req) => {
   const body = await req.body!.text();
   return req.respond({ status: 200, body: "Hello! " + body });
 };

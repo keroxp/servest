@@ -15,7 +15,7 @@ import { DFC } from "./jsx.ts";
 export function serveJsx(
   dir: string,
   onImport: (file: string) => Promise<any>,
-  parentComponent: any = React.Fragment
+  parentComponent: any = React.Fragment,
 ): ServeHandler {
   return async function serveJsx(req) {
     const p = await resolveIndexPath(dir, req.path, [".tsx", ".jsx"]);
@@ -24,7 +24,7 @@ export function serveJsx(
       const el = jsx.default as DFC;
       if (!el) {
         throw new Error(
-          "jsx: jsx/tsx files served by serveJsx must has default export!"
+          "jsx: jsx/tsx files served by serveJsx must has default export!",
         );
       }
       if (typeof el !== "function") {
@@ -37,15 +37,15 @@ export function serveJsx(
       await req.respond({
         status: 200,
         headers: new Headers({
-          "content-type": "text/html; charset=UTF-8"
+          "content-type": "text/html; charset=UTF-8",
         }),
         body: ReactDOMServer.renderToString(
           React.createElement(
             parentComponent,
             {},
-            React.createElement(el, props, [])
-          )
-        )
+            React.createElement(el, props, []),
+          ),
+        ),
       });
     }
   };
