@@ -3,13 +3,13 @@ import { createApp } from "../../../app.ts";
 const app = createApp();
 // Define route with string pattern.
 // Called if request path exactly match "/"
-app.get("/", async req => {
+app.get("/", async (req) => {
   await req.respond({
     status: 200,
     headers: new Headers({
-      "content-type": "text/plain"
+      "content-type": "text/plain",
     }),
-    body: "Hello, Servest!"
+    body: "Hello, Servest!",
   });
 });
 // Define route with regexp pattern.
@@ -20,9 +20,9 @@ app.get(new RegExp("^/foo/(.+)"), async (req, { match }) => {
   await req.respond({
     status: 200,
     headers: new Headers({
-      "content-type": "application/json"
+      "content-type": "application/json",
     }),
-    body: JSON.stringify({ id })
+    body: JSON.stringify({ id }),
   });
 });
 // Start listening on port 8899

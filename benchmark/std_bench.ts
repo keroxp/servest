@@ -6,7 +6,7 @@ async function main() {
   for await (const req of it) {
     req.respond({
       status: 200,
-      body
+      body,
     });
   }
 }

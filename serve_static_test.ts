@@ -8,9 +8,9 @@ import { serveStatic } from "./serve_static.ts";
 import { it } from "./test_util.ts";
 import { createApp } from "./app.ts";
 
-it("serveStatic", t => {
+it("serveStatic", (t) => {
   const func = serveStatic("./fixtures/public", {
-    contentTypeMap: new Map([[".vue", "application/vue"]])
+    contentTypeMap: new Map([[".vue", "application/vue"]]),
   });
   const data: [string, string][] = [
     ["/", "text/html"],
@@ -20,7 +20,7 @@ it("serveStatic", t => {
     ["/index.ts", "application/javascript"],
     ["/index.js", "application/javascript"],
     ["/sample.vue", "application/vue"],
-    ["/sample.xx", "application/octet-stream"]
+    ["/sample.xx", "application/octet-stream"],
   ];
   data.forEach(([path, type]) => {
     t.run(path, async () => {
@@ -34,7 +34,7 @@ it("serveStatic", t => {
   });
 });
 
-it("serveStatic integration", t => {
+it("serveStatic integration", (t) => {
   t.beforeAfterAll(() => {
     const router = createApp();
     router.use(serveStatic("./fixtures/public"));

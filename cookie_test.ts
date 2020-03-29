@@ -9,17 +9,17 @@ import { cookieToString, parseCookie, parseSetCookie } from "./cookie.ts";
 import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 import { createApp } from "./app.ts";
 
-it("parseCookie", t => {
+it("parseCookie", (t) => {
   t.run("basic", () => {
     const cookie = parseCookie(
-      `deno=land; foo=var; ${encodeURIComponent("👉=🦕")}`
+      `deno=land; foo=var; ${encodeURIComponent("👉=🦕")}`,
     );
     assertEquals(cookie.get("deno"), "land");
     assertEquals(cookie.get("foo"), "var");
     assertEquals(cookie.get("👉"), "🦕");
   });
 });
-it("parseSetCookie", t => {
+it("parseSetCookie", (t) => {
   const expires = new Date();
   const maxAge = 1000;
   const domain = "servestjs.org";
@@ -27,7 +27,7 @@ it("parseSetCookie", t => {
   const sameSite = "Lax";
   t.run("basic", () => {
     const e = `deno=land; Expires=${toIMF(
-      expires
+      expires,
     )}; Max-Age=${maxAge}; Domain=${domain}; Path=${path}; Secure; HttpOnly; SameSite=${sameSite}`;
     const { name, value, ...opts } = parseSetCookie(e);
     assertEquals(name, "deno");
@@ -41,7 +41,7 @@ it("parseSetCookie", t => {
     assertEquals(opts.sameSite, sameSite);
   });
 });
-it("cookieToString", t => {
+it("cookieToString", (t) => {
   t.run("basic", () => {
     const expires = new Date();
     const maxAge = 1000;
@@ -55,45 +55,45 @@ it("cookieToString", t => {
       path,
       sameSite,
       secure: true,
-      httpOnly: true
+      httpOnly: true,
     });
     assertEquals(
       cookie,
       `deno=land; Expires=${toIMF(
-        expires
-      )}; Max-Age=${maxAge}; Domain=${domain}; Path=${path}; Secure; HttpOnly; SameSite=${sameSite}`
+        expires,
+      )}; Max-Age=${maxAge}; Domain=${domain}; Path=${path}; Secure; HttpOnly; SameSite=${sameSite}`,
     );
   });
   t.run("should throw if maxAge is not integer", () => {
     assertThrows(() =>
       cookieToString("deno", "land", {
-        maxAge: 1.11
+        maxAge: 1.11,
       })
     );
   });
   t.run("should throw if maxAge is lesser than or equals 0", () => {
     assertThrows(() => {
       cookieToString("deno", "land", {
-        maxAge: -1
+        maxAge: -1,
       });
     });
   });
 });
 
-it("cookie integration", t => {
+it("cookie integration", (t) => {
   const now = new Date();
   now.setMilliseconds(0);
   t.beforeAfterAll(() => {
     const router = createApp();
-    router.get("/", req => {
+    router.get("/", (req) => {
       req.setCookie("deno", "land", {
         path: "/",
         maxAge: 1000,
-        expires: now
+        expires: now,
       });
       return req.respond({ status: 200, body: "ok" });
     });
-    router.get("/deno", req => {
+    router.get("/deno", (req) => {
       const deno = req.cookies.get("deno");
       return req.respond({ status: 200, body: deno || "" });
     });
@@ -114,12 +114,12 @@ it("cookie integration", t => {
       sameSite: undefined,
       domain: undefined,
       secure: undefined,
-      httpOnly: undefined
+      httpOnly: undefined,
     });
     const resp2 = await fetch("http://127.0.0.1:9983/deno", {
       headers: {
-        Cookie: "deno=land"
-      }
+        Cookie: "deno=land",
+      },
     });
     const body = await resp2.body.text();
     assertEquals(body, "land");

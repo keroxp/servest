@@ -19,7 +19,7 @@ export interface Testing {
 export function it(
   desc: string,
   func: (t: Testing) => void,
-  ignore: boolean = false
+  ignore: boolean = false,
 ) {
   let testCnt = 0;
   let beforeAllFunc: SetupFunc | undefined;
@@ -63,7 +63,7 @@ export function it(
             }
           });
         }
-      }
+      },
     });
   }
   func({ beforeAfterAll, beforeAfterEach, run });
@@ -79,7 +79,7 @@ export function makeGet(router: Router, method = "GET") {
 
 export async function assertRoutingError(
   f: () => Promise<any>,
-  status: number
+  status: number,
 ) {
   await assertThrowsAsync(f, RoutingError, kHttpStatusMessages[status]);
 }

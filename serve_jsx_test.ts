@@ -9,15 +9,15 @@ import { serveJsx } from "./serve_jsx.ts";
 import { pathResolver, readString } from "./util.ts";
 import { it } from "./test_util.ts";
 
-it("serveJsx", t => {
+it("serveJsx", (t) => {
   const func = serveJsx(
     pathResolver(import.meta)("./fixtures/public"),
-    f => import(f)
+    (f) => import(f),
   );
   t.run("basic", async () => {
     const rec = createRecorder({
       url: "/",
-      method: "GET"
+      method: "GET",
     });
     await func(rec);
     const resp = await rec.response();
@@ -25,7 +25,7 @@ it("serveJsx", t => {
     assertMatch(resp.headers.get("content-type")!, /text\/html/);
     assertEquals(
       await readString(resp.body),
-      '<html data-reactroot="">deno</html>'
+      '<html data-reactroot="">deno</html>',
     );
   });
   t.run("should throw if jsx file has no default export", async () => {
@@ -35,7 +35,7 @@ it("serveJsx", t => {
         await func(rec);
       },
       Error,
-      "jsx: jsx/tsx files served by serveJsx must has default export!"
+      "jsx: jsx/tsx files served by serveJsx must has default export!",
     );
   });
   t.run("should throw if default export is not function", async () => {

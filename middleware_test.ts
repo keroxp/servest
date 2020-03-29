@@ -4,16 +4,16 @@ import {
   assertEquals
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createRecorder } from "./testing.ts";
-it("middleware", t => {
+it("middleware", (t) => {
   t.run("basicAuth", async () => {
     const auth = basicAuth({
       username: "deno",
       password: "land",
-      message: "hello"
+      message: "hello",
     });
     let req = createRecorder({
       url: "/",
-      method: "GET"
+      method: "GET",
     });
     await auth(req);
     let resp = await req.response();
@@ -25,8 +25,8 @@ it("middleware", t => {
       url: "/",
       method: "GET",
       headers: new Headers({
-        "authorization": `Basic ${up}`
-      })
+        "authorization": `Basic ${up}`,
+      }),
     });
     await auth(req);
     assertEquals(req.isResponded(), false);
@@ -36,20 +36,20 @@ it("middleware", t => {
       "Basic hoge",
       `Basic ${btoa("deno:js")}`,
       `Basic ${btoa("deno:")}`,
-      "Basic"
+      "Basic",
     ];
     const auth = basicAuth({
       username: "deno",
       password: "land",
-      message: "hello"
+      message: "hello",
     });
     for (const pat of patterns) {
       let req = createRecorder({
         url: "/",
         method: "GET",
         headers: new Headers({
-          "authorization": pat
-        })
+          "authorization": pat,
+        }),
       });
       await auth(req);
       assertEquals(req.isResponded(), true);

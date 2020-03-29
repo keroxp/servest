@@ -4,10 +4,10 @@ import { createRouter } from "../../../router.ts";
 const app = createApp();
 function IndexRoutes() {
   const router = createRouter();
-  router.get("/", req => {
+  router.get("/", (req) => {
     // GET /
   });
-  router.get("/about", req => {
+  router.get("/about", (req) => {
     // GET /about
   });
   return router;
@@ -25,10 +25,10 @@ function UserRoutes() {
   });
   function UserPostRoutes() {
     const router = createRouter();
-    router.get("/", req => {
+    router.get("/", (req) => {
       // GET /users/posts
     });
-    router.get("/inbox", req => {
+    router.get("/inbox", (req) => {
       // GET /users/posts/indbox
     });
     return router;

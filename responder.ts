@@ -20,7 +20,7 @@ export interface ServerResponder extends CookieSetter {
     opts?: {
       contentDisposition?: "inline" | "attachment";
       headers?: Headers;
-    }
+    },
   ): Promise<void>;
 
   /** Redirect request with 302 (Found ) */
@@ -29,7 +29,7 @@ export interface ServerResponder extends CookieSetter {
     opts?: {
       headers?: Headers;
       body?: ServerResponse["body"];
-    }
+    },
   ): Promise<void>;
 
   /** Mark as responded manually */
@@ -43,8 +43,8 @@ export interface ServerResponder extends CookieSetter {
 /** create ServerResponder object */
 export function createResponder(
   w: Writer,
-  onResponse: (r: ServerResponse) => Promise<void> = resp =>
-    writeResponse(w, resp)
+  onResponse: (r: ServerResponse) => Promise<void> = (resp) =>
+    writeResponse(w, resp),
 ): ServerResponder {
   const responseHeaders = new Headers();
   const cookie = cookieSetter(responseHeaders);
@@ -56,8 +56,8 @@ export function createResponder(
     url: string,
     {
       headers = new Headers(),
-      body
-    }: { headers?: Headers; body?: ServerResponse["body"] } = {}
+      body,
+    }: { headers?: Headers; body?: ServerResponse["body"] } = {},
   ) {
     headers.set("location", url);
     await respond({ status: 302, headers, body });
@@ -76,7 +76,7 @@ export function createResponder(
     await onResponse({
       status,
       headers: responseHeaders,
-      body
+      body,
     });
   }
   async function sendFile(
@@ -84,7 +84,7 @@ export function createResponder(
     opts?: {
       contentDisposition?: "inline" | "attachment";
       headers?: Headers;
-    }
+    },
   ): Promise<void> {
     const body = await Deno.open(path);
     const headers = opts?.headers ?? new Headers();
@@ -99,13 +99,13 @@ export function createResponder(
         const filename = basename(path);
         headers.set(
           "content-disposition",
-          `attachment; filename="${filename}"`
+          `attachment; filename="${filename}"`,
         );
       }
       await onResponse({
         status: 200,
         headers,
-        body
+        body,
       });
     } finally {
       body.close();
@@ -124,6 +124,6 @@ export function createResponder(
     isResponded,
     respondedStatus,
     markAsResponded,
-    ...cookie
+    ...cookie,
   };
 }

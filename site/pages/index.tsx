@@ -33,10 +33,10 @@ const Index: DFC<{
 Index.getInitialProps = async () => {
   const codes = Object.fromEntries(
     await Promise.all(
-      ["use_jsx.tsx"].map(async v => {
+      ["use_jsx.tsx"].map(async (v) => {
         return [v, await fetchExample(v)];
-      })
-    )
+      }),
+    ),
   );
   return { codes };
 };

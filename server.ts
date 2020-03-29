@@ -137,7 +137,7 @@ function createListener(listenOptions: string | HostPort): Listener {
 export function listenAndServeTLS(
   listenOptions: ListenTLSOptions,
   handler: ServeHandler,
-  opts?: ServeOptions
+  opts?: ServeOptions,
 ): ServeListener {
   const listener = Deno.listenTLS(listenOptions);
   return listenInternal(listener, handler, opts);
@@ -146,7 +146,7 @@ export function listenAndServeTLS(
 export function listenAndServe(
   listenOptions: string | ListenOptions,
   handler: ServeHandler,
-  opts: ServeOptions = {}
+  opts: ServeOptions = {},
 ): ServeListener {
   opts = initServeOptions(opts);
   const listener = createListener(listenOptions);
@@ -156,7 +156,7 @@ export function listenAndServe(
 function listenInternal(
   listener: Listener,
   handler: ServeHandler,
-  opts: ServeOptions = {}
+  opts: ServeOptions = {},
 ): ServeListener {
   let cancel: Promise<void>;
   let d = deferred<void>();
@@ -166,7 +166,7 @@ function listenInternal(
     cancel = d;
   }
   const throwIfCancelled = promiseInterrupter({
-    cancel
+    cancel,
   });
   let closed = false;
   const close = () => {
@@ -179,7 +179,7 @@ function listenInternal(
   const acceptRoutine = () => {
     if (closed) return;
     throwIfCancelled(listener.accept())
-      .then(conn => {
+      .then((conn) => {
         handleKeepAliveConn(conn, handler, opts);
         acceptRoutine();
       })
@@ -193,12 +193,12 @@ function listenInternal(
 export function handleKeepAliveConn(
   conn: Conn,
   handler: ServeHandler,
-  opts: ServeOptions = {}
+  opts: ServeOptions = {},
 ): void {
   const bufReader = new BufReader(conn);
   const bufWriter = new BufWriter(conn);
   const originalOpts = opts;
-  const q = promiseWaitQueue<ServerResponse, void>(resp =>
+  const q = promiseWaitQueue<ServerResponse, void>((resp) =>
     writeResponse(bufWriter, resp)
   );
 
@@ -206,12 +206,12 @@ export function handleKeepAliveConn(
   scheduleReadRequest({
     keepAliveTimeout: opts.readTimeout,
     readTimeout: opts.readTimeout,
-    cancel: opts.cancel
+    cancel: opts.cancel,
   });
 
   function scheduleReadRequest(opts: ServeOptions) {
     processRequest(opts)
-      .then(v => {
+      .then((v) => {
         if (v) scheduleReadRequest(v);
       })
       .catch(() => {
@@ -220,7 +220,7 @@ export function handleKeepAliveConn(
   }
 
   async function processRequest(
-    opts: ServeOptions
+    opts: ServeOptions,
   ): Promise<ServeOptions | undefined> {
     const baseReq = await readRequest(bufReader, opts);
     let responded: Promise<void> = Promise.resolve();
@@ -234,7 +234,7 @@ export function handleKeepAliveConn(
       bufWriter,
       bufReader,
       conn,
-      ...responder
+      ...responder,
     };
     await handler(req);
     await responded;
@@ -253,13 +253,13 @@ export function handleKeepAliveConn(
     if (req.keepAlive) {
       keepAliveTimeout = Math.min(
         keepAliveTimeout!,
-        req.keepAlive.timeout * 1000
+        req.keepAlive.timeout * 1000,
       );
     }
     return {
       keepAliveTimeout,
       readTimeout: opts.readTimeout,
-      cancel: opts.cancel
+      cancel: opts.cancel,
     };
   }
 }

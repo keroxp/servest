@@ -20,7 +20,7 @@ export interface FormBody {
  */
 export async function parserMultipartRequest(
   req: { headers: Headers; body?: Reader },
-  maxMemory: number = 1 << 10 // 10MB by default
+  maxMemory: number = 1 << 10, // 10MB by default
 ): Promise<FormBody> {
   // Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryO5quBRiT4G7Vm3R7
   const contentType = req.headers.get("content-type");
@@ -64,12 +64,12 @@ export async function parserMultipartRequest(
                   await Deno.remove(tempfile);
                 }
               } catch (e) {}
-            })()
+            })(),
           );
         }
       }
       await Promise.all(promises);
-    }
+    },
   };
 }
 /**
@@ -100,6 +100,6 @@ export async function parseUrlEncodedForm(req: {
     file(field: string): FormFile | undefined {
       return undefined;
     },
-    async removeAllTempFiles(): Promise<void> {}
+    async removeAllTempFiles(): Promise<void> {},
   };
 }

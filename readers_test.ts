@@ -9,7 +9,7 @@ import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { decode } from "./vendor/https/deno.land/std/strings/decode.ts";
 import { it } from "./test_util.ts";
 
-it("bodyReader", t => {
+it("bodyReader", (t) => {
   t.run("basic", async () => {
     const bufr = new BufReader(new StringReader("okdenoland"));
     const buf = new Uint8Array(100);
@@ -80,8 +80,8 @@ it("bodyReader", t => {
     const br = bodyReader(r, e.length);
     const f = await br.formData(
       new Headers({
-        "content-type": "application/x-www-form-urlencoded"
-      })
+        "content-type": "application/x-www-form-urlencoded",
+      }),
     );
     assertEquals(f.field("deno"), "land");
     assertEquals(f.field("での"), "らんど");
@@ -94,7 +94,7 @@ it("bodyReader", t => {
         await br.formData(new Headers({ "content-type": "text/plain" }));
       },
       Error,
-      "request is not multipart/form-data nor application/x-www-form-urlencoded"
+      "request is not multipart/form-data nor application/x-www-form-urlencoded",
     );
   });
   t.run("multi transforming", async () => {
@@ -107,7 +107,7 @@ it("bodyReader", t => {
   });
 });
 
-it("chunkedBodyReader", t => {
+it("chunkedBodyReader", (t) => {
   t.run("basic", async () => {
     const s = `4\r\ndeno\r\n4\r\nland\r\n0\r\n\r\n`;
     const br = chunkedBodyReader(new StringReader(s));

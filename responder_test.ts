@@ -13,17 +13,17 @@ import copy = Deno.copy;
 import Reader = Deno.Reader;
 import { it } from "./test_util.ts";
 
-it("responder", t => {
-  t.run("basic", async function() {
+it("responder", (t) => {
+  t.run("basic", async function () {
     const w = new Buffer();
     const res = createResponder(w);
     assert(!res.isResponded());
     await res.respond({
       status: 200,
       headers: new Headers({
-        "content-type": "text/plain"
+        "content-type": "text/plain",
       }),
-      body: new StringReader("ok")
+      body: new StringReader("ok"),
     });
     assert(res.isResponded());
     const resp = await readResponse(w);
@@ -34,21 +34,21 @@ it("responder", t => {
     assertEquals(sw.toString(), "ok");
   });
 
-  t.run("respond() should throw if already responded", async function() {
+  t.run("respond() should throw if already responded", async function () {
     const w = new Buffer();
     const res = createResponder(w);
     await res.respond({
       status: 200,
-      headers: new Headers()
+      headers: new Headers(),
     });
     await assertThrowsAsync(async () =>
       res.respond({
         status: 200,
-        headers: new Headers()
+        headers: new Headers(),
       }), Error, "responded");
   });
 
-  t.run("sendFile() basic", async function() {
+  t.run("sendFile() basic", async function () {
     const w = new Buffer();
     const res = createResponder(w);
     await res.sendFile("./fixtures/sample.txt");
@@ -63,7 +63,7 @@ it("responder", t => {
     const res = createResponder(w);
     await assertThrowsAsync(
       () => res.sendFile("./fixtures/not-found"),
-      Deno.errors.NotFound
+      Deno.errors.NotFound,
     );
   });
 
@@ -71,7 +71,7 @@ it("responder", t => {
     const w = new Buffer();
     const res = createResponder(w);
     await res.sendFile("./fixtures/sample.txt", {
-      contentDisposition: "inline"
+      contentDisposition: "inline",
     });
     const resp = await readResponse(w);
     assertEquals(resp.status, 200);
@@ -83,13 +83,13 @@ it("responder", t => {
     const w = new Buffer();
     const res = createResponder(w);
     await res.sendFile("./fixtures/sample.txt", {
-      contentDisposition: "attachment"
+      contentDisposition: "attachment",
     });
     const resp = await readResponse(w);
     assertEquals(resp.status, 200);
     assertEquals(
       resp.headers.get("content-disposition"),
-      'attachment; filename="sample.txt"'
+      'attachment; filename="sample.txt"',
     );
     assertEquals(await resp.body?.text(), "sample");
   });
@@ -112,7 +112,7 @@ it("responder", t => {
     await assertThrowsAsync(
       () => res.respond({ status: 404, body: "404" }),
       Error,
-      "already"
+      "already",
     );
   });
 });

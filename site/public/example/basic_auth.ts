@@ -6,16 +6,16 @@ const app = createApp();
 app.use(
   basicAuth({
     username: "deno",
-    password: "deno is nice"
-  })
+    password: "deno is nice",
+  }),
 );
-app.get("/", async req => {
+app.get("/", async (req) => {
   await req.respond({
     status: 200,
     headers: new Headers({
-      "content-type": "text/plain"
+      "content-type": "text/plain",
     }),
-    body: "Hello, Servest!"
+    body: "Hello, Servest!",
   });
 });
 app.listen(":8899");

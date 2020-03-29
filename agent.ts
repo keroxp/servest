@@ -45,12 +45,12 @@ export type HttpAgentSendOptions = {
 
 const kPortMap = {
   "http:": 80,
-  "https:": 443
+  "https:": 443,
 };
 
 export function createAgent(
   baseUrl: string,
-  opts: HttpAgentOptions = {}
+  opts: HttpAgentOptions = {},
 ): HttpAgent {
   let connected = false;
   let connecting = false;
@@ -61,7 +61,7 @@ export function createAgent(
   const url = new URL(baseUrl);
   assert(
     url.protocol === "http:" || url.protocol === "https:",
-    `scheme must be http or https: ${url.protocol}`
+    `scheme must be http or https: ${url.protocol}`,
   );
   const hostname = url.hostname;
   let port = url.port ? parseInt(url.port) : kPortMap[url.protocol];
@@ -72,7 +72,7 @@ export function createAgent(
     connecting = true;
     const opts: DialOptions = {
       port,
-      transport: "tcp"
+      transport: "tcp",
     };
     if (url.hostname) {
       opts.hostname = hostname;
@@ -91,7 +91,7 @@ export function createAgent(
   let prevResponse: ClientResponse;
   let sending = false;
   async function send(
-    sendOptions: HttpAgentSendOptions
+    sendOptions: HttpAgentSendOptions,
   ): Promise<ClientResponse> {
     if (sending) {
       throw new Error("It is not able to send http request concurrently");
@@ -110,13 +110,13 @@ export function createAgent(
         url: destUrl.toString(),
         method,
         headers,
-        body
+        body,
       });
       const res = await readResponse(bufReader, opts);
       return (prevResponse = Object.assign(res, {
         bufWriter,
         bufReader,
-        conn: _conn
+        conn: _conn,
       }));
     } catch (e) {
       if (e === Deno.EOF) {
@@ -134,6 +134,6 @@ export function createAgent(
     send,
     get conn() {
       return _conn;
-    }
+    },
   };
 }

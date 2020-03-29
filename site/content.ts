@@ -23,7 +23,7 @@ export async function fetchExample(filename: string): Promise<string> {
     if (denov) {
       ret = ret.replace(
         /https:\/\/deno.land\/std/g,
-        `https://deno.land/std@${denov}`
+        `https://deno.land/std@${denov}`,
       );
     }
   }
@@ -35,10 +35,10 @@ export async function fetchExampleCodes(
 ): Promise<{ [key: string]: string }> {
   return Object.fromEntries(
     await Promise.all(
-      files.map(async v => {
+      files.map(async (v) => {
         return [v, await fetchExample(v)];
-      })
-    )
+      }),
+    ),
   );
 }
 
@@ -56,10 +56,10 @@ export async function getDenoVersion(): Promise<string> {
 }
 async function getLatestVersion(
   owner: string,
-  repo: string
+  repo: string,
 ): Promise<string | undefined> {
   const resp = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/releases/latest`
+    `https://api.github.com/repos/${owner}/${repo}/releases/latest`,
   );
   if (resp.status === 200) {
     const j = await resp.json();

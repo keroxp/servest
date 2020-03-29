@@ -4,11 +4,11 @@ const it = serve(":4500");
 async function main() {
   const path = new URL("./main.ts", import.meta.url).pathname;
   for await (const req of it) {
-    Deno.open(path).then(body => {
+    Deno.open(path).then((body) => {
       req
         .respond({
           status: 200,
-          body
+          body,
         })
         .finally(() => body.close());
     });

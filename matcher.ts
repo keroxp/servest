@@ -7,7 +7,7 @@ import * as path from "./vendor/https/deno.land/std/path/mod.ts";
  * */
 export function findLongestAndNearestMatches(
   pathname: string,
-  patterns: (string | RegExp)[]
+  patterns: (string | RegExp)[],
 ): [number, RegExpMatchArray][] {
   let lastMatchIndex = pathname.length;
   let lastMatchLength = 0;
@@ -57,7 +57,7 @@ export function findLongestAndNearestMatches(
 export async function resolveIndexPath(
   dir: string,
   pathname: string,
-  extensions: string[] = [".html"]
+  extensions: string[] = [".html"],
 ): Promise<string | undefined> {
   let filepath = path.join(dir, pathname);
   const fileExists = async (s: string): Promise<boolean> => {

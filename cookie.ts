@@ -19,7 +19,7 @@ export type Cookie = {
 export function parseCookie(header: string): Map<string, string> {
   const query = decodeURIComponent(header)
     .split(";")
-    .map(v => v.trim())
+    .map((v) => v.trim())
     .join("&");
   return new Map(new URLSearchParams(query).entries());
 }
@@ -31,10 +31,10 @@ export function parseSetCookie(header: string): Cookie {
   }
   const [_, name, value, optStr] = m;
   const optMap = new Headers(
-    optStr.split(";").map(i => {
+    optStr.split(";").map((i) => {
       const [k, v] = i.trim().split("=");
       return [k, v] as [string, string];
-    })
+    }),
   );
   const domain = optMap.get("Domain") || undefined;
   const path = optMap.get("Path") || undefined;
@@ -67,14 +67,14 @@ export function parseSetCookie(header: string): Cookie {
     path,
     secure,
     httpOnly,
-    sameSite
+    sameSite,
   };
 }
 
 export function cookieToString(
   name: string,
   value: string,
-  opts: SetCookieOpts = {}
+  opts: SetCookieOpts = {},
 ) {
   const out: string[] = [];
   out.push(`${encodeURIComponent(name)}=${encodeURIComponent(value)}`);
