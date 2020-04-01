@@ -37,4 +37,4 @@ app.catch(async (e, req) => {
   }
 });
 const port = Deno.env()["PORT"] || "8899";
-app.listen(":" + port);
+app.listen({ hostname: "0.0.0.0", port: parseInt(port) });
