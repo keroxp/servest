@@ -7,8 +7,6 @@ import {
   ServerRequest
 } from "./server.ts";
 import { createLogger, Logger, Loglevel, namedLogger } from "./logger.ts";
-import ListenOptions = Deno.ListenOptions;
-import ListenTLSOptions = Deno.ListenTLSOptions;
 import {
   createRouter,
   Router
@@ -18,10 +16,13 @@ import { kHttpStatusMessages } from "./serveio.ts";
 
 export interface App extends Router {
   /** Start listening with given addr */
-  listen(addr: string | ListenOptions, opts?: ServeOptions): ServeListener;
+  listen(addr: Deno.ListenOptions, opts?: ServeOptions): ServeListener;
 
   /** Start listening for HTTPS server */
-  listenTLS(tlsOptions: ListenTLSOptions, opts?: ServeOptions): ServeListener;
+  listenTLS(
+    tlsOptions: Deno.ListenTLSOptions,
+    opts?: ServeOptions,
+  ): ServeListener;
 }
 
 export type AppOptions = {
@@ -76,7 +77,7 @@ export function createApp(
     }
   };
   function listen(
-    addr: string | ListenOptions,
+    addr: Deno.ListenOptions,
     opts?: ServeOptions,
   ): ServeListener {
     const listener = listenAndServe(addr, (req) => handleRoute("", req), opts);
@@ -84,7 +85,7 @@ export function createApp(
     return listener;
   }
   function listenTLS(
-    listenOptions: ListenTLSOptions,
+    listenOptions: Deno.ListenTLSOptions,
     opts?: ServeOptions,
   ): ServeListener {
     const listener = listenAndServeTLS(

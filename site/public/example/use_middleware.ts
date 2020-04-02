@@ -11,4 +11,4 @@ app.use(async (req) => {
   }
   // Go through the next middleware
 });
-app.listen(":8899");
+app.listen({ port: 8899 });

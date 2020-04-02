@@ -102,4 +102,4 @@ app.get("/logout", async (req) => {
   req.clearCookie("sid");
   return req.redirect("/login");
 });
-app.listen(":8899");
+app.listen({ port: 8899 });

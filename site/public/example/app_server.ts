@@ -26,4 +26,4 @@ app.get(new RegExp("^/foo/(.+)"), async (req, { match }) => {
   });
 });
 // Start listening on port 8899
-app.listen(":8899");
+app.listen({ port: 8899 });

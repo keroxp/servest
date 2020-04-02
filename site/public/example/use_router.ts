@@ -40,4 +40,4 @@ function UserRoutes() {
 
 app.route("/", IndexRoutes());
 app.route("/users", UserRoutes());
-app.listen(":8899");
+app.listen({ port: 8899 });
