@@ -97,7 +97,7 @@ it("cookie integration", (t) => {
       const deno = req.cookies.get("deno");
       return req.respond({ status: 200, body: deno || "" });
     });
-    const lis = router.listen(":9983");
+    const lis = router.listen({ port: 9983 });
     return () => lis.close();
   });
   t.run("basic", async () => {

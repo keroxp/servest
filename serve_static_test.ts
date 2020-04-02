@@ -38,7 +38,7 @@ it("serveStatic integration", (t) => {
   t.beforeAfterAll(() => {
     const router = createApp();
     router.use(serveStatic("./fixtures/public"));
-    const l = router.listen(":9988");
+    const l = router.listen({ port: 9988 });
     return () => l.close();
   });
   t.run("basic", async () => {
