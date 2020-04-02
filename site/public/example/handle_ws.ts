@@ -13,4 +13,4 @@ function handleHandshake(sock: WebSocket) {
 }
 const app = createApp();
 app.ws("/ws", handleHandshake);
-app.listen(":8899");
+app.listen({ port: 8899 });

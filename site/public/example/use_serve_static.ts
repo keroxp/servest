@@ -6,4 +6,4 @@ const app = createApp();
 // are served automatically
 // Otherwise, request will be passed to next handler
 app.use(serveStatic("./public"));
-app.listen(":8899");
+app.listen({ port: 8899 });
