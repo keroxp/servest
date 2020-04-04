@@ -21,5 +21,6 @@ do-std-bench: bench
 	docker run -e TARGET=/servest/benchmark/std_bench.ts -t servest/bench
 dev:
 	./tools/dev.ts "site/**/*.ts" "site/**/*.tsx" "site/index.ts"
-mod.ts: *.ts
-	./tools/make_mod.ts
+.PHONY: mod.ts	
+mod.ts:
+	deno --allow-read --allow-write ./tools/make_mod.ts
