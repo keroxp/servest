@@ -1,8 +1,8 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import * as path from "./vendor/https/deno.land/std/path/mod.ts";
-import * as media_types from "./vendor/https/deno.land/std/media_types/mod.ts";
 import { resolveIndexPath } from "./matcher.ts";
 import { ServeHandler } from "./server.ts";
+import { contentTypeByExt } from "./media_types.ts";
 
 export type ServeStaticOptions = {
   /**
@@ -29,8 +29,6 @@ export function serveStatic(
   opts: ServeStaticOptions = {},
 ): ServeHandler {
   const contentTypeMap = new Map<string, string>([
-    [".ts", "application/javascript"],
-    [".tsx", "application/javascript"],
     ...(opts.contentTypeMap || new Map<string, string>()).entries(),
   ]);
   const contentDispositionMap = opts.contentDispositionMap || new Map([]);
@@ -48,7 +46,7 @@ export function serveStatic(
       const ext = path.extname(filepath);
       const base = path.basename(filepath);
       let contentType = contentTypeMap.get(ext) ||
-        media_types.contentType(ext) ||
+        contentTypeByExt(ext) ||
         "application/octet-stream";
       const headers = new Headers({
         "content-length": stat.size + "",

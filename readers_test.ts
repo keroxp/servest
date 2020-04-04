@@ -6,7 +6,7 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
-import { decode } from "./vendor/https/deno.land/std/strings/decode.ts";
+import { decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import { it } from "./test_util.ts";
 
 it("bodyReader", (t) => {

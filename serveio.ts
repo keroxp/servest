@@ -25,8 +25,7 @@ import {
   ServeOptions,
   ServerResponse
 } from "./server.ts";
-import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
-import { decode } from "./vendor/https/deno.land/std/strings/decode.ts";
+import { encode, decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;

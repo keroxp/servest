@@ -3,9 +3,8 @@ import Writer = Deno.Writer;
 import { ServerResponse } from "./server.ts";
 import { cookieSetter, CookieSetter } from "./cookie.ts";
 import { writeResponse } from "./serveio.ts";
-import * as media_types from "./vendor/https/deno.land/std/media_types/mod.ts";
-import { basename } from "./vendor/https/deno.land/std/path/mod.ts";
-
+import { extname, basename } from "./vendor/https/deno.land/std/path/mod.ts";
+import { contentTypeByExt } from "./media_types.ts";
 /** Basic responder for http response */
 export interface ServerResponder extends CookieSetter {
   /** Respond to request */
@@ -90,7 +89,7 @@ export function createResponder(
     const headers = opts?.headers ?? new Headers();
     try {
       const contentType =
-        media_types.lookup(path) ?? "application/octet-stream";
+        contentTypeByExt(extname(path)) ?? "application/octet-stream";
       headers.set("content-type", contentType);
       const contentDisposition = opts?.contentDisposition;
       if (contentDisposition === "inline") {
