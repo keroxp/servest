@@ -24,7 +24,7 @@ jobs:
       run: deno fmt --check
     - name: Check mod.ts
       run: |
-        ./tools/make_mod.ts
+        deno tools/make_mod.ts
         git diff --exit-code      
     - name: Run Tests
       run: |
