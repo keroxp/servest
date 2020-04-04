@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { encode } from "./vendor/https/deno.land/std/strings/encode.ts";
+import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import { createAgent } from "./agent.ts";
 import { createApp } from "./app.ts";
 import {
