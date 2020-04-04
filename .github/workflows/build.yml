@@ -19,7 +19,7 @@ jobs:
         echo "::set-env name=DENO_VERSION::$(cat .denov)"
     - uses: denolib/setup-deno@master
       with:
-        deno-version: {{ env.DENO_VERSION }}
+        deno-version: ${{ env.DENO_VERSION }}
     - name: Fmt check
       run: deno fmt --check
     - name: Check mod.ts
