@@ -1,7 +1,6 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
-import { createRecorder } from "../../../testing.ts";
-import { ServeHandler } from "../../../server.ts";
+import { createRecorder, ServeHandler } from "../../../mod.ts";
 
 const handleRequest: ServeHandler = async (req) => {
   const body = await req.body!.text();

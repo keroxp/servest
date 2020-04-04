@@ -1,5 +1,4 @@
-import { createApp } from "../../../app.ts";
-import { createRouter } from "../../../router.ts";
+import { createApp, createRouter } from "../../../mod.ts";
 
 const app = createApp();
 function IndexRoutes() {

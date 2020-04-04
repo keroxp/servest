@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { RouteHandler } from "../../../router.ts";
+import { RouteHandler } from "../../../mod.ts";
 
 const handle: RouteHandler = (req) => {
   // Get cookie from request

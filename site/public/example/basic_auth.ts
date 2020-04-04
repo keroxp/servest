@@ -1,6 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { basicAuth } from "../../../middleware.ts";
-import { createApp } from "../../../app.ts";
+import { createApp, basicAuth } from "../../../mod.ts";
 const app = createApp();
 // Add global auth middleware
 app.use(
