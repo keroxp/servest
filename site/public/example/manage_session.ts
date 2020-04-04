@@ -1,6 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createApp } from "../../../app.ts";
-import { ServerRequest } from "../../../server.ts";
+import { createApp, ServerRequest  } from "../../../mod.ts";
 const app = createApp();
 type User = {
   id: string;

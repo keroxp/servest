@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createAgent } from "../../../agent.ts";
+import { createAgent } from "../../../mod.ts";
 
 async function main() {
   const agent = createAgent("https://servestjs.org");

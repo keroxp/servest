@@ -1,4 +1,4 @@
-import { createApp } from "../../../app.ts";
+import { createApp } from "../../../mod.ts";
 import { WebSocket } from "https://deno.land/std/ws/mod.ts";
 
 function handleHandshake(sock: WebSocket) {

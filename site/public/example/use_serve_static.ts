@@ -1,6 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { serveStatic } from "../../../serve_static.ts";
-import { createApp } from "../../../app.ts";
+import { createApp, serveStatic } from "../../../mod.ts";
 const app = createApp();
 // All requests will be processed and matched files in "public" directory
 // are served automatically

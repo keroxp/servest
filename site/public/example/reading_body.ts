@@ -1,6 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { contentTypeFilter } from "../../../middleware.ts";
-import { createApp } from "../../../app.ts";
+import { createApp, contentTypeFilter } from "../../../mod.ts";
 const app = createApp();
 app.post("/json", contentTypeFilter("application/json"), async (req) => {
   const bodyJson = (await req.body!.json()) as { name: string; id: string };

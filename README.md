@@ -25,7 +25,7 @@ To get more detialed information, go to https://servestjs.org
 import React from "https://dev.jspm.io/react/index.js";
 // @deno-types="https://servestjs.org/@/types/react-dom/server/index.d.ts"
 import ReactDOMServer from "https://dev.jspm.io/react-dom/server.js";
-import { createRouter } from "https://servestjs.org/@/router.ts";
+import { createRouter } from "https://servestjs.org/@/mod.ts";
 
 const router = createRouter();
 router.handle("/", async req => {

@@ -1,5 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { createApp } from "../../../app.ts";
+import { createApp } from "../../../mod.ts";
 const app = createApp();
 // Define route with string pattern.
 // Called if request path exactly match "/"

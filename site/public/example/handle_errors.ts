@@ -1,6 +1,5 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { RoutingError } from "../../../error.ts";
-import { createApp } from "../../../app.ts";
+import { createApp, RoutingError } from "../../../mod.ts";
 
 const app = createApp();
 app.handle("/", async (req) => {
