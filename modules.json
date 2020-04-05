@@ -3,7 +3,6 @@
     "version": "@v0.39.0",
     "modules": [
       "/testing/asserts.ts",
-      "/testing/runner.ts",
       "/textproto/mod.ts",
       "/path/mod.ts",
       "/datetime/mod.ts",
