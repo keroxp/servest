@@ -69,13 +69,18 @@ export interface Router extends Route {
   route(prefix: string, ...handlers: (RouteHandler | Router)[]): void;
 
   /**
-   * Register GET route. This is shortcut for handle();
-   * Handlers will be called on GET and HEAD method.
+   * Register GET/HEAD route. This is shortcut for handle();
    * */
   get(pattern: string | RegExp, ...handlers: RouteHandler[]): void;
 
   /** Register POST route. This is shortcut for handle() */
   post(pattern: string | RegExp, ...handlers: RouteHandler[]): void;
+
+  /** Register PUT route  */
+  put(pattern: string | RegExp, ...handlers: RouteHandler[]): void;
+
+  /** Register DELETE route  */
+  delete(pattern: string | RegExp, ...handlers: RouteHandler[]): void;
 
   /** Accept ws upgrade */
   ws(pattern: string | RegExp, handler: WebSocketHandler): void;
@@ -135,6 +140,14 @@ export function createRouter(): Router {
 
   function post(pattern: string | RegExp, ...handlers: RouteHandler[]) {
     routes.push({ pattern, methods: ["POST"], handlers });
+  }
+
+  function put(pattern: string | RegExp, ...handlers: RouteHandler[]) {
+    routes.push({ pattern, methods: ["PUT"], handlers });
+  }
+
+  function _delete(pattern: string | RegExp, ...handlers: RouteHandler[]) {
+    routes.push({ pattern, methods: ["DELETE"], handlers });
   }
 
   function use(...handlers: ServeHandler[]) {
@@ -253,6 +266,8 @@ export function createRouter(): Router {
     route,
     get,
     post,
+    put,
+    delete: _delete,
     ws,
     catch: _catch,
     finally: _finally,

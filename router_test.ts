@@ -1,12 +1,18 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
+import {
+  assertEquals,
+  assertThrowsAsync
+} from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { it, makeGet, assertRoutingError } from "./test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 import { writeResponse } from "./serveio.ts";
 import {
-  createRouter
+  createRouter,
+  Router
 } from "./router.ts";
 import { ServerRequest } from "./server.ts";
+import { createRecorder } from "./testing.ts";
+import { RoutingError } from "./error.ts";
 
 setLevel(Loglevel.NONE);
 
@@ -85,6 +91,49 @@ it("router", (t) => {
       assertEquals(await res.body?.text(), "ok");
     },
   );
+});
+
+it("method routes", (t) => {
+  const handler = (req: ServerRequest) => {
+    return req.respond({ status: 200, body: req.method });
+  };
+  const methods = ["GET", "POST", "PUT", "DELETE"];
+  const assertMethods = async (router: Router, method: string) => {
+    for (const _method of methods) {
+      const rec = createRecorder({ url: "/", method: _method });
+      if (_method === method) {
+        await router.handleRoute("", rec);
+        const resp = await rec.response();
+        assertEquals(resp.status, 200);
+        assertEquals(await resp.body.text(), method);
+      } else {
+        await assertThrowsAsync(async () => {
+          await router.handleRoute("", rec);
+        }, RoutingError);
+      }
+    }
+  };
+  let router: Router;
+  t.beforeAfterEach(() => {
+    router = createRouter();
+    return () => {};
+  });
+  t.run("GET", async () => {
+    router.get("/", handler);
+    assertMethods(router, "GET");
+  });
+  t.run("POST", async () => {
+    router.post("/", handler);
+    assertMethods(router, "POST");
+  });
+  t.run("PUT", async () => {
+    router.put("/", handler);
+    assertMethods(router, "PUT");
+  });
+  t.run("DELETE", async () => {
+    router.delete("/", handler);
+    assertMethods(router, "DELETE");
+  });
 });
 
 it("same path routes", (t) => {
