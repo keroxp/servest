@@ -2,7 +2,7 @@
 import {
   FormFile,
   isFormFile,
-  MultipartReader
+  MultipartReader,
 } from "./vendor/https/deno.land/std/mime/multipart.ts";
 import Reader = Deno.Reader;
 

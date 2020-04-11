@@ -1,7 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   assertEquals,
-  assertMatch
+  assertMatch,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createRecorder } from "./testing.ts";
 import { serveStatic } from "./serve_static.ts";

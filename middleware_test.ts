@@ -1,7 +1,7 @@
 import { basicAuth } from "./middleware.ts";
 import { it } from "./test_util.ts";
 import {
-  assertEquals
+  assertEquals,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createRecorder } from "./testing.ts";
 it("middleware", (t) => {

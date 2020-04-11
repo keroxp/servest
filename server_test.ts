@@ -4,7 +4,7 @@ import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { StringWriter } from "./vendor/https/deno.land/std/io/writers.ts";
 import {
   assertEquals,
-  assertThrowsAsync
+  assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import { createAgent } from "./agent.ts";

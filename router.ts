@@ -1,12 +1,12 @@
 import {
-  findLongestAndNearestMatches
+  findLongestAndNearestMatches,
 } from "./matcher.ts";
 import { ServerRequest, ServeHandler } from "./server.ts";
 import { RoutingError } from "./error.ts";
 import {
   acceptWebSocket,
   acceptable,
-  WebSocket
+  WebSocket,
 } from "./vendor/https/deno.land/std/ws/mod.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 

@@ -6,11 +6,11 @@ import {
   readResponse,
   setupBody,
   writeRequest,
-  writeResponse
+  writeResponse,
 } from "./serveio.ts";
 import {
   assert,
-  assertEquals
+  assertEquals,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";

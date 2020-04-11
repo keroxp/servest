@@ -1,6 +1,6 @@
 {
   "https://deno.land/std": {
-    "version": "@v0.39.0",
+    "version": "@v0.40.0",
     "modules": [
       "/testing/asserts.ts",
       "/textproto/mod.ts",
@@ -22,24 +22,32 @@
   },
   "https://dev.jspm.io/react": {
     "version": "@16.13",
-    "modules": ["/index.js"],
+    "modules": [
+      "/index.js"
+    ],
     "types": {
       "/index.js": "./types/react/index.d.ts"
     }
   },
   "https://dev.jspm.io/react-dom": {
     "version": "@16.13",
-    "modules": ["/server.js"],
+    "modules": [
+      "/server.js"
+    ],
     "types": {
       "/server.js": "./types/react-dom/server/index.d.ts"
     }
   },
   "https://dev.jspm.io/@types/prop-types": {
     "version": "@15.7.2",
-    "modules": ["/index.d.ts"]
+    "modules": [
+      "/index.d.ts"
+    ]
   },
   "https://dev.jspm.io/csstype": {
     "version": "@2.6.9",
-    "modules": ["/index.d.ts"]
+    "modules": [
+      "/index.d.ts"
+    ]
   }
 }

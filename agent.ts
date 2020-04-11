@@ -5,7 +5,7 @@ import { readResponse, writeRequest } from "./serveio.ts";
 import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
 import {
   BufReader,
-  BufWriter
+  BufWriter,
 } from "./vendor/https/deno.land/std/io/bufio.ts";
 import Conn = Deno.Conn;
 import Reader = Deno.Reader;

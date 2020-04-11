@@ -1,7 +1,7 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   BufReader,
-  BufWriter
+  BufWriter,
 } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { IncomingHttpResponse, ServerRequest } from "./server.ts";
 import { readResponse, setupBody } from "./serveio.ts";

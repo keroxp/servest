@@ -2,7 +2,7 @@
 import {
   assert,
   assertEquals,
-  assertThrows
+  assertThrows,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { it } from "./test_util.ts";
 import { cookieToString, parseCookie, parseSetCookie } from "./cookie.ts";
