@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - uses: keroxp/dink-bot@v1
+    - uses: keroxp/dink-bot@master
       with:
         github-repository: ${{ github.repository }}
         github-token: ${{ secrets.GITHUB_TOKEN }}
