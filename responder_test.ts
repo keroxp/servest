@@ -3,7 +3,7 @@ import { createResponder } from "./responder.ts";
 import {
   assert,
   assertEquals,
-  assertThrowsAsync
+  assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { readResponse, readRequest } from "./serveio.ts";

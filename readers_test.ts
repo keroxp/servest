@@ -2,7 +2,7 @@
 import { bodyReader, chunkedBodyReader } from "./readers.ts";
 import {
   assertEquals,
-  assertThrowsAsync
+  assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";

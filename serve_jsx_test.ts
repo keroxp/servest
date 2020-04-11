@@ -3,7 +3,7 @@ import { createRecorder } from "./testing.ts";
 import {
   assertEquals,
   assertMatch,
-  assertThrowsAsync
+  assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { serveJsx } from "./serve_jsx.ts";
 import { pathResolver, readString } from "./util.ts";

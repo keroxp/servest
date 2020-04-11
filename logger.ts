@@ -3,7 +3,7 @@ import {
   red,
   yellow,
   cyan,
-  gray
+  gray,
 } from "./vendor/https/deno.land/std/fmt/colors.ts";
 import { sprintf } from "./vendor/https/deno.land/std/fmt/sprintf.ts";
 export enum Loglevel {

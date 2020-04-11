@@ -2,7 +2,7 @@
 import { createApp, App } from "./app.ts";
 import {
   assertEquals,
-  assertMatch
+  assertMatch,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { it, makeGet, assertRoutingError } from "./test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";

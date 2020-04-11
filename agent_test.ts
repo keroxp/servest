@@ -4,7 +4,7 @@ import { createAgent } from "./agent.ts";
 import { createApp } from "./app.ts";
 import {
   assertEquals,
-  assertThrows
+  assertThrows,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;

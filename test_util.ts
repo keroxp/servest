@@ -5,7 +5,7 @@ import { createRecorder } from "./testing.ts";
 import {
   assertEquals,
   assert,
-  assertThrowsAsync
+  assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { RoutingError } from "./error.ts";
 import { kHttpStatusMessages } from "./serveio.ts";

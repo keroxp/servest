@@ -3,7 +3,7 @@ import Conn = Deno.Conn;
 import Reader = Deno.Reader;
 import {
   BufReader,
-  BufWriter
+  BufWriter,
 } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { promiseInterrupter } from "./promises.ts";
 import { deferred } from "./vendor/https/deno.land/std/util/async.ts";

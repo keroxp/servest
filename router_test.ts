@@ -1,14 +1,14 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   assertEquals,
-  assertThrowsAsync
+  assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { it, makeGet, assertRoutingError } from "./test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 import { writeResponse } from "./serveio.ts";
 import {
   createRouter,
-  Router
+  Router,
 } from "./router.ts";
 import { ServerRequest } from "./server.ts";
 import { createRecorder } from "./testing.ts";
