@@ -1,5 +1,5 @@
 #!/usr/bin/env deno --allow-net --allow-read --allow-env
-// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { serveStatic } from "../serve_static.ts";
 import { Loglevel } from "../logger.ts";
 import { Layout } from "./components/layout.tsx";

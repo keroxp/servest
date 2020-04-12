@@ -1,3 +1,4 @@
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { basicAuth } from "./middleware.ts";
 import { group } from "./test_util.ts";
 import {

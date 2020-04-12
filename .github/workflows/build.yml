@@ -26,6 +26,8 @@ jobs:
       run: |
         make mod.ts
         git diff --exit-code
+    - name: Check license
+      run: deno --allow-read tools/license_checker.ts
     - name: Run Tests
       run: |
         make test
