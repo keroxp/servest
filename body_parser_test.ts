@@ -10,10 +10,10 @@ import {
 import { parserMultipartRequest } from "./body_parser.ts";
 import * as fs from "./vendor/https/deno.land/std/fs/mod.ts";
 import Buffer = Deno.Buffer;
-import { it } from "./test_util.ts";
+import { group } from "./test_util.ts";
 
-it("multipart", (t) => {
-  t.run("basic", async () => {
+group("multipart", ({ test }) => {
+  test("basic", async () => {
     const buf = new Buffer();
     const w = new MultipartWriter(buf);
     await w.writeField("deno", "land");
@@ -38,7 +38,7 @@ it("multipart", (t) => {
     await m.removeAllTempFiles();
     assertEquals(await fs.exists(mfile.tempfile!), false);
   });
-  t.run("should throw if content-type is invalid", async () => {
+  test("should throw if content-type is invalid", async () => {
     const body = new Buffer();
     await assertThrowsAsync(async () => {
       await parserMultipartRequest({

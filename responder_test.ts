@@ -11,10 +11,10 @@ import { StringWriter } from "./vendor/https/deno.land/std/io/writers.ts";
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
 import Reader = Deno.Reader;
-import { it } from "./test_util.ts";
+import { group } from "./test_util.ts";
 
-it("responder", (t) => {
-  t.run("basic", async function () {
+group("responder", (t) => {
+  t.test("basic", async function () {
     const w = new Buffer();
     const res = createResponder(w);
     assert(!res.isResponded());
@@ -34,7 +34,7 @@ it("responder", (t) => {
     assertEquals(sw.toString(), "ok");
   });
 
-  t.run("respond() should throw if already responded", async function () {
+  t.test("respond() should throw if already responded", async function () {
     const w = new Buffer();
     const res = createResponder(w);
     await res.respond({
@@ -48,7 +48,7 @@ it("responder", (t) => {
       }), Error, "responded");
   });
 
-  t.run("sendFile() basic", async function () {
+  t.test("sendFile() basic", async function () {
     const w = new Buffer();
     const res = createResponder(w);
     await res.sendFile("./fixtures/sample.txt");
@@ -58,7 +58,7 @@ it("responder", (t) => {
     assertEquals(await resp.body?.text(), "sample");
   });
 
-  t.run("sendFile() should throw if file not found", async () => {
+  t.test("sendFile() should throw if file not found", async () => {
     const w = new Buffer();
     const res = createResponder(w);
     await assertThrowsAsync(
@@ -67,7 +67,7 @@ it("responder", (t) => {
     );
   });
 
-  t.run("sendFile() with attachment", async () => {
+  t.test("sendFile() with attachment", async () => {
     const w = new Buffer();
     const res = createResponder(w);
     await res.sendFile("./fixtures/sample.txt", {
@@ -79,7 +79,7 @@ it("responder", (t) => {
     assertEquals(await resp.body?.text(), "sample");
   });
 
-  t.run("sendFile() with attachment", async () => {
+  t.test("sendFile() with attachment", async () => {
     const w = new Buffer();
     const res = createResponder(w);
     await res.sendFile("./fixtures/sample.txt", {
@@ -94,7 +94,7 @@ it("responder", (t) => {
     assertEquals(await resp.body?.text(), "sample");
   });
 
-  t.run("responder redirect should set Location header", async () => {
+  t.test("responder redirect should set Location header", async () => {
     const w = new Buffer();
     const res = createResponder(w);
     await res.redirect("/index.html");
@@ -103,7 +103,7 @@ it("responder", (t) => {
     assertEquals(headers.get("location"), "/index.html");
   });
 
-  t.run("markResponded()", async () => {
+  t.test("markResponded()", async () => {
     const w = new Buffer();
     const res = createResponder(w);
     res.markAsResponded(200);

@@ -1,72 +1,114 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-
 import { Router } from "./router.ts";
-import { createRecorder } from "./testing.ts";
 import {
-  assertEquals,
-  assert,
   assertThrowsAsync,
+  AssertionError,
+  assertEquals,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { RoutingError } from "./error.ts";
 import { kHttpStatusMessages } from "./serveio.ts";
+import { createRecorder } from "./testing.ts";
+import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
+import { red, green } from "./vendor/https/deno.land/std/fmt/colors.ts";
 
-export type SetupFunc = () => any | Promise<any>;
-export interface Testing {
-  run(desc: string, body: () => void | Promise<void>): void;
-  beforeAfterAll(func: () => SetupFunc | Promise<SetupFunc>): void;
-  beforeAfterEach(func: () => SetupFunc | Promise<SetupFunc>): void;
+type PromiseOrVal<T> = T | Promise<T>;
+export type SetupFunc = () => PromiseOrVal<TearDownFunc | void>;
+export type TearDownFunc = () => PromiseOrVal<void>;
+
+export interface GroupBody {
+  setupAll(func: SetupFunc): void;
+  setupEach(func: SetupFunc): void;
+  test: typeof Deno.test;
 }
-export function it(
-  desc: string,
-  func: (t: Testing) => void,
-  ignore: boolean = false,
-) {
-  let testCnt = 0;
-  let beforeAllFunc: SetupFunc | undefined;
-  let afterAllFunc: SetupFunc | undefined;
-  let beforeEachFunc: SetupFunc | undefined;
-  let afterEachFunc: SetupFunc | undefined;
-  function beforeAfterAll(func: SetupFunc) {
-    beforeAllFunc = func;
+export type GroupHead = Omit<Deno.TestDefinition, "fn">;
+type TestFunc = () => PromiseOrVal<void>;
+export async function group(
+  desc: string | GroupHead,
+  body: (p: GroupBody) => void,
+): Promise<void> {
+  const prefix = typeof desc === "string" ? desc : desc.name;
+  let opts: GroupHead;
+  if (typeof desc !== "string") {
+    opts = { ...desc };
+  } else {
+    opts = { name: desc };
   }
-  function beforeAfterEach(func: SetupFunc) {
-    beforeEachFunc = func;
+  let setupAllFuncs: (SetupFunc)[] = [];
+  let setupEachFuncs: (SetupFunc)[] = [];
+  function setupAll(f: SetupFunc): void {
+    setupAllFuncs.push(f);
   }
-  function run(desc2: string, func2: () => any | Promise<any>) {
-    Deno.test({
-      name: `${desc} ${desc2}`,
-      disableResourceSanitizer: true,
-      disableOpSanitizer: true,
-      fn: async () => {
-        if (ignore) {
-          console.warn("ignored");
-          return;
+  function setupEach(f: SetupFunc): void {
+    setupEachFuncs.push(f);
+  }
+  const tests: Deno.TestDefinition[] = [];
+  function wrap(funcs: SetupFunc[], fn: TestFunc): TestFunc {
+    return async () => {
+      const tearDowns: (TearDownFunc)[] = [];
+      for (const setupFunc of funcs) {
+        if (!setupFunc) continue;
+        const tearDown = await setupFunc?.();
+        if (!tearDown) continue;
+        tearDowns.push(tearDown);
+      }
+      try {
+        await fn();
+      } finally {
+        for (let i = tearDowns.length - 1; i >= 0; i--) {
+          const tearDown = tearDowns[i];
+          await tearDown?.();
         }
-        if (testCnt === 0 && beforeAllFunc) {
-          afterAllFunc = await beforeAllFunc();
-        }
-        testCnt++;
+      }
+    };
+  }
+  function test(f: TestFunc): void;
+  function test(s: string, f: TestFunc): void;
+  function test(d: Deno.TestDefinition): void;
+  function test(
+    arg1: (TestFunc | string | Deno.TestDefinition),
+    arg2?: TestFunc,
+  ) {
+    let fn: TestFunc;
+    let name: string;
+    if (typeof arg1 === "function") {
+      fn = arg1;
+      name = fn.name ?? "";
+    } else if (typeof arg1 === "string") {
+      if (arg2 == null) throw new Error("invalid arg");
+      name = arg1;
+      fn = arg2;
+    } else {
+      name = arg1.name;
+      fn = arg1.fn;
+    }
+    tests.push({ ...opts, name, fn: wrap(setupEachFuncs, fn) });
+  }
+  body({ test, setupAll, setupEach });
+  Deno.test({
+    ...opts,
+    fn: wrap(setupAllFuncs, async () => {
+      await Deno.writeAll(Deno.stdout, encode("\n"));
+      for (const { fn, name } of tests) {
+        await Deno.writeAll(Deno.stdout, encode(`  ${name} ... `));
+        const beforeRes = Deno.resources();
+        const beforeOps = Deno.metrics();
         try {
-          if (beforeEachFunc) {
-            afterEachFunc = await beforeEachFunc();
+          await fn();
+          const afterRes = Deno.resources();
+          const afterOps = Deno.metrics();
+          if (!opts.disableOpSanitizer) {
           }
-          await func2();
-        } finally {
-          if (afterEachFunc) {
-            await afterEachFunc();
+          await Deno.writeAll(Deno.stdout, encode(green("ok") + "\n"));
+        } catch (e) {
+          if (e instanceof AssertionError) {
+            await Deno.writeAll(Deno.stdout, encode(red("FAILED") + "\n"));
+          } else {
+            await Deno.writeAll(Deno.stdout, encode(red("ERROR") + "\n"));
           }
-          testCnt--;
-          // @ts-ignore
-          queueMicrotask(async () => {
-            if (testCnt === 0 && afterAllFunc) {
-              await afterAllFunc();
-            }
-          });
         }
-      },
-    });
-  }
-  func({ beforeAfterAll, beforeAfterEach, run });
+      }
+    }),
+  });
 }
 
 export function makeGet(router: Router, method = "GET") {

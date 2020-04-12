@@ -3,7 +3,7 @@ import {
   assertEquals,
   assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { it, makeGet, assertRoutingError } from "./test_util.ts";
+import { group, makeGet, assertRoutingError } from "./test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 import { writeResponse } from "./serveio.ts";
 import {
@@ -16,10 +16,10 @@ import { RoutingError } from "./error.ts";
 
 setLevel(Loglevel.NONE);
 
-it("router", (t) => {
+group("router", (t) => {
   const router = createRouter();
   const get = makeGet(router);
-  t.beforeAfterAll(() => {
+  t.setupAll(() => {
     router.handle("/index", async (req) => {
       await req.respond({
         status: 200,
@@ -47,9 +47,8 @@ it("router", (t) => {
       await writeResponse(req.bufWriter, { status: 200, body: "ok" });
       req.markAsResponded(200);
     });
-    return () => {};
   });
-  t.run("should respond string path", async () => {
+  t.test("should respond string path", async () => {
     {
       const res1 = await get("/index");
       const text = await res1.body.text();
@@ -57,13 +56,13 @@ it("router", (t) => {
       assertEquals(text, "ok");
     }
   });
-  t.run("should respond with capitalized path", async () => {
+  t.test("should respond with capitalized path", async () => {
     const res1 = await get("/Index");
     const text = await res1.body.text();
     assertEquals(res1.status, 200);
     assertEquals(text, "ok");
   });
-  t.run("should respond with capitalized path in regex", async () => {
+  t.test("should respond with capitalized path in regex", async () => {
     for (const p of ["var", "Var"]) {
       const res1 = await get("/" + p);
       const text = await res1.body.text();
@@ -71,19 +70,19 @@ it("router", (t) => {
       assertEquals(text, text);
     }
   });
-  t.run("should respond regexp path", async () => {
+  t.test("should respond regexp path", async () => {
     const res2 = await get("/foo/123");
     const json = await res2.body.json();
     assertEquals(res2.status, 200);
     assertEquals(res2.headers.get("content-type"), "application/json");
     assertEquals(json["id"], "123");
   });
-  t.run("should redirect", async () => {
+  t.test("should redirect", async () => {
     const res = await get("/redirect");
     assertEquals(res.status, 302);
     assertEquals(res.headers.get("location"), "/index");
   });
-  t.run(
+  t.test(
     "should not go global error handler when markResponded called",
     async () => {
       const res = await get("/respond-raw");
@@ -93,7 +92,7 @@ it("router", (t) => {
   );
 });
 
-it("method routes", (t) => {
+group("method routes", (t) => {
   const handler = (req: ServerRequest) => {
     return req.respond({ status: 200, body: req.method });
   };
@@ -114,30 +113,29 @@ it("method routes", (t) => {
     }
   };
   let router: Router;
-  t.beforeAfterEach(() => {
+  t.setupEach(() => {
     router = createRouter();
-    return () => {};
   });
-  t.run("GET", async () => {
+  t.test("GET", async () => {
     router.get("/", handler);
     assertMethods(router, "GET");
   });
-  t.run("POST", async () => {
+  t.test("POST", async () => {
     router.post("/", handler);
     assertMethods(router, "POST");
   });
-  t.run("PUT", async () => {
+  t.test("PUT", async () => {
     router.put("/", handler);
     assertMethods(router, "PUT");
   });
-  t.run("DELETE", async () => {
+  t.test("DELETE", async () => {
     router.delete("/", handler);
     assertMethods(router, "DELETE");
   });
 });
 
-it("same path routes", (t) => {
-  t.run("/", async () => {
+group("same path routes", (t) => {
+  t.test("/", async () => {
     const router = createRouter();
     router.get("/", (req) => {
       req.respond({ status: 200, body: "get /" });
@@ -152,18 +150,18 @@ it("same path routes", (t) => {
   });
 });
 
-it("router error", (t) => {
-  t.run("should throw RoutingError if handler won't respond", async () => {
+group("router error", (t) => {
+  t.test("should throw RoutingError if handler won't respond", async () => {
     const router = createRouter();
     router.handle("/", () => {});
     await assertRoutingError(() => makeGet(router)("/"), 404);
   });
-  t.run("should throw RoutingError when no route is matched", async () => {
+  t.test("should throw RoutingError when no route is matched", async () => {
     const router = createRouter();
     router.handle("/", () => {});
     await assertRoutingError(() => makeGet(router)("/about"), 404);
   });
-  t.run("should call error handler", async () => {
+  t.test("should call error handler", async () => {
     const router = createRouter();
     router.handle("/", () => {
       throw new Error("Err");
@@ -178,7 +176,7 @@ it("router error", (t) => {
     assertEquals(await resp.body.text(), "err");
     assertEquals(handled, true);
   });
-  t.run("should re-throw error if error handler won't respond", async () => {
+  t.test("should re-throw error if error handler won't respond", async () => {
     const router = createRouter();
     router.handle("/", () => {
       throw new Error("Err");
@@ -198,7 +196,7 @@ it("router error", (t) => {
     assertEquals(handled, true);
     assertEquals(thrown, reThrown);
   });
-  t.run("should call final handler", async () => {
+  t.test("should call final handler", async () => {
     const router = createRouter();
     router.get("/", (req) => {
       req.respond({ status: 200, body: "ok" });
@@ -214,7 +212,7 @@ it("router error", (t) => {
   });
 });
 
-it("router nested", (t) => {
+group("router nested", (t) => {
   const handler = (name: string, subpath: string) =>
     (req: ServerRequest) => {
       req.respond({ status: 200, body: `${name} ${subpath}` });
@@ -236,38 +234,38 @@ it("router nested", (t) => {
   app.get("/", handler("IndexRoute", "/"));
   app.route("/users", UserRoutes());
   const get = makeGet(app);
-  t.run("basic", async () => {
+  t.test("basic", async () => {
     const res = await get("/");
     assertEquals(await res.body?.text(), "IndexRoute /");
   });
-  t.run("nested root", async () => {
+  t.test("nested root", async () => {
     const res = await get("/users");
     assertEquals(await res.body?.text(), "UserRoute /");
   });
-  t.run("nested root with /", async () => {
+  t.test("nested root with /", async () => {
     const res = await get("/users/");
     assertEquals(await res.body?.text(), "UserRoute /");
   });
-  t.run("nested subpath", async () => {
+  t.test("nested subpath", async () => {
     const res = await get("/users/list");
     assertEquals(await res.body?.text(), "UserRoute /list");
   });
-  t.run("nested subroutes", async () => {
+  t.test("nested subroutes", async () => {
     const res = await get("/users/posts");
     assertEquals(await res.body?.text(), "PostRoute /");
   });
-  t.run("nested subroutes with /", async () => {
+  t.test("nested subroutes with /", async () => {
     const res = await get("/users/posts/");
     assertEquals(await res.body?.text(), "PostRoute /");
   });
-  t.run("nested subroutes", async () => {
+  t.test("nested subroutes", async () => {
     const res = await get("/users/posts/inbox");
     assertEquals(await res.body?.text(), "PostRoute /inbox");
   });
 });
 
-it("nested router bad", (t) => {
-  t.run("prefix with /", async () => {
+group("nested router bad", (t) => {
+  t.test("prefix with /", async () => {
     const app = createRouter();
     const UserRoute = createRouter();
     UserRoute.get(
@@ -280,7 +278,7 @@ it("nested router bad", (t) => {
     const resp = await get("/users/");
     assertEquals(resp.status, 200);
   });
-  t.run("prefix with / and ''", async () => {
+  t.test("prefix with / and ''", async () => {
     const app = createRouter();
     const UserRoute = createRouter();
     UserRoute.get(
@@ -292,7 +290,7 @@ it("nested router bad", (t) => {
     await assertRoutingError(() => get("/users"), 404);
     await assertRoutingError(() => get("/users/"), 404);
   });
-  t.run("prefix with ''", async () => {
+  t.test("prefix with ''", async () => {
     const app = createRouter();
     const UserRoute = createRouter();
     UserRoute.get(

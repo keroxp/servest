@@ -19,10 +19,10 @@ import Buffer = Deno.Buffer;
 import copy = Deno.copy;
 import { ServerResponse } from "./server.ts";
 import { readString } from "./util.ts";
-import { it } from "./test_util.ts";
+import { group } from "./test_util.ts";
 
-it("serveio", (t) => {
-  t.run("serveioReadRequestGet", async function serveioReadRequestGet() {
+group("serveio", (t) => {
+  t.test("serveioReadRequestGet", async function serveioReadRequestGet() {
     const f = await Deno.open("./fixtures/request_get.txt");
     const req = await readRequest(f);
     assertEquals(req.method, "GET");
@@ -38,7 +38,7 @@ it("serveio", (t) => {
     f.close();
   });
 
-  t.run(
+  t.test(
     "serveioReadRequestGetCapital",
     async function serveioReadRequestGetCapital() {
       const f = await Deno.open("./fixtures/request_get_capital.txt");
@@ -56,7 +56,7 @@ it("serveio", (t) => {
     },
   );
 
-  t.run(
+  t.test(
     "serveioReadRequestEncoded",
     async function serveioReadRequestEncoded() {
       const f = await Deno.open("./fixtures/request_get_encoded.txt");
@@ -77,7 +77,7 @@ it("serveio", (t) => {
     },
   );
 
-  t.run("serveioReadRequestPost", async function serveioReadRequestPost() {
+  t.test("serveioReadRequestPost", async function serveioReadRequestPost() {
     const f = await Deno.open("./fixtures/request_post.txt");
     const req = await readRequest(f);
     assertEquals(req.method, "POST");
@@ -95,7 +95,7 @@ it("serveio", (t) => {
     f.close();
   });
 
-  t.run(
+  t.test(
     "serveioReadRequestPostChunked",
     async function serveioReadRequestPostChunked() {
       const f = await Deno.open("./fixtures/request_post_chunked.txt");
@@ -115,7 +115,7 @@ it("serveio", (t) => {
     },
   );
 
-  t.run(
+  t.test(
     "serveioReadRequestPostChunkedWithTrailers",
     async function serveioReadRequestPostChunkedWithTrailers() {
       const f = await Deno.open(
@@ -142,7 +142,7 @@ it("serveio", (t) => {
     },
   );
 
-  t.run("serveioReadResponse", async function () {
+  t.test("serveioReadResponse", async function () {
     const f = await Deno.open("./fixtures/response.txt");
     const res = await readResponse(f);
     assertEquals(res.proto, "HTTP/1.1");
@@ -159,7 +159,7 @@ it("serveio", (t) => {
     f.close();
   });
 
-  t.run("serveioReadResponseChunked", async function () {
+  t.test("serveioReadResponseChunked", async function () {
     const f = await Deno.open("./fixtures/response_chunked.txt");
     const res = await readResponse(f);
     assertEquals(res.proto, "HTTP/1.1");
@@ -179,7 +179,7 @@ it("serveio", (t) => {
     f.close();
   });
 
-  t.run("writeRequest", async () => {
+  t.test("writeRequest", async () => {
     const buf = new Buffer();
     await writeRequest(buf, {
       url: "http://localhost",
@@ -196,7 +196,7 @@ it("serveio", (t) => {
     assertEquals(await req.body?.text(), "ok");
   });
 
-  t.run("writeRequestWithTrailer", async () => {
+  t.test("writeRequestWithTrailer", async () => {
     const buf = new Buffer();
     await writeRequest(buf, {
       url: "http://localhost",
@@ -224,7 +224,7 @@ it("serveio", (t) => {
     assertEquals(req.trailers?.get("node"), "js");
   });
 
-  t.run("serveioWriteResponse", async function serveioWriteResponse() {
+  t.test("serveioWriteResponse", async function serveioWriteResponse() {
     const list: [
       ServerResponse["body"],
       string | null,
@@ -256,7 +256,7 @@ it("serveio", (t) => {
     }
   });
 
-  t.run("serveioWriteResponseWithoutHeaders", async function () {
+  t.test("serveioWriteResponseWithoutHeaders", async function () {
     const buf = new Buffer();
     await writeResponse(buf, {
       status: 200,
@@ -270,7 +270,7 @@ it("serveio", (t) => {
     assertEquals(resBody.toString(), "ok");
   });
 
-  t.run("serveioWriteResponseWithTrailers", async function () {
+  t.test("serveioWriteResponseWithTrailers", async function () {
     const buf = new Buffer();
     await writeResponse(buf, {
       status: 200,
@@ -298,8 +298,8 @@ it("serveio", (t) => {
     assertEquals(res.trailers?.get("node"), "js");
   });
 });
-it("serveio/setupBody", (t) => {
-  t.run("len,string,no-header", () => {
+group("serveio/setupBody", (t) => {
+  t.test("len,string,no-header", () => {
     const h = new Headers();
     const [r, l] = setupBody("ok", h);
     assertEquals(r instanceof Buffer, true);
@@ -307,7 +307,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(h.get("content-length"), "2");
     assertEquals(l, 2);
   });
-  t.run("len,string,header", () => {
+  t.test("len,string,header", () => {
     const h = new Headers({ "content-type": "application/json" });
     const [r, l] = setupBody("[]", h);
     assertEquals(r instanceof Buffer, true);
@@ -315,7 +315,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(h.get("content-length"), "2");
     assertEquals(l, 2);
   });
-  t.run("len,bin,no-header", () => {
+  t.test("len,bin,no-header", () => {
     const h = new Headers();
     const [r, l] = setupBody(new Uint8Array([0, 1]), h);
     assertEquals(r instanceof Buffer, true);
@@ -323,7 +323,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(h.get("content-length"), "2");
     assertEquals(l, 2);
   });
-  t.run("len,bin,header", () => {
+  t.test("len,bin,header", () => {
     const ct = "text/plain";
     const h = new Headers({ "content-type": ct });
     const [r, l] = setupBody(new Uint8Array([0, 1]), h);
@@ -332,7 +332,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(h.get("content-length"), "2");
     assertEquals(l, 2);
   });
-  t.run("len,reader,no-header", () => {
+  t.test("len,reader,no-header", () => {
     const h = new Headers();
     const body = new Buffer(new Uint8Array([0, 1]));
     const [r, l] = setupBody(body, h);
@@ -342,7 +342,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(h.get("transfer-encoding"), "chunked");
     assertEquals(l, undefined);
   });
-  t.run("len,reader,header", () => {
+  t.test("len,reader,header", () => {
     const ct = "text/plain";
     const h = new Headers({ "content-type": ct });
     const body = new Buffer(new Uint8Array([0, 1]));
@@ -353,7 +353,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(l, undefined);
     assertEquals(h.get("transfer-encoding"), "chunked");
   });
-  t.run("len,reader,header,cl", () => {
+  t.test("len,reader,header,cl", () => {
     const ct = "text/plain";
     const h = new Headers({ "content-type": ct, "content-length": "2" });
     const body = new Buffer(new Uint8Array([0, 1]));
@@ -365,7 +365,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(h.has("transfer-encoding"), false);
   });
   // chunked
-  t.run("chunked,string,no-header", () => {
+  t.test("chunked,string,no-header", () => {
     const h = new Headers({ "transfer-encoding": "chunked" });
     const [r, l] = setupBody("ok", h);
     assertEquals(r instanceof Buffer, true);
@@ -374,7 +374,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(h.get("transfer-encoding"), "chunked");
     assertEquals(l, undefined);
   });
-  t.run("chunked,string,header", () => {
+  t.test("chunked,string,header", () => {
     const h = new Headers({
       "content-type": "application/json",
       "transfer-encoding": "chunked",
@@ -386,7 +386,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(h.has("content-length"), false);
     assertEquals(l, undefined);
   });
-  t.run("chunked,bin,no-header", () => {
+  t.test("chunked,bin,no-header", () => {
     const h = new Headers({ "transfer-encoding": "chunked" });
     const [r, l] = setupBody(new Uint8Array([0, 1]), h);
     assertEquals(r instanceof Buffer, true);
@@ -395,7 +395,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(h.has("content-length"), false);
     assertEquals(l, undefined);
   });
-  t.run("chunked,bin,header", () => {
+  t.test("chunked,bin,header", () => {
     const ct = "text/plain";
     const h = new Headers({
       "transfer-encoding": "chunked",
@@ -408,7 +408,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(h.get("transfer-encoding"), "chunked");
     assertEquals(l, undefined);
   });
-  t.run("chunked,reader,no-header", () => {
+  t.test("chunked,reader,no-header", () => {
     const h = new Headers({ "transfer-encoding": "chunked" });
     const body = new Buffer(new Uint8Array([0, 1]));
     const [r, l] = setupBody(body, h);
@@ -418,7 +418,7 @@ it("serveio/setupBody", (t) => {
     assertEquals(h.get("transfer-encoding"), "chunked");
     assertEquals(l, undefined);
   });
-  t.run("chunked,reader,header", () => {
+  t.test("chunked,reader,header", () => {
     const ct = "text/plain";
     const h = new Headers({
       "transfer-encoding": "chunked",
@@ -434,8 +434,8 @@ it("serveio/setupBody", (t) => {
   });
 });
 
-it("serveio/keep-alive", (t) => {
-  t.run("serveioParseKeepAlive", function () {
+group("serveio/keep-alive", (t) => {
+  t.test("serveioParseKeepAlive", function () {
     const ka = parseKeepAlive(
       new Headers({
         "keep-alive": "timeout=5, max=100",

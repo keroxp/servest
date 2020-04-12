@@ -4,9 +4,9 @@ import {
   resolveIndexPath,
 } from "./matcher.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { it } from "./test_util.ts";
+import { group } from "./test_util.ts";
 
-it("matcher", (t) => {
+group("matcher", ({ test }) => {
   type Pat = [string, (string | RegExp)[], number[]][];
   ([
     ["/foo", ["/foo", "/bar", "/f"], [0]],
@@ -19,7 +19,7 @@ it("matcher", (t) => {
     ["/foo", [/\/foo/, /\/bar\/foo/], [0]],
     ["/foo", [/\/a\/foo/, /\/foo/], [1]],
   ] as Pat).forEach(([path, pat, idx]) => {
-    t.run("findLongestAndNearestMatch:" + path, () => {
+    test("findLongestAndNearestMatch:" + path, () => {
       const matches = findLongestAndNearestMatches(path, pat);
       assertEquals(matches.length, idx.length);
       for (let i = 0; i < idx.length; i++) {
@@ -28,7 +28,7 @@ it("matcher", (t) => {
     });
   });
 
-  t.run("resolveIndexPath", async () => {
+  test("resolveIndexPath", async () => {
     for (
       const [dir, fp, exp] of [
         [".", "/README.md", "README.md"],
