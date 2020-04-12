@@ -3,7 +3,6 @@ import { Router } from "./router.ts";
 import {
   assertThrowsAsync,
   AssertionError,
-  assertEquals,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { RoutingError } from "./error.ts";
 import { kHttpStatusMessages } from "./serveio.ts";
@@ -90,14 +89,8 @@ export async function group(
       await Deno.writeAll(Deno.stdout, encode("\n"));
       for (const { fn, name } of tests) {
         await Deno.writeAll(Deno.stdout, encode(`  ${name} ... `));
-        const beforeRes = Deno.resources();
-        const beforeOps = Deno.metrics();
         try {
           await fn();
-          const afterRes = Deno.resources();
-          const afterOps = Deno.metrics();
-          if (!opts.disableOpSanitizer) {
-          }
           await Deno.writeAll(Deno.stdout, encode(green("ok") + "\n"));
         } catch (e) {
           if (e instanceof AssertionError) {

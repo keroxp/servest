@@ -2,7 +2,7 @@
 
 const files = Deno.readdirSync(".").filter((f) => {
   const name = f.name;
-  if (!name) return false;
+  if (!name || name === "mod.ts") return false;
   return name.endsWith(".ts") && !name.endsWith("_test.ts") &&
     !name.endsWith(".d.ts");
 }).map((f) => f.name).sort();

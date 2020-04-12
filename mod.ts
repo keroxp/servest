@@ -9,7 +9,6 @@ export * from "./logger.ts";
 export * from "./matcher.ts";
 export * from "./media_types.ts";
 export * from "./middleware.ts";
-export * from "./mod.ts";
 export * from "./promises.ts";
 export * from "./readers.ts";
 export * from "./responder.ts";
