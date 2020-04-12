@@ -11,7 +11,6 @@ setLevel(Loglevel.NONE);
 
 group({
   name: "app",
-  ignore: true,
 }, ({ setupAll, test }) => {
   const app = createApp();
   app.handle("/no-response", () => {});
@@ -40,7 +39,6 @@ group({
 });
 group({
   name: "app/ws",
-  ignore: true,
 }, ({ test, setupAll }) => {
   const app = createApp();
   app.ws("/ws", async (sock) => {

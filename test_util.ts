@@ -1,9 +1,15 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
 import { Router } from "./router.ts";
-import { assertThrowsAsync } from "./vendor/https/deno.land/std/testing/asserts.ts";
+import {
+  assertThrowsAsync,
+  AssertionError,
+  assertEquals,
+} from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { RoutingError } from "./error.ts";
 import { kHttpStatusMessages } from "./serveio.ts";
 import { createRecorder } from "./testing.ts";
+import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
+import { red, green } from "./vendor/https/deno.land/std/fmt/colors.ts";
 
 type PromiseOrVal<T> = T | Promise<T>;
 export type SetupFunc = () => PromiseOrVal<TearDownFunc | void>;
@@ -21,14 +27,39 @@ export async function group(
   body: (p: GroupBody) => void,
 ): Promise<void> {
   const prefix = typeof desc === "string" ? desc : desc.name;
+  let opts: GroupHead;
+  if (typeof desc !== "string") {
+    opts = { ...desc };
+  } else {
+    opts = { name: desc };
+  }
   let setupAllFuncs: (SetupFunc)[] = [];
-  const tearDownFuncs: (TearDownFunc)[] = [];
   let setupEachFuncs: (SetupFunc)[] = [];
   function setupAll(f: SetupFunc): void {
     setupAllFuncs.push(f);
   }
   function setupEach(f: SetupFunc): void {
     setupEachFuncs.push(f);
+  }
+  const tests: Deno.TestDefinition[] = [];
+  function wrap(funcs: SetupFunc[], fn: TestFunc): TestFunc {
+    return async () => {
+      const tearDowns: (TearDownFunc)[] = [];
+      for (const setupFunc of funcs) {
+        if (!setupFunc) continue;
+        const tearDown = await setupFunc?.();
+        if (!tearDown) continue;
+        tearDowns.push(tearDown);
+      }
+      try {
+        await fn();
+      } finally {
+        for (let i = tearDowns.length - 1; i >= 0; i--) {
+          const tearDown = tearDowns[i];
+          await tearDown?.();
+        }
+      }
+    };
   }
   function test(f: TestFunc): void;
   function test(s: string, f: TestFunc): void;
@@ -50,61 +81,33 @@ export async function group(
       name = arg1.name;
       fn = arg1.fn;
     }
-    name = `${prefix} ${name}`;
-    let opts: GroupHead;
-    if (typeof desc !== "string") {
-      opts = {
-        ...desc,
-        name,
-      };
-    } else {
-      opts = { name };
-    }
-    Deno.test({
-      ...opts,
-      async fn() {
-        const tearDownFuncs: (TearDownFunc | undefined)[] = [];
-        for (const setupFunc of setupEachFuncs) {
-          if (!setupFunc) continue;
-          const tearDown = await setupFunc?.();
-          if (!tearDown) continue;
-          tearDownFuncs.push(tearDown);
-        }
-        try {
-          await fn();
-        } finally {
-          for (let i = tearDownFuncs.length - 1; i >= 0; i--) {
-            const tearDown = tearDownFuncs[i];
-            await tearDown?.();
-          }
-        }
-      },
-    });
+    tests.push({ ...opts, name, fn: wrap(setupEachFuncs, fn) });
   }
-  Deno.test({
-    name: `${prefix} beforeAll`,
-    disableResourceSanitizer: true,
-    disableOpSanitizer: false,
-    async fn() {
-      for (const setup of setupAllFuncs) {
-        if (!setup) continue;
-        const tearDown = await setup?.();
-        if (!tearDown) continue;
-        tearDownFuncs.push(tearDown);
-      }
-    },
-  });
   body({ test, setupAll, setupEach });
   Deno.test({
-    name: `${prefix} afterAll`,
-    disableResourceSanitizer: true,
-    disableOpSanitizer: false,
-    async fn() {
-      for (let i = tearDownFuncs.length - 1; i >= 0; i--) {
-        const tearDown = tearDownFuncs[i];
-        await tearDown?.();
+    ...opts,
+    fn: wrap(setupAllFuncs, async () => {
+      await Deno.writeAll(Deno.stdout, encode("\n"));
+      for (const { fn, name } of tests) {
+        await Deno.writeAll(Deno.stdout, encode(`  ${name} ... `));
+        const beforeRes = Deno.resources();
+        const beforeOps = Deno.metrics();
+        try {
+          await fn();
+          const afterRes = Deno.resources();
+          const afterOps = Deno.metrics();
+          if (!opts.disableOpSanitizer) {
+          }
+          await Deno.writeAll(Deno.stdout, encode(green("ok") + "\n"));
+        } catch (e) {
+          if (e instanceof AssertionError) {
+            await Deno.writeAll(Deno.stdout, encode(red("FAILED") + "\n"));
+          } else {
+            await Deno.writeAll(Deno.stdout, encode(red("ERROR") + "\n"));
+          }
+        }
       }
-    },
+    }),
   });
 }
 
