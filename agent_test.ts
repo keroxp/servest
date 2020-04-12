@@ -9,7 +9,7 @@ import {
 import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
-import { it } from "./test_util.ts";
+import { group } from "./test_util.ts";
 import { ServeListener } from "./server.ts";
 
 async function readString(r: Reader) {
@@ -36,13 +36,13 @@ function setupRouter(port: number): ServeListener {
   return app.listen({ port });
 }
 
-it("agent", (t) => {
+group("agent", ({ test, setupAll }) => {
   let port = 8700;
-  t.beforeAfterAll(() => {
+  setupAll(() => {
     const listener = setupRouter(port);
     return () => listener.close();
   });
-  t.run("basic", async () => {
+  test("basic", async () => {
     const agent = createAgent(`http://127.0.0.1:${port}`);
     try {
       {
@@ -66,7 +66,7 @@ it("agent", (t) => {
       agent.conn.close();
     }
   });
-  t.run("agentTls", async () => {
+  test("agentTls", async () => {
     const agent = createAgent(`https://httpbin.org`);
     try {
       {
@@ -96,7 +96,7 @@ it("agent", (t) => {
       agent.conn.close();
     }
   });
-  t.run("agent unread body", async () => {
+  test("agent unread body", async () => {
     const agent = createAgent(`http://127.0.0.1:${port}`);
     try {
       await agent.send({ path: "/get", method: "GET" });
@@ -111,7 +111,7 @@ it("agent", (t) => {
       agent.conn.close();
     }
   });
-  t.run("agent invalid scheme", async () => {
+  test("agent invalid scheme", async () => {
     assertThrows(() => {
       createAgent("ftp://127.0.0.1");
     });

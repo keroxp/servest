@@ -7,10 +7,10 @@ import {
 import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
-import { it } from "./test_util.ts";
+import { group } from "./test_util.ts";
 
-it("bodyReader", (t) => {
-  t.run("basic", async () => {
+group("bodyReader", ({ test }) => {
+  test("basic", async () => {
     const bufr = new BufReader(new StringReader("okdenoland"));
     const buf = new Uint8Array(100);
     {
@@ -38,20 +38,20 @@ it("bodyReader", (t) => {
       assertEquals(decode(buf.slice(0, 4)), "land");
     }
   });
-  t.run("text()", async () => {
+  test("text()", async () => {
     const s = "denoland";
     const r = new StringReader(s);
     const br = bodyReader(r, s.length);
     assertEquals(await br.text(), s);
   });
-  t.run("text() should return empty string if body is empty", async () => {
+  test("text() should return empty string if body is empty", async () => {
     const s = "";
     const r = new StringReader(s);
     const br = bodyReader(r, 0);
     assertEquals(await br.text(), "");
     assertEquals(await br.text(), "");
   });
-  t.run("json()", async () => {
+  test("json()", async () => {
     const j = { deno: "land" };
     const s = JSON.stringify(j);
     const r = new StringReader(s);
@@ -59,7 +59,7 @@ it("bodyReader", (t) => {
     assertEquals(await br.json(), j);
     assertEquals(await br.json(), j);
   });
-  t.run("json() should throw if input is invalid", async () => {
+  test("json() should throw if input is invalid", async () => {
     const j = `{ deno: "land" `;
     const r = new StringReader(j);
     const br = bodyReader(r, j.length);
@@ -67,13 +67,13 @@ it("bodyReader", (t) => {
       await br.json();
     }, SyntaxError, "JSON");
   });
-  t.run("arrayBuffer()", async () => {
+  test("arrayBuffer()", async () => {
     const bin = new Deno.Buffer(new Uint8Array([0, 1, 2, 3]));
     const br = bodyReader(bin, 4);
     assertEquals([...(await br.arrayBuffer()).values()], [0, 1, 2, 3]);
     assertEquals([...(await br.arrayBuffer()).values()], [0, 1, 2, 3]);
   });
-  t.run("formData(), urlencoded", async () => {
+  test("formData(), urlencoded", async () => {
     const s = "deno=land&での=らんど&👉=🦕";
     const e = encodeURIComponent(s);
     const r = new StringReader(e);
@@ -87,7 +87,7 @@ it("bodyReader", (t) => {
     assertEquals(f.field("での"), "らんど");
     assertEquals(f.field("👉"), "🦕");
   });
-  t.run("formData() should throw if invalid content type", async () => {
+  test("formData() should throw if invalid content type", async () => {
     const br = bodyReader(new StringReader("deno=land"), 9);
     await assertThrowsAsync(
       async () => {
@@ -97,7 +97,7 @@ it("bodyReader", (t) => {
       "request is not multipart/form-data nor application/x-www-form-urlencoded",
     );
   });
-  t.run("multi transforming", async () => {
+  test("multi transforming", async () => {
     const s = `{"deno": "land"}`;
     const encoder = new TextEncoder();
     const br = bodyReader(new StringReader(s), s.length);
@@ -107,8 +107,8 @@ it("bodyReader", (t) => {
   });
 });
 
-it("chunkedBodyReader", (t) => {
-  t.run("basic", async () => {
+group("chunkedBodyReader", ({ test }) => {
+  test("basic", async () => {
     const s = `4\r\ndeno\r\n4\r\nland\r\n0\r\n\r\n`;
     const br = chunkedBodyReader(new StringReader(s));
     const buf = new Deno.Buffer();

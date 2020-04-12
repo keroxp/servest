@@ -1,11 +1,11 @@
 import { basicAuth } from "./middleware.ts";
-import { it } from "./test_util.ts";
+import { group } from "./test_util.ts";
 import {
   assertEquals,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createRecorder } from "./testing.ts";
-it("middleware", (t) => {
-  t.run("basicAuth", async () => {
+group("middleware", ({ test }) => {
+  test("basicAuth", async () => {
     const auth = basicAuth({
       username: "deno",
       password: "land",
@@ -31,7 +31,7 @@ it("middleware", (t) => {
     await auth(req);
     assertEquals(req.isResponded(), false);
   });
-  t.run("basicAuth failed", async () => {
+  test("basicAuth failed", async () => {
     const patterns = [
       "Basic hoge",
       `Basic ${btoa("deno:js")}`,

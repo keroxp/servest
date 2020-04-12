@@ -1,5 +1,10 @@
 // Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
-import { handleKeepAliveConn, listenAndServe } from "./server.ts";
+import {
+  handleKeepAliveConn,
+  listenAndServe,
+  ServerResponse,
+  ServerRequest,
+} from "./server.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { StringWriter } from "./vendor/https/deno.land/std/io/writers.ts";
 import {
@@ -12,56 +17,37 @@ import { readResponse, writeRequest } from "./serveio.ts";
 import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { deferred, delay } from "./vendor/https/deno.land/std/util/async.ts";
 import Buffer = Deno.Buffer;
-import { it } from "./test_util.ts";
+import { group } from "./test_util.ts";
 
 let port = 8880;
-
-it("server", (t) => {
-  t.beforeAfterAll(() => {
-    const l = listenAndServe(
-      { port },
-      async (req) => {
-        await req.respond({
-          status: 200,
-          body: "ok",
-        });
-      },
-      {
-        keepAliveTimeout: 10,
-      },
-    );
-    return () => l.close();
-  });
-  t.run("basic", async function server() {
+const handler = (req: ServerRequest) =>
+  req.respond({ status: 200, body: "ok" });
+group("server", (t) => {
+  t.test("basic", async function server() {
     port++;
-    const listener = listenAndServe({ port }, async (req) => {
-      await req.respond({
-        status: 200,
-        headers: new Headers({
-          "content-type": "text/plain",
-          "content-length": "5",
-        }),
-        body: new StringReader("hello"),
-      });
-    });
+    const listener = listenAndServe({ port }, handler);
     const agent = createAgent("http://127.0.0.1:" + port);
     try {
       const { headers, status, body } = await agent.send({
         path: "/",
         method: "GET",
       });
-      assertEquals(headers.get("content-length"), "5");
+      assertEquals(headers.get("content-length"), "2");
       assertEquals(status, 200);
-      assertEquals(headers.get("content-type"), "text/plain");
-      const dest = new StringWriter();
-      await Deno.copy(dest, body);
-      assertEquals(dest.toString(), "hello");
+      assertEquals(headers.get("content-type"), "text/plain; charset=UTF-8");
+      assertEquals(await body.text(), "ok");
     } finally {
       agent.conn.close();
       listener.close();
     }
   });
-  t.run("keepAliveTimeout", async () => {
+  t.test("keepAliveTimeout", async () => {
+    port++;
+    const l = listenAndServe(
+      { port },
+      handler,
+      { keepAliveTimeout: 10 },
+    );
     const agent = createAgent(`http://127.0.0.1:${port}`);
     try {
       const req = {
@@ -81,25 +67,14 @@ it("server", (t) => {
       });
     } finally {
       agent.conn.close();
+      l.close();
     }
   });
-  t.run(
+  t.test(
     "serverKeepAliveTimeoutMax",
     async function serverKeepAliveTimeoutMax() {
       port++;
-      const listener = listenAndServe(
-        {
-          hostname: "0.0.0.0",
-          port,
-        },
-        async (req) => {
-          await req.respond({
-            status: 200,
-            headers: new Headers(),
-            body: encode("ok"),
-          });
-        },
-      );
+      const listener = listenAndServe({ port }, handler);
       const agent = createAgent(`http://127.0.0.1:${port}`);
       try {
         const req = {
@@ -123,21 +98,9 @@ it("server", (t) => {
       }
     },
   );
-  t.run("serverConnectionClose", async function serverConnectionClose() {
+  t.test("serverConnectionClose", async function serverConnectionClose() {
     port++;
-    const listener = listenAndServe(
-      {
-        hostname: "0.0.0.0",
-        port,
-      },
-      async (req) => {
-        await req.respond({
-          status: 200,
-          headers: new Headers(),
-          body: encode("ok"),
-        });
-      },
-    );
+    const listener = listenAndServe({ port }, handler);
     const agent = createAgent(`http://127.0.0.1:${port}`);
     try {
       const req = {
@@ -147,7 +110,7 @@ it("server", (t) => {
           host: "deno.land",
           connection: "close",
         }),
-        body: encode("hello"),
+        body: "hello",
       };
       const { status, finalize } = await agent.send(req);
       await finalize();
@@ -160,7 +123,7 @@ it("server", (t) => {
       listener.close();
     }
   });
-  t.run("handleKeepAliveConn should respond exclusively", async () => {
+  t.test("handleKeepAliveConn should respond exclusively", async () => {
     const r = new Buffer();
     const w = new Buffer();
     await writeRequest(r, {

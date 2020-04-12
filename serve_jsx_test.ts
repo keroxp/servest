@@ -7,14 +7,14 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { serveJsx } from "./serve_jsx.ts";
 import { pathResolver, readString } from "./util.ts";
-import { it } from "./test_util.ts";
+import { group } from "./test_util.ts";
 
-it("serveJsx", (t) => {
+group("serveJsx", (t) => {
   const func = serveJsx(
     pathResolver(import.meta)("./fixtures/public"),
     (f) => import(f),
   );
-  t.run("basic", async () => {
+  t.test("basic", async () => {
     const rec = createRecorder({
       url: "/",
       method: "GET",
@@ -28,7 +28,7 @@ it("serveJsx", (t) => {
       '<html data-reactroot="">deno</html>',
     );
   });
-  t.run("should throw if jsx file has no default export", async () => {
+  t.test("should throw if jsx file has no default export", async () => {
     const rec = createRecorder({ url: "/empty", method: "GET" });
     await assertThrowsAsync(
       async () => {
@@ -38,7 +38,7 @@ it("serveJsx", (t) => {
       "jsx: jsx/tsx files served by serveJsx must has default export!",
     );
   });
-  t.run("should throw if default export is not function", async () => {
+  t.test("should throw if default export is not function", async () => {
     const rec = createRecorder({ url: "/not-component", method: "GET" });
     await assertThrowsAsync(async () => {
       await func(rec);
