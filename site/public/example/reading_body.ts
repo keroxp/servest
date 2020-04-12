@@ -1,4 +1,4 @@
-// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { createApp, contentTypeFilter } from "../../../mod.ts";
 const app = createApp();
 app.post("/json", contentTypeFilter("application/json"), async (req) => {

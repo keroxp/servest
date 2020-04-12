@@ -1,4 +1,4 @@
-// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { createApp, serveStatic } from "../../../mod.ts";
 const app = createApp();
 // All requests will be processed and matched files in "public" directory

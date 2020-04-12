@@ -1,4 +1,4 @@
-// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { listenAndServe } from "../server.ts";
 
 const addr = Deno.args[1] || "127.0.0.1:4500";

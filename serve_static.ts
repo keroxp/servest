@@ -1,4 +1,4 @@
-// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import * as path from "./vendor/https/deno.land/std/path/mod.ts";
 import { resolveIndexPath } from "./matcher.ts";
 import { ServeHandler } from "./server.ts";

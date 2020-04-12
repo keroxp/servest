@@ -1,3 +1,4 @@
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 const kBasicContentTypes: [string, string][] = [
   [".html", "text/html"],
   [".md", "text/markdown"],

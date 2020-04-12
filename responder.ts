@@ -1,4 +1,4 @@
-// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import Writer = Deno.Writer;
 import { ServerResponse } from "./server.ts";
 import { cookieSetter, CookieSetter } from "./cookie.ts";

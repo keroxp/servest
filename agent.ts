@@ -1,4 +1,4 @@
-// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { ClientResponse } from "./server.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { readResponse, writeRequest } from "./serveio.ts";

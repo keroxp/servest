@@ -1,4 +1,4 @@
-// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 import { createRecorder, ServeHandler } from "../../../mod.ts";
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env deno --allow-net --allow-write
-// Copyright 2019 Yusuke Sakurai. All rights reserved. MIT license.
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 function resolvePath(p: string): string {
   const u = new URL(p, import.meta.url);
   return u.pathname;
