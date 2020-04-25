@@ -27,7 +27,7 @@ app.get(
     } else if (resp.status === 404) {
       throw new RoutingError(404);
     } else {
-      throw new Error(await resp.body.text());
+      throw new Error(await resp.text());
     }
   },
 );

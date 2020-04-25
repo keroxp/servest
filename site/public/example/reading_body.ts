@@ -14,13 +14,13 @@ app.post(
   contentTypeFilter("multipart/form-data"),
   async (req) => {
     const bodyForm = await req.body!.formData(req.headers);
-    const name = bodyForm.field("name");
+    const name = bodyForm.value("name");
     const file = bodyForm.file("file");
     try {
       // ...respond
     } finally {
       // Clean up stored temp files
-      await bodyForm.removeAllTempFiles();
+      await bodyForm.removeAll();
     }
   },
 );
@@ -29,8 +29,8 @@ app.post(
   contentTypeFilter("application/x-www-form-urlencoded"),
   async (req) => {
     const bodyForm = await req.body!.formData(req.headers);
-    const name = bodyForm.field("name");
-    const id = bodyForm.field("id");
+    const name = bodyForm.value("name");
+    const id = bodyForm.value("id");
     // ...respond
   },
 );

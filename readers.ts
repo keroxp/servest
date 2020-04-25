@@ -7,10 +7,10 @@ import { promiseInterrupter } from "./promises.ts";
 import Reader = Deno.Reader;
 import EOF = Deno.EOF;
 import {
-  FormBody,
   parserMultipartRequest,
   parseUrlEncodedForm,
 } from "./body_parser.ts";
+import { MultipartFormData } from "./vendor/https/deno.land/std/mime/multipart.ts";
 
 const nullBuffer = new Uint8Array(1024);
 
@@ -32,7 +32,7 @@ export interface BodyParser {
   text(): Promise<string>;
   json(): Promise<any>;
   arrayBuffer(): Promise<Uint8Array>;
-  formData(headers: Headers, maxMemory?: number): Promise<FormBody>;
+  formData(headers: Headers, maxMemory?: number): Promise<MultipartFormData>;
 }
 
 interface BodyHolder {
@@ -42,14 +42,14 @@ interface BodyHolder {
 
 function bodyParser(holder: BodyHolder): BodyParser {
   let bodyBuf: Deno.Buffer | undefined;
-  let formBody: FormBody | undefined;
+  let formBody: MultipartFormData | undefined;
   let textBody: string | undefined;
   let jsonBody: any | undefined;
   async function formDataInternal(
     headers: Headers,
     body: Reader,
     maxMemory?: number,
-  ) {
+  ): Promise<MultipartFormData> {
     const contentType = headers.get("content-type") || "";
     if (contentType.match(/^multipart\/form-data/)) {
       return parserMultipartRequest({ headers, body }, maxMemory);
@@ -67,7 +67,7 @@ function bodyParser(holder: BodyHolder): BodyParser {
   async function formData(
     headers: Headers,
     maxMemory?: number,
-  ): Promise<FormBody> {
+  ): Promise<MultipartFormData> {
     if (formBody) {
       return formBody;
     } else if (bodyBuf) {
@@ -239,4 +239,38 @@ function timeoutReader(
       return await timeoutOrCancel(r.read(p));
     },
   };
+}
+
+export function streamReader(stream: ReadableStream<Uint8Array>): Deno.Reader {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  const read = async (p: Uint8Array): Promise<number | Deno.EOF> => {
+    const set = (bytes: Uint8Array): number => {
+      p.set(bytes);
+      return bytes.byteLength;
+    };
+    const chunk = chunks.shift();
+    if (chunk) {
+      if (chunk.byteLength <= p.byteLength) {
+        return set(chunk);
+      } else {
+        const ret = set(chunk.subarray(0, p.byteLength));
+        chunks.unshift(chunk.subarray(p.byteLength));
+        return ret;
+      }
+    }
+    const { value, done } = await reader.read();
+    if (done || !value) {
+      return Deno.EOF;
+    }
+    if (value.byteLength <= p.byteLength) {
+      return set(value);
+    } else {
+      const ret = set(value.subarray(0, p.byteLength));
+      chunks.push(value.subarray(p.byteLength));
+      return ret;
+    }
+  };
+  return { read };
 }

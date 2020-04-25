@@ -82,9 +82,9 @@ app.get("/login", async (req) => {
 });
 app.post("/login/auth", async (req) => {
   const form = await req.body!.formData(req.headers);
-  const userId = form.field("id");
-  const password = form.field("password");
-  const name = form.field("name");
+  const userId = form.value("id");
+  const password = form.value("password");
+  const name = form.value("name");
   if (!userId || !password || !name) {
     return req.respond({ status: 400, body: "Bad Request" });
   }

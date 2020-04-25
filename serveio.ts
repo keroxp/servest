@@ -11,6 +11,7 @@ import {
   bodyReader,
   chunkedBodyReader,
   readUntilEof,
+  streamReader,
 } from "./readers.ts";
 import { promiseInterrupter } from "./promises.ts";
 import {
@@ -24,6 +25,7 @@ import {
   KeepAlive,
   ServeOptions,
   ServerResponse,
+  HttpBody,
 } from "./server.ts";
 import { encode, decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import Reader = Deno.Reader;
@@ -260,7 +262,7 @@ export const kHttpStatusMessages: { [k: number]: string } = {
 };
 
 function bodyToReader(
-  body: string | Uint8Array | Reader,
+  body: HttpBody,
   headers: Headers,
 ): [Reader, number | undefined] {
   if (typeof body === "string") {
@@ -268,17 +270,17 @@ function bodyToReader(
     return [new Buffer(bin), bin.byteLength];
   } else if (body instanceof Uint8Array) {
     return [new Buffer(body), body.byteLength];
+  } else if (body instanceof ReadableStream) {
+    const cl = headers.get("content-length");
+    return [streamReader(body), cl ? parseInt(cl) : undefined];
   } else {
     const cl = headers.get("content-length");
-    if (cl) {
-      return [body, parseInt(cl)];
-    }
-    return [body, undefined];
+    return [body, cl ? parseInt(cl) : undefined];
   }
 }
 
 export function setupBody(
-  body: string | Uint8Array | Reader,
+  body: HttpBody,
   headers: Headers,
 ): [Reader, number | undefined] {
   let [r, len] = bodyToReader(body, headers);

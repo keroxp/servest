@@ -30,12 +30,12 @@ group("multipart", ({ test }) => {
       },
       1000,
     );
-    assertEquals(m.field("hoge"), undefined);
-    assertEquals(m.field("deno"), "land");
+    assertEquals(m.value("hoge"), undefined);
+    assertEquals(m.value("deno"), "land");
     const mfile = m.file("file")!;
     assertEquals(mfile.filename, "README.md");
     assert(mfile.tempfile !== undefined, "temp file should be created");
-    await m.removeAllTempFiles();
+    await m.removeAll();
     assertEquals(await fs.exists(mfile.tempfile!), false);
   });
   test("should throw if content-type is invalid", async () => {

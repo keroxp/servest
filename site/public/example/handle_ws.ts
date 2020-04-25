@@ -1,6 +1,6 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { createApp } from "../../../mod.ts";
-import { WebSocket } from "https://deno.land/std/ws/mod.ts";
+import type { WebSocket } from "https://deno.land/std/ws/mod.ts";
 
 function handleHandshake(sock: WebSocket) {
   async function handleMessage(sock: WebSocket) {
