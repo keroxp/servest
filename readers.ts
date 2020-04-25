@@ -7,10 +7,10 @@ import { promiseInterrupter } from "./promises.ts";
 import Reader = Deno.Reader;
 import EOF = Deno.EOF;
 import {
-  FormBody,
   parserMultipartRequest,
   parseUrlEncodedForm,
 } from "./body_parser.ts";
+import { MultipartFormData } from "./vendor/https/deno.land/std/mime/multipart.ts";
 
 const nullBuffer = new Uint8Array(1024);
 
@@ -32,7 +32,7 @@ export interface BodyParser {
   text(): Promise<string>;
   json(): Promise<any>;
   arrayBuffer(): Promise<Uint8Array>;
-  formData(headers: Headers, maxMemory?: number): Promise<FormBody>;
+  formData(headers: Headers, maxMemory?: number): Promise<MultipartFormData>;
 }
 
 interface BodyHolder {
@@ -42,14 +42,14 @@ interface BodyHolder {
 
 function bodyParser(holder: BodyHolder): BodyParser {
   let bodyBuf: Deno.Buffer | undefined;
-  let formBody: FormBody | undefined;
+  let formBody: MultipartFormData | undefined;
   let textBody: string | undefined;
   let jsonBody: any | undefined;
   async function formDataInternal(
     headers: Headers,
     body: Reader,
     maxMemory?: number,
-  ) {
+  ): Promise<MultipartFormData> {
     const contentType = headers.get("content-type") || "";
     if (contentType.match(/^multipart\/form-data/)) {
       return parserMultipartRequest({ headers, body }, maxMemory);
@@ -67,7 +67,7 @@ function bodyParser(holder: BodyHolder): BodyParser {
   async function formData(
     headers: Headers,
     maxMemory?: number,
-  ): Promise<FormBody> {
+  ): Promise<MultipartFormData> {
     if (formBody) {
       return formBody;
     } else if (bodyBuf) {

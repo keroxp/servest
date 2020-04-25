@@ -44,21 +44,21 @@ group("serveStatic integration", (t) => {
   t.test("basic", async () => {
     const resp = await fetch("http://127.0.0.1:9988/index.html");
     assertEquals(resp.status, 200);
-    resp.body.close();
+    await resp.text();
   });
   t.test("not found", async () => {
     const resp = await fetch("http://127.0.0.1:9988/no-file");
     assertEquals(resp.status, 404);
-    resp.body.close();
+    await resp.text();
   });
   t.test("Capitalized", async () => {
     const resp = await fetch("http://127.0.0.1:9988/File.txt");
     assertEquals(resp.status, 200);
-    resp.body.close();
+    await resp.text();
   });
   t.test("Multi bytes", async () => {
     const resp = await fetch("http://127.0.0.1:9988/日本語.txt");
     assertEquals(resp.status, 200);
-    resp.body.close();
+    await resp.text();
   });
 });

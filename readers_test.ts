@@ -83,9 +83,9 @@ group("bodyReader", ({ test }) => {
         "content-type": "application/x-www-form-urlencoded",
       }),
     );
-    assertEquals(f.field("deno"), "land");
-    assertEquals(f.field("での"), "らんど");
-    assertEquals(f.field("👉"), "🦕");
+    assertEquals(f.value("deno"), "land");
+    assertEquals(f.value("での"), "らんど");
+    assertEquals(f.value("👉"), "🦕");
   });
   test("formData() should throw if invalid content type", async () => {
     const br = bodyReader(new StringReader("deno=land"), 9);

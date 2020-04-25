@@ -1,16 +1,9 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import {
-  FormFile,
-  isFormFile,
   MultipartReader,
+  MultipartFormData,
 } from "./vendor/https/deno.land/std/mime/multipart.ts";
 import Reader = Deno.Reader;
-
-export interface FormBody {
-  field(field: string): string | undefined;
-  file(field: string): FormFile | undefined;
-  removeAllTempFiles(): Promise<void>;
-}
 
 /**
  * Parse multipart/form-data request
@@ -21,7 +14,7 @@ export interface FormBody {
 export async function parserMultipartRequest(
   req: { headers: Headers; body?: Reader },
   maxMemory: number = 1 << 10, // 10MB by default
-): Promise<FormBody> {
+): Promise<MultipartFormData> {
   // Content-Type: multipart/form-data; boundary=----WebKitFormBoundaryO5quBRiT4G7Vm3R7
   const contentType = req.headers.get("content-type");
   if (!req.body) {
@@ -36,41 +29,7 @@ export async function parserMultipartRequest(
   }
   const boundary = m[1];
   const reader = new MultipartReader(req.body, boundary);
-  const form = await reader.readForm(maxMemory);
-  return {
-    field(field: string): string | undefined {
-      const v = form[field];
-      if (typeof v === "string") {
-        return v;
-      }
-    },
-    file(field: string): FormFile | undefined {
-      const v = form[field];
-      if (isFormFile(v)) {
-        return v;
-      }
-    },
-    async removeAllTempFiles(): Promise<void> {
-      const arr = Object.values(form).filter(isFormFile) as FormFile[];
-      const promises: Promise<void>[] = [];
-      for (const v of arr) {
-        const { tempfile } = v;
-        if (tempfile) {
-          promises.push(
-            (async () => {
-              try {
-                const stat = await Deno.stat(tempfile);
-                if (stat.isFile()) {
-                  await Deno.remove(tempfile);
-                }
-              } catch (e) {}
-            })(),
-          );
-        }
-      }
-      await Promise.all(promises);
-    },
-  };
+  return reader.readForm(maxMemory);
 }
 /**
  * Parse application/x-www-form-urlencoded request
@@ -79,7 +38,7 @@ export async function parserMultipartRequest(
 export async function parseUrlEncodedForm(req: {
   headers: Headers;
   body?: Reader;
-}): Promise<FormBody> {
+}): Promise<MultipartFormData> {
   const contentType = req.headers.get("content-type");
   if (!req.body) {
     throw new Error("request has no body");
@@ -93,13 +52,23 @@ export async function parseUrlEncodedForm(req: {
   const buf = new Deno.Buffer();
   await Deno.copy(buf, req.body);
   const params = new URLSearchParams(decodeURIComponent(buf.toString()));
+  function* entries() {
+    for (const i of params.entries()) {
+      yield i;
+    }
+  }
   return {
-    field(field: string): string | undefined {
-      return params.get(field) || undefined;
+    value(f: string) {
+      return params.get(f) ?? undefined;
     },
-    file(field: string): FormFile | undefined {
+    entries,
+    [Symbol.iterator]() {
+      return entries();
+    },
+    file(f: string) {
       return undefined;
     },
-    async removeAllTempFiles(): Promise<void> {},
+    async removeAll() {
+    },
   };
 }

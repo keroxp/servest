@@ -105,7 +105,7 @@ group("cookie integration", ({ setupAll, test }) => {
     const sc = resp.headers.get("Set-Cookie");
     assert(sc != null, "should set cookie");
     const cookie = parseSetCookie(sc);
-    resp.body.close();
+    await resp.text();
     assertEquals(cookie, {
       name: "deno",
       value: "land",
@@ -122,7 +122,7 @@ group("cookie integration", ({ setupAll, test }) => {
         Cookie: "deno=land",
       },
     });
-    const body = await resp2.body.text();
+    const body = await resp2.text();
     assertEquals(body, "land");
   });
 });

@@ -63,7 +63,7 @@ export async function resolveIndexPath(
   const fileExists = async (s: string): Promise<boolean> => {
     try {
       const stat = await Deno.stat(s);
-      return stat.isFile();
+      return stat.isFile;
     } catch (e) {
       return false;
     } finally {
