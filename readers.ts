@@ -240,3 +240,37 @@ function timeoutReader(
     },
   };
 }
+
+export function streamReader(stream: ReadableStream<Uint8Array>): Deno.Reader {
+  const reader = stream.getReader();
+  const chunks: Uint8Array[] = [];
+
+  const read = async (p: Uint8Array): Promise<number | Deno.EOF> => {
+    const set = (bytes: Uint8Array): number => {
+      p.set(bytes);
+      return bytes.byteLength;
+    };
+    const chunk = chunks.shift();
+    if (chunk) {
+      if (chunk.byteLength <= p.byteLength) {
+        return set(chunk);
+      } else {
+        const ret = set(chunk.subarray(0, p.byteLength));
+        chunks.unshift(chunk.subarray(p.byteLength));
+        return ret;
+      }
+    }
+    const { value, done } = await reader.read();
+    if (done || !value) {
+      return Deno.EOF;
+    }
+    if (value.byteLength <= p.byteLength) {
+      return set(value);
+    } else {
+      const ret = set(value.subarray(0, p.byteLength));
+      chunks.push(value.subarray(p.byteLength));
+      return ret;
+    }
+  };
+  return { read };
+}

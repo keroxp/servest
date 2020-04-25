@@ -15,7 +15,9 @@ import { BodyReader } from "./readers.ts";
 import ListenTLSOptions = Deno.ListenTLSOptions;
 import { promiseWaitQueue } from "./util.ts";
 
-export type HttpBody = string | Uint8Array | Reader;
+export type HttpBody = string | Uint8Array | Reader | ReadableStream<
+  Uint8Array
+>;
 /** request data for building http request to server */
 export type ClientRequest = {
   /** full request url with queries */
@@ -37,7 +39,7 @@ export type ServerResponse = {
   /** HTTP headers */
   headers?: Headers;
   /** HTTP body */
-  body?: HttpBody;
+  body?: HttpBody | null;
   /** HTTP Trailers setter. It will be after finishing writing body. */
   trailers?: () => Promise<Headers> | Headers;
 };

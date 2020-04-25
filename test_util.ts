@@ -98,6 +98,7 @@ export async function group(
           } else {
             await Deno.writeAll(Deno.stdout, encode(red("ERROR") + "\n"));
           }
+          throw e;
         }
       }
     }),
