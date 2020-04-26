@@ -3,16 +3,26 @@ import {
   BufReader,
   BufWriter,
 } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { IncomingHttpResponse, ServerRequest } from "./server.ts";
+import {
+  IncomingHttpResponse,
+  ServerRequest,
+  HttpBody,
+  ClientResponse,
+} from "./server.ts";
 import { readResponse, setupBody } from "./serveio.ts";
-import Reader = Deno.Reader;
-import { createResponder } from "./responder.ts";
-import { bodyReader, BodyReader, chunkedBodyReader } from "./readers.ts";
+import { createResponder, ServerResponder } from "./responder.ts";
+import { BodyReader, closableBodyReader } from "./readers.ts";
 import { parseCookie } from "./cookie.ts";
+import {
+  bodyReader,
+  chunkedBodyReader,
+  emptyReader,
+} from "./vendor/https/deno.land/std/http/io.ts";
+import { createBodyParser, BodyParser } from "./body_parser.ts";
 
 export type ResponseRecorder = ServerRequest & {
   /** Obtain recorded response */
-  response(): Promise<IncomingHttpResponse>;
+  response(): Promise<IncomingHttpResponse & BodyParser>;
 };
 
 /** Create dummy request & responder that records a response from HTTPHandler  */
@@ -27,7 +37,7 @@ export function createRecorder({
   method?: string;
   proto?: string;
   headers?: Headers;
-  body?: string | Uint8Array | Reader;
+  body?: HttpBody;
 }): ResponseRecorder {
   const conn: Deno.Conn = {
     localAddr: { transport: "tcp", hostname: "0.0.0.0", port: 80 },
@@ -46,19 +56,32 @@ export function createRecorder({
   const buf = new Deno.Buffer();
   const bufReader = new BufReader(buf);
   const bufWriter = new BufWriter(buf);
-  let br: BodyReader | undefined;
+  let br: BodyReader;
   if (body) {
-    const [a, b] = setupBody(body, headers);
-    if (b !== undefined) {
-      br = bodyReader(a, b);
+    const [reader, cl] = setupBody(body, headers);
+    if (cl !== undefined) {
+      br = closableBodyReader(bodyReader(cl, new BufReader(reader)));
     } else {
-      br = chunkedBodyReader(a);
+      br = closableBodyReader(
+        chunkedBodyReader(headers, new BufReader(reader)),
+      );
     }
+  } else {
+    br = closableBodyReader(emptyReader());
   }
-  async function response(): Promise<IncomingHttpResponse> {
-    return readResponse(bufReader);
+  async function response(): Promise<IncomingHttpResponse & BodyParser> {
+    const resp = await readResponse(bufReader);
+    const bodyParser = createBodyParser({
+      reader: resp.body,
+      contentType: resp.headers.get("content-type") ?? "",
+    });
+    return { ...resp, ...bodyParser };
   }
   const responder = createResponder(bufWriter);
+  const bodyParser = createBodyParser({
+    reader: br,
+    contentType: headers.get("content-type") ?? "",
+  });
   const cookies = parseCookie(headers.get("Cookie") || "");
   const { pathname: path, searchParams: query } = new URL(url, "http://dummy");
   return {
@@ -68,7 +91,6 @@ export function createRecorder({
     method,
     headers,
     proto,
-    finalize: async () => {},
     body: br,
     response,
     bufWriter,
@@ -76,5 +98,7 @@ export function createRecorder({
     conn,
     cookies,
     ...responder,
+    ...bodyParser,
+    data: new Map(),
   };
 }

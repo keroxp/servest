@@ -104,7 +104,7 @@ export function createAgent(
     const destUrl = new URL(path, url);
     try {
       if (prevResponse) {
-        await prevResponse.finalize();
+        await prevResponse.body.close();
       }
       await writeRequest(bufWriter, {
         url: destUrl.toString(),

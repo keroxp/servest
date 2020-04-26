@@ -55,7 +55,7 @@ group("responder", (t) => {
     const resp = await readResponse(w);
     assertEquals(resp.status, 200);
     assertEquals(resp.headers.get("content-type"), "text/plain");
-    assertEquals(await resp.body?.text(), "sample");
+    assertEquals(await resp.text(), "sample");
   });
 
   t.test("sendFile() should throw if file not found", async () => {
@@ -76,7 +76,7 @@ group("responder", (t) => {
     const resp = await readResponse(w);
     assertEquals(resp.status, 200);
     assertEquals(resp.headers.get("content-disposition"), "inline");
-    assertEquals(await resp.body?.text(), "sample");
+    assertEquals(await resp.text(), "sample");
   });
 
   t.test("sendFile() with attachment", async () => {
@@ -91,7 +91,7 @@ group("responder", (t) => {
       resp.headers.get("content-disposition"),
       'attachment; filename="sample.txt"',
     );
-    assertEquals(await resp.body?.text(), "sample");
+    assertEquals(await resp.text(), "sample");
   });
 
   t.test("responder redirect should set Location header", async () => {

@@ -7,7 +7,11 @@ import { extname, basename } from "./vendor/https/deno.land/std/path/mod.ts";
 import { contentTypeByExt } from "./media_types.ts";
 /** Basic responder for http response */
 export interface ServerResponder extends CookieSetter {
-  /** Respond to request */
+  /**
+   * Respond to request 
+   * Error will be thrown if request has already been responded.
+   * headers is merged with responseHeaders
+   * */
   respond(response: ServerResponse): Promise<void>;
 
   /**
@@ -30,6 +34,9 @@ export interface ServerResponder extends CookieSetter {
       body?: ServerResponse["body"];
     },
   ): Promise<void>;
+
+  /** Headers to be used for response */
+  readonly responseHeaders: Headers;
 
   /** Mark as responded manually */
   markAsResponded(status: number): void;
@@ -121,6 +128,7 @@ export function createResponder(
     redirect,
     sendFile,
     isResponded,
+    responseHeaders,
     respondedStatus,
     markAsResponded,
     ...cookie,
