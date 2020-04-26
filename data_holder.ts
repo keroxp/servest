@@ -1,3 +1,4 @@
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 type Key = string | symbol;
 export interface DataHolder {
   set<T = unknown>(key: Key, value: T): void;
