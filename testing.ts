@@ -7,7 +7,6 @@ import {
   IncomingHttpResponse,
   ServerRequest,
   HttpBody,
-  ClientResponse,
 } from "./server.ts";
 import { readResponse, setupBody } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
@@ -19,6 +18,7 @@ import {
   emptyReader,
 } from "./vendor/https/deno.land/std/http/io.ts";
 import { createBodyParser, BodyParser } from "./body_parser.ts";
+import { createDataHolder } from "./data_holder.ts";
 
 export type ResponseRecorder = ServerRequest & {
   /** Obtain recorded response */
@@ -84,6 +84,7 @@ export function createRecorder({
   });
   const cookies = parseCookie(headers.get("Cookie") || "");
   const { pathname: path, searchParams: query } = new URL(url, "http://dummy");
+  const dataHolder = createDataHolder();
   return {
     url,
     path,
@@ -99,6 +100,6 @@ export function createRecorder({
     cookies,
     ...responder,
     ...bodyParser,
-    data: new Map(),
+    ...dataHolder
   };
 }
