@@ -81,7 +81,7 @@ app.get("/login", async (req) => {
   });
 });
 app.post("/login/auth", async (req) => {
-  const form = await req.body!.formData(req.headers);
+  const form = await req.formData();
   const userId = form.value("id");
   const password = form.value("password");
   const name = form.value("name");

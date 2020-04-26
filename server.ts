@@ -14,7 +14,8 @@ import Listener = Deno.Listener;
 import { BodyReader } from "./readers.ts";
 import ListenTLSOptions = Deno.ListenTLSOptions;
 import { promiseWaitQueue } from "./util.ts";
-import { createBodyParser, BodyParser } from "./body_parser.ts";
+import { BodyParser } from "./body_parser.ts";
+import { DataHolder, createDataHolder } from "./data_holder.ts";
 
 export type HttpBody = string | Uint8Array | Reader | ReadableStream<
   Uint8Array
@@ -65,8 +66,6 @@ export interface IncomingHttpRequest extends BodyParser {
   cookies: Map<string, string>;
   /** keep-alive info */
   keepAlive?: KeepAlive;
-  /** Arbitary data store */
-  data: Map<string | symbol, any>;
 }
 
 export type KeepAlive = {
@@ -75,7 +74,8 @@ export type KeepAlive = {
 };
 
 /** Outgoing http response for building request to server */
-export interface ServerRequest extends IncomingHttpRequest, ServerResponder {
+export interface ServerRequest
+  extends IncomingHttpRequest, DataHolder, ServerResponder {
   conn: Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
@@ -213,16 +213,18 @@ export function handleKeepAliveConn(
       return responded;
     };
     const responder = createResponder(bufWriter, onResponse);
+    const dataHolder = createDataHolder();
     const req: ServerRequest = {
       ...baseReq,
       bufWriter,
       bufReader,
       conn,
       ...responder,
+      ...dataHolder,
     };
     await handler(req);
     await responded;
-    await req.body?.close();
+    await req.body.close();
     if (req.respondedStatus() === 101) {
       // If upgraded, stop processing
       return;

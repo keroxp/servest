@@ -137,7 +137,6 @@ export async function readRequest(
     cookies,
     body,
     keepAlive,
-    data: new Map(),
     ...bodyParser,
   };
 }

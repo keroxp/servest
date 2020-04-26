@@ -12,19 +12,19 @@ const ReadingBody: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
       <section id={"reading-body"}>
         <h2>Reading Body</h2>
         <p>
-          <Q>ServerRequest.body</Q> implements <Q>Deno.Reader</Q> and also
-          provides handy parser methods for major content types.
+          <Q>ServerRequest.body</Q> implements <Q>Deno.Reader</Q>.
+          And also implemnts utility mixin methods to read body data.
         </p>
         <p>
           <ul>
             <li>
-              <Q>body.text()</Q> parses UTF-8 decoded strings
+              <Q>req.text()</Q> parses UTF-8 decoded strings
             </li>
             <li>
-              <Q>body.json()</Q> try to parse body string as JSON
+              <Q>req.json()</Q> try to parse body string as JSON
             </li>
             <li>
-              <Q>body.formData()</Q> try to parse if content-type is one of:
+              <Q>req.formData()</Q> try to parse if content-type is one of:
               <ul>
                 <li>
                   <Q>multipart/form-data</Q>
@@ -35,7 +35,7 @@ const ReadingBody: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
               </ul>
             </li>
             <li>
-              <Q>body.arryBuffer()</Q> returns full raw body as{" "}
+              <Q>req.arryBuffer()</Q> returns full raw body as{" "}
               <Q>Uint8Array</Q>
             </li>
           </ul>

@@ -2,18 +2,18 @@
 import { createApp, contentTypeFilter } from "../../../mod.ts";
 const app = createApp();
 app.post("/json", contentTypeFilter("application/json"), async (req) => {
-  const bodyJson = (await req.body!.json()) as { name: string; id: string };
+  const bodyJson = (await req.json()) as { name: string; id: string };
   // ...respond
 });
 app.post("/text", contentTypeFilter("text/plain"), async (req) => {
-  const bodyText = await req.body!.text();
+  const bodyText = await req.text();
   // ...respond
 });
 app.post(
   "/multipart",
   contentTypeFilter("multipart/form-data"),
   async (req) => {
-    const bodyForm = await req.body!.formData(req.headers);
+    const bodyForm = await req.formData();
     const name = bodyForm.value("name");
     const file = bodyForm.file("file");
     try {
@@ -28,14 +28,14 @@ app.post(
   "/form-urlencoded",
   contentTypeFilter("application/x-www-form-urlencoded"),
   async (req) => {
-    const bodyForm = await req.body!.formData(req.headers);
+    const bodyForm = await req.formData();
     const name = bodyForm.value("name");
     const id = bodyForm.value("id");
     // ...respond
   },
 );
 app.post("/raw", async (req) => {
-  const buf = await req.body!.arrayBuffer();
+  const buf = await req.arrayBuffer();
   // ...respond
 });
 // Start listening on port 8899

@@ -1,6 +1,6 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import Writer = Deno.Writer;
-import { ServerResponse } from "./server.ts";
+import { ServerResponse, HttpBody } from "./server.ts";
 import { cookieSetter, CookieSetter } from "./cookie.ts";
 import { writeResponse } from "./serveio.ts";
 import { extname, basename } from "./vendor/https/deno.land/std/path/mod.ts";
@@ -31,7 +31,7 @@ export interface ServerResponder extends CookieSetter {
     url: string,
     opts?: {
       headers?: Headers;
-      body?: ServerResponse["body"];
+      body?: HttpBody;
     },
   ): Promise<void>;
 
