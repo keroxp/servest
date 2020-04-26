@@ -100,6 +100,6 @@ export function createRecorder({
     cookies,
     ...responder,
     ...bodyParser,
-    ...dataHolder
+    ...dataHolder,
   };
 }
