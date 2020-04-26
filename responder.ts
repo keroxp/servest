@@ -1,13 +1,17 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import Writer = Deno.Writer;
-import { ServerResponse } from "./server.ts";
+import { ServerResponse, HttpBody } from "./server.ts";
 import { cookieSetter, CookieSetter } from "./cookie.ts";
 import { writeResponse } from "./serveio.ts";
 import { extname, basename } from "./vendor/https/deno.land/std/path/mod.ts";
 import { contentTypeByExt } from "./media_types.ts";
 /** Basic responder for http response */
 export interface ServerResponder extends CookieSetter {
-  /** Respond to request */
+  /**
+   * Respond to request 
+   * Error will be thrown if request has already been responded.
+   * headers is merged with responseHeaders
+   * */
   respond(response: ServerResponse): Promise<void>;
 
   /**
@@ -27,9 +31,12 @@ export interface ServerResponder extends CookieSetter {
     url: string,
     opts?: {
       headers?: Headers;
-      body?: ServerResponse["body"];
+      body?: HttpBody;
     },
   ): Promise<void>;
+
+  /** Headers to be used for response */
+  readonly responseHeaders: Headers;
 
   /** Mark as responded manually */
   markAsResponded(status: number): void;
@@ -121,6 +128,7 @@ export function createResponder(
     redirect,
     sendFile,
     isResponded,
+    responseHeaders,
     respondedStatus,
     markAsResponded,
     ...cookie,

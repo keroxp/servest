@@ -11,4 +11,18 @@ app.use(async (req) => {
   }
   // Go through the next middleware
 });
+app.use(async (req) => {
+  // Add header to response
+  req.responseHeaders.set("my-header", "value");
+});
+app.use(async (req) => {
+  // Set arbitary data
+  req.set("my-data", "value");
+  req.set("my-date", new Date());
+});
+app.use(async (req) => {
+  // Get data set by previous middlewares
+  const myData = req.getString("my-data");
+  const myDate = req.get<Date>("my-date");
+});
 app.listen({ port: 8899 });

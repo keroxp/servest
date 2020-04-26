@@ -8,10 +8,9 @@ import {
 } from "./vendor/https/deno.land/std/textproto/mod.ts";
 import {
   BodyReader,
-  bodyReader,
-  chunkedBodyReader,
-  readUntilEof,
   streamReader,
+  timeoutReader,
+  closableBodyReader,
 } from "./readers.ts";
 import { promiseInterrupter } from "./promises.ts";
 import {
@@ -26,6 +25,7 @@ import {
   ServeOptions,
   ServerResponse,
   HttpBody,
+  ClientResponse,
 } from "./server.ts";
 import { encode, decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import Reader = Deno.Reader;
@@ -34,6 +34,13 @@ import Buffer = Deno.Buffer;
 import EOF = Deno.EOF;
 import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 import { parseCookie } from "./cookie.ts";
+import {
+  bodyReader,
+  chunkedBodyReader,
+  emptyReader,
+  writeTrailers,
+} from "./vendor/https/deno.land/std/http/io.ts";
+import { createBodyParser } from "./body_parser.ts";
 
 export const kDefaultKeepAliveTimeout = 75000; // ms
 
@@ -93,30 +100,14 @@ export async function readRequest(
   // cookie
   const cookies = parseCookie(headers.get("Cookie") || "");
   // body
-  let body: BodyReader | undefined;
-  let trailers: Headers;
-  let finalizers: (() => Promise<void>)[] = [];
-  const finalize = async () => {
-    for (const f of finalizers) {
-      await f();
-    }
-  };
+  let body: BodyReader = closableBodyReader(emptyReader());
   if (method === "POST" || method === "PUT") {
-    finalizers.push(async () => {
-      if (body) {
-        await readUntilEof(body);
-      }
-    });
     if (headers.get("transfer-encoding") === "chunked") {
-      if (headers.has("trailer")) {
-        finalizers.push(async () => {
-          trailers = await readTrailers(reader, headers);
-        });
-      }
-      body = chunkedBodyReader(reader, {
+      const tr = timeoutReader(chunkedBodyReader(headers, reader), {
         timeout: opts.readTimeout,
         cancel: opts.cancel,
       });
+      body = closableBodyReader(tr);
     } else {
       const contentLength = parseInt(headers.get("content-length")!);
       assert(
@@ -125,12 +116,17 @@ export async function readRequest(
           "content-length",
         )}`,
       );
-      body = bodyReader(reader, contentLength, {
+      const tr = timeoutReader(bodyReader(contentLength, reader), {
         timeout: opts.readTimeout,
         cancel: opts.cancel,
       });
+      body = closableBodyReader(tr);
     }
   }
+  const bodyParser = createBodyParser({
+    reader: body,
+    contentType: headers.get("content-type") ?? "",
+  });
   return {
     method,
     url,
@@ -141,10 +137,7 @@ export async function readRequest(
     cookies,
     body,
     keepAlive,
-    get trailers() {
-      return trailers;
-    },
-    finalize,
+    ...bodyParser,
   };
 }
 
@@ -205,41 +198,32 @@ export async function readResponse(
   const contentLength = headers.get("content-length");
   const isChunked = headers.get("transfer-encoding")?.match(/^chunked/);
   let body: BodyReader;
-  let finalizers: (() => Promise<any>)[] = [() => readUntilEof(body)];
-  const finalize = async () => {
-    for (const f of finalizers) {
-      await f();
-    }
-  };
-  let trailers: Headers;
   if (isChunked) {
-    if (headers.has("trailer")) {
-      finalizers.push(async () => {
-        trailers = await readTrailers(reader, headers);
-      });
-    }
-    body = chunkedBodyReader(reader, {
+    const tr = timeoutReader(chunkedBodyReader(headers, reader), {
       timeout,
       cancel,
     });
+    body = closableBodyReader(tr);
   } else if (contentLength != null) {
-    body = bodyReader(reader, parseInt(contentLength), {
+    const tr = timeoutReader(bodyReader(parseInt(contentLength), reader), {
       timeout,
       cancel,
     });
+    body = closableBodyReader(tr);
   } else {
     throw new Error("unkown conetnt-lengh or chunked");
   }
+  const bodyParser = createBodyParser({
+    reader: body,
+    contentType: headers.get("content-type") ?? "",
+  });
   return {
     proto,
     status: parseInt(status),
     statusText,
     headers,
     body,
-    get trailers() {
-      return trailers;
-    },
-    finalize,
+    ...bodyParser,
   };
 }
 
@@ -387,89 +371,6 @@ export async function writeBody(
       }
     }
   }
-}
-
-const kProhibitedTrailerHeaders = [
-  "transfer-encoding",
-  "content-length",
-  "trailer",
-];
-
-/** write trailer headers to writer. it mostly should be called after writeResponse */
-export async function writeTrailers(
-  w: Writer,
-  headers: Headers,
-  trailers: Headers,
-): Promise<void> {
-  const trailer = headers.get("trailer");
-  if (trailer === null) {
-    throw new AssertionError(
-      'response headers must have "trailer" header field',
-    );
-  }
-  const transferEncoding = headers.get("transfer-encoding");
-  if (transferEncoding === null || !transferEncoding.match(/^chunked/)) {
-    throw new AssertionError(
-      `trailer headers is only allowed for "transfer-encoding: chunked": got "${transferEncoding}"`,
-    );
-  }
-  const writer = BufWriter.create(w);
-  const trailerHeaderFields = trailer
-    .split(",")
-    .map((s) => s.trim().toLowerCase());
-  for (const f of trailerHeaderFields) {
-    assert(
-      !kProhibitedTrailerHeaders.includes(f),
-      `"${f}" is prohibited for trailer header`,
-    );
-  }
-  for (const [key, value] of trailers) {
-    assert(
-      trailerHeaderFields.includes(key),
-      `Not trailed header field: ${key}`,
-    );
-    await writer.write(encode(`${key}: ${value}\r\n`));
-  }
-  await writer.flush();
-}
-
-/** read trailer headers from reader. it should mostly be called after readRequest */
-export async function readTrailers(
-  r: Reader,
-  headers: Headers,
-): Promise<Headers> {
-  const h = new Headers();
-  const reader = BufReader.create(r);
-  const trailer = headers.get("trailer");
-  if (trailer === null) {
-    throw new AssertionError("trailer header must be set");
-  }
-  const trailerHeaderFields = trailer
-    .split(",")
-    .map((s) => s.trim().toLowerCase());
-  for (const field of trailerHeaderFields) {
-    assert(
-      kProhibitedTrailerHeaders.indexOf(field) < 0,
-      `"${field}" is prohibited for trailer field`,
-    );
-  }
-  for (let i = 0; i < trailerHeaderFields.length; i++) {
-    const readLine = await reader.readLine();
-    if (readLine === EOF) {
-      throw EOF;
-    }
-    const m = decode(readLine.line)
-      .trim()
-      .match(/^([^ :]+?):(.+?)$/);
-    assert(m != null);
-    const [_, field, value] = m;
-    assert(
-      trailerHeaderFields.includes(field),
-      `unexpected trailer field: ${field}`,
-    );
-    h.set(field.trim(), value.trim());
-  }
-  return h;
 }
 
 export function parseKeepAlive(h: Headers): KeepAlive {

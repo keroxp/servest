@@ -11,7 +11,7 @@ export const Content: FC = ({ children }) => (
       </SideBarSection>
       <SideBarSection title={"API"}>
         <SideBarLink href={"/app-api"}>App API</SideBarLink>
-        <SideBarLink href={"/server-api"}>Server APi</SideBarLink>
+        <SideBarLink href={"/server-api"}>Server API</SideBarLink>
         <SideBarLink href={"/agent-api"}>Agent API</SideBarLink>
       </SideBarSection>
       <SideBarSection title={"Concept"}>

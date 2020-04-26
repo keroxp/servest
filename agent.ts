@@ -1,5 +1,5 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import { ClientResponse } from "./server.ts";
+import { ClientResponse, HttpBody } from "./server.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { readResponse, writeRequest } from "./serveio.ts";
 import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
@@ -40,7 +40,7 @@ export type HttpAgentSendOptions = {
   /** http headers */
   headers?: Headers;
   /** http body */
-  body?: string | Uint8Array | Reader;
+  body?: HttpBody;
 };
 
 const kPortMap = {
@@ -104,7 +104,7 @@ export function createAgent(
     const destUrl = new URL(path, url);
     try {
       if (prevResponse) {
-        await prevResponse.finalize();
+        await prevResponse.body.close();
       }
       await writeRequest(bufWriter, {
         url: destUrl.toString(),

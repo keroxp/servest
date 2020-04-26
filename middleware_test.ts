@@ -20,7 +20,7 @@ group("middleware", ({ test }) => {
     let resp = await req.response();
     assertEquals(resp.status, 401);
     assertEquals(resp.headers.has("www-authenticate"), true);
-    assertEquals(await resp.body?.text(), "hello");
+    assertEquals(await resp.text(), "hello");
     const up = btoa("deno:land");
     req = createRecorder({
       url: "/",

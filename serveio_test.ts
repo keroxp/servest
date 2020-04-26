@@ -14,7 +14,6 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
-import Reader = Deno.Reader;
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
 import { ServerResponse } from "./server.ts";
@@ -33,8 +32,8 @@ group("serveio", (t) => {
     assertEquals(req.proto, "HTTP/1.1");
     assertEquals(req.headers.get("host"), "deno.land");
     assertEquals(req.headers.get("content-type"), "text/plain");
-    assert(req.body === void 0);
-    assert(req.trailers === void 0);
+    const eof = await req.body.read(new Uint8Array());
+    assertEquals(eof, Deno.EOF);
     f.close();
   });
 
@@ -50,8 +49,8 @@ group("serveio", (t) => {
       assertEquals(req.proto, "HTTP/1.1");
       assertEquals(req.headers.get("host"), "deno.land");
       assertEquals(req.headers.get("content-type"), "text/plain");
-      assert(req.body === void 0);
-      assert(req.trailers === void 0);
+      const eof = await req.body.read(new Uint8Array());
+      assertEquals(eof, Deno.EOF);
       f.close();
     },
   );
@@ -71,8 +70,8 @@ group("serveio", (t) => {
       assertEquals(req.query.get("deno"), "🦕");
       assertEquals(req.headers.get("host"), "deno.land");
       assertEquals(req.headers.get("content-type"), "text/plain");
-      assert(req.body === void 0);
-      assert(req.trailers === void 0);
+      const eof = await req.body.read(new Uint8Array());
+      assertEquals(eof, Deno.EOF);
       f.close();
     },
   );
@@ -91,7 +90,6 @@ group("serveio", (t) => {
       await readString(req.body!),
       "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
     );
-    assert(req.trailers === void 0);
     f.close();
   });
 
@@ -110,7 +108,6 @@ group("serveio", (t) => {
         await readString(req.body!),
         "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
       );
-      assertEquals(req.trailers, void 0);
       f.close();
     },
   );
@@ -128,16 +125,16 @@ group("serveio", (t) => {
       assertEquals(req.headers.get("host"), "deno.land");
       assertEquals(req.headers.get("content-type"), "text/plain");
       assertEquals(req.headers.get("transfer-encoding"), "chunked");
+      assertEquals(req.headers.get("x-deno"), null);
+      assertEquals(req.headers.get("x-node"), null);
+      assertEquals(req.headers.get("trailer"), "x-deno, x-node");
       assertEquals(
-        await readString(req.body!),
+        await req.text(),
         "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
       );
-      assertEquals(req.trailers, void 0);
-      assertEquals(typeof req.finalize, "function");
-      await req.finalize();
-      assertEquals(req.trailers?.constructor, Headers);
-      assertEquals(req.trailers?.get("x-deno"), "land");
-      assertEquals(req.trailers?.get("x-node"), "js");
+      assertEquals(req.headers.get("x-deno"), "land");
+      assertEquals(req.headers.get("x-node"), "js");
+      assertEquals(req.headers.get("trailer"), null);
       f.close();
     },
   );
@@ -151,11 +148,9 @@ group("serveio", (t) => {
     assertEquals(res.headers.get("content-type"), "text/plain");
     assertEquals(res.headers.get("content-length"), "69");
     assertEquals(
-      await readString(res.body),
+      await res.text(),
       "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
     );
-    assertEquals(res.trailers, void 0);
-    assertEquals(typeof res.finalize, "function");
     f.close();
   });
 
@@ -167,15 +162,16 @@ group("serveio", (t) => {
     assertEquals(res.statusText, "OK");
     assertEquals(res.headers.get("content-type"), "text/plain");
     assertEquals(res.headers.get("transfer-encoding"), "chunked");
+    assertEquals(res.headers.get("x-deno"), null);
+    assertEquals(res.headers.get("x-node"), null);
+    assertEquals(res.headers.get("trailer"), "x-deno, x-node");
     assertEquals(
-      await readString(res.body),
+      await res.text(),
       "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
     );
-    assertEquals(res.trailers, void 0);
-    await res.finalize();
-    assertEquals(res.trailers?.get("x-deno"), "land");
-    assertEquals(res.trailers?.get("x-node"), "js");
-    assert(typeof res.finalize === "function");
+    assertEquals(res.headers.get("x-deno"), "land");
+    assertEquals(res.headers.get("x-node"), "js");
+    assertEquals(res.headers.get("trailer"), null);
     f.close();
   });
 
@@ -193,7 +189,7 @@ group("serveio", (t) => {
     assertEquals(req.url, "/");
     assertEquals(req.headers.get("content-type"), "text/plain");
     assertEquals(req.headers.get("content-length"), "2");
-    assertEquals(await req.body?.text(), "ok");
+    assertEquals(await req.text(), "ok");
   });
 
   t.test("writeRequestWithTrailer", async () => {
@@ -217,11 +213,12 @@ group("serveio", (t) => {
     assertEquals(req.url, "/");
     assertEquals(req.headers.get("content-type"), "text/plain");
     assertEquals(req.headers.has("content-length"), false);
-    assertEquals(await req.body?.text(), "ok");
-    assertEquals(req.trailers, undefined);
-    await req.finalize();
-    assertEquals(req.trailers?.get("deno"), "land");
-    assertEquals(req.trailers?.get("node"), "js");
+    assertEquals(req.headers.get("deno"), null);
+    assertEquals(req.headers.get("node"), null);
+    assertEquals(req.headers.get("trailer"), "deno,node");
+    assertEquals(await req.text(), "ok");
+    assertEquals(req.headers.get("deno"), "land");
+    assertEquals(req.headers.get("node"), "js");
   });
 
   t.test("serveioWriteResponse", async function serveioWriteResponse() {
@@ -289,13 +286,11 @@ group("serveio", (t) => {
     assertEquals(res.status, 200);
     assertEquals(res.headers.get("trailer"), "deno,node");
     assertEquals(res.headers.get("transfer-encoding"), "chunked");
-    const resBody = new Buffer();
-    await copy(resBody, res.body);
-    assertEquals(resBody.toString(), "ok");
-    assertEquals(res.trailers, undefined);
-    await res.finalize();
-    assertEquals(res.trailers?.get("deno"), "land");
-    assertEquals(res.trailers?.get("node"), "js");
+    assertEquals(res.headers.get("deno"), null);
+    assertEquals(res.headers.get("node"), null);
+    assertEquals(await res.text(), "ok");
+    assertEquals(res.headers.get("deno"), "land");
+    assertEquals(res.headers.get("node"), "js");
   });
 });
 group("serveio/setupBody", (t) => {

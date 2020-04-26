@@ -10,6 +10,7 @@
       "/io/bufio.ts",
       "/io/readers.ts",
       "/io/writers.ts",
+      "/http/io.ts",
       "/encoding/utf8.ts",
       "/flags/mod.ts",
       "/fmt/sprintf.ts",

@@ -2,11 +2,8 @@
 import {
   handleKeepAliveConn,
   listenAndServe,
-  ServerResponse,
   ServerRequest,
 } from "./server.ts";
-import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
-import { StringWriter } from "./vendor/https/deno.land/std/io/writers.ts";
 import {
   assertEquals,
   assertThrowsAsync,
@@ -28,14 +25,14 @@ group("server", (t) => {
     const listener = listenAndServe({ port }, handler);
     const agent = createAgent("http://127.0.0.1:" + port);
     try {
-      const { headers, status, body } = await agent.send({
+      const { headers, status, text } = await agent.send({
         path: "/",
         method: "GET",
       });
       assertEquals(headers.get("content-length"), "2");
       assertEquals(status, 200);
       assertEquals(headers.get("content-type"), "text/plain; charset=UTF-8");
-      assertEquals(await body.text(), "ok");
+      assertEquals(await text(), "ok");
     } finally {
       agent.conn.close();
       listener.close();
@@ -58,8 +55,8 @@ group("server", (t) => {
         }),
         body: "hello",
       };
-      const { status, finalize } = await agent.send(req);
-      await finalize();
+      const { status, body } = await agent.send(req);
+      await body.close();
       assertEquals(200, status);
       await delay(100);
       await assertThrowsAsync(async () => {
@@ -86,8 +83,8 @@ group("server", (t) => {
           }),
           body: encode("hello"),
         };
-        const { status, finalize } = await agent.send(req);
-        await finalize();
+        const { status, body } = await agent.send(req);
+        await body.close();
         assertEquals(200, status);
         await assertThrowsAsync(async () => {
           await agent.send(req);
@@ -112,8 +109,8 @@ group("server", (t) => {
         }),
         body: "hello",
       };
-      const { status, finalize } = await agent.send(req);
-      await finalize();
+      const { status, body } = await agent.send(req);
+      await body.close();
       assertEquals(200, status);
       await assertThrowsAsync(async () => {
         await agent.send(req);
@@ -152,11 +149,11 @@ group("server", (t) => {
     await d;
     const responseReader = new BufReader(w);
     const resp1 = await readResponse(responseReader);
-    assertEquals(await resp1.body.text(), "resp:1");
+    assertEquals(await resp1.text(), "resp:1");
     const resp2 = await readResponse(responseReader);
-    assertEquals(await resp2.body.text(), "resp:2");
+    assertEquals(await resp2.text(), "resp:2");
     const resp3 = await readResponse(responseReader);
-    assertEquals(await resp3.body.text(), "resp:3");
+    assertEquals(await resp3.text(), "resp:3");
   });
 });
 

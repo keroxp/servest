@@ -32,7 +32,7 @@ group({
   });
   test("should handle global error", async () => {
     const res = await get("/throw");
-    const text = await res.body.text();
+    const text = await res.text();
     assertEquals(res.status, 500);
     assertMatch(text, /Error: throw/);
   });

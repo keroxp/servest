@@ -14,6 +14,8 @@ import Listener = Deno.Listener;
 import { BodyReader } from "./readers.ts";
 import ListenTLSOptions = Deno.ListenTLSOptions;
 import { promiseWaitQueue } from "./util.ts";
+import { BodyParser } from "./body_parser.ts";
+import { DataHolder, createDataHolder } from "./data_holder.ts";
 
 export type HttpBody = string | Uint8Array | Reader | ReadableStream<
   Uint8Array
@@ -45,12 +47,12 @@ export type ServerResponse = {
 };
 
 /** Incoming http request for handling request from client */
-export type IncomingHttpRequest = {
+export interface IncomingHttpRequest extends BodyParser {
   /** Raw requested URL (path + query): /path/to/resource?a=1&b=2 */
   url: string;
   /** Path part of url: /path/to/resource */
   path: string;
-  /** Query part of url: ?a=1&b=2 */
+  /** Parsed query part of url: ?a=1&b=2 */
   query: URLSearchParams;
   /** HTTP method */
   method: string;
@@ -59,16 +61,12 @@ export type IncomingHttpRequest = {
   /** HTTP Headers */
   headers: Headers;
   /** HTTP Body */
-  body?: BodyReader;
+  body: BodyReader;
   /** Cookie */
   cookies: Map<string, string>;
-  /** Trailer headers. Note that it won't be assigned until finalizer will be called */
-  trailers?: Headers;
   /** keep-alive info */
   keepAlive?: KeepAlive;
-  /** Request finalizer. Consume all body and trailers */
-  finalize: () => Promise<void>;
-};
+}
 
 export type KeepAlive = {
   timeout: number;
@@ -76,14 +74,15 @@ export type KeepAlive = {
 };
 
 /** Outgoing http response for building request to server */
-export type ServerRequest = IncomingHttpRequest & {
+export interface ServerRequest
+  extends IncomingHttpRequest, DataHolder, ServerResponder {
   conn: Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
-} & ServerResponder;
+}
 
 /** Incoming http response for receiving from server */
-export type IncomingHttpResponse = {
+export interface IncomingHttpResponse extends BodyParser {
   /** requested protocol. like HTTP/1.1 */
   proto: string;
   /** request path with queries. always begin with / */
@@ -94,19 +93,14 @@ export type IncomingHttpResponse = {
   headers: Headers;
   /** HTTP Body */
   body: BodyReader;
-  /** trailer headers. Note that it won't be assigned until finalizer will be called */
-  trailers?: Headers;
-  /** Request finalizer. Consume all body and trailers */
-  finalize: () => Promise<void>;
-};
+}
 
-export type ClientResponse = IncomingHttpResponse & {
+export interface ClientResponse extends IncomingHttpResponse {
   conn: Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
-};
+} /** serve options */
 
-/** serve options */
 export type ServeOptions = {
   /** canceller promise for async iteration. use defer() */
   cancel?: Promise<void>;
@@ -219,16 +213,18 @@ export function handleKeepAliveConn(
       return responded;
     };
     const responder = createResponder(bufWriter, onResponse);
+    const dataHolder = createDataHolder();
     const req: ServerRequest = {
       ...baseReq,
       bufWriter,
       bufReader,
       conn,
       ...responder,
+      ...dataHolder,
     };
     await handler(req);
     await responded;
-    await req.finalize();
+    await req.body.close();
     if (req.respondedStatus() === 101) {
       // If upgraded, stop processing
       return;

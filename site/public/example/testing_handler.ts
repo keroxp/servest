@@ -3,7 +3,7 @@ import { assertEquals } from "https://deno.land/std/testing/asserts.ts";
 import { createRecorder, ServeHandler } from "../../../mod.ts";
 
 const handleRequest: ServeHandler = async (req) => {
-  const body = await req.body!.text();
+  const body = await req.text();
   return req.respond({ status: 200, body: "Hello! " + body });
 };
 
@@ -14,5 +14,5 @@ Deno.test("handler should respond with 200", async () => {
   // Obtain recorded response
   const resp = await recorder.response();
   assertEquals(resp.status, 200);
-  assertEquals(await resp.body.text(), "Hello! Deno");
+  assertEquals(await resp.text(), "Hello! Deno");
 });
