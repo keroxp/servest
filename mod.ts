@@ -3,6 +3,7 @@ export * from "./agent.ts";
 export * from "./app.ts";
 export * from "./body_parser.ts";
 export * from "./cookie.ts";
+export * from "./data_holder.ts";
 export * from "./error.ts";
 export * from "./jsx.ts";
 export * from "./logger.ts";
