@@ -36,5 +36,5 @@ app.catch(async (e, req) => {
     await req.sendFile(resolve("./public/error.html"));
   }
 });
-const port = Deno.env()["PORT"] || "8899";
+const port = Deno.env.get("PORT") ?? "8899";
 app.listen({ hostname: "0.0.0.0", port: parseInt(port) });
