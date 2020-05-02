@@ -114,7 +114,7 @@ export function createAgent(
         conn: _conn,
       }));
     } catch (e) {
-      if (e === UnexpectedEofError) {
+      if (e instanceof UnexpectedEofError) {
         throw new ConnectionClosedError();
       } else {
         throw e;

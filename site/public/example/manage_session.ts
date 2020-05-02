@@ -38,8 +38,8 @@ app.use(async (req) => {
   // save session to store
   sessionMap.set(req, session);
 });
-app.get("/", async (req, { match }) => {
-  const [_, id] = match;
+app.get("/", async (req) => {
+  const [_, id] = req.match;
   await req.respond({
     status: 200,
     headers: new Headers({

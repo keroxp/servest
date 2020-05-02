@@ -19,6 +19,7 @@ import {
 } from "./vendor/https/deno.land/std/http/io.ts";
 import { createBodyParser, BodyParser } from "./body_parser.ts";
 import { createDataHolder } from "./data_holder.ts";
+import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
 export type ResponseRecorder = ServerRequest & {
   /** Obtain recorded response */
@@ -84,6 +85,8 @@ export function createRecorder({
   const cookies = parseCookie(headers.get("Cookie") || "");
   const { pathname: path, searchParams: query } = new URL(url, "http://dummy");
   const dataHolder = createDataHolder();
+  const match = url.match(/^\//);
+  assert(match != null);
   return {
     url,
     path,
@@ -97,6 +100,7 @@ export function createRecorder({
     bufReader,
     conn,
     cookies,
+    match,
     ...responder,
     ...bodyParser,
     ...dataHolder,
