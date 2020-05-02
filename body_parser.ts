@@ -4,6 +4,7 @@ import {
   MultipartFormData,
 } from "./vendor/https/deno.land/std/mime/multipart.ts";
 import Reader = Deno.Reader;
+import { decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 
 export interface BodyParser {
   text(): Promise<string>;
@@ -64,22 +65,22 @@ export function createBodyParser(holder: {
     if (jsonBody) {
       return jsonBody as T;
     } else if (bodyBuf) {
-      return (jsonBody = JSON.parse(bodyBuf.toString()));
+      return (jsonBody = JSON.parse(decode(bodyBuf.bytes())));
     }
     bodyBuf = new Deno.Buffer();
     await Deno.copy(holder.reader, bodyBuf);
-    return JSON.parse(bodyBuf.toString());
+    return JSON.parse(decode(bodyBuf.bytes()));
   }
 
   async function text(): Promise<string> {
     if (textBody) {
       return textBody;
     } else if (bodyBuf) {
-      return (textBody = bodyBuf.toString());
+      return (textBody = decode(bodyBuf.bytes()));
     }
     bodyBuf = new Deno.Buffer();
     await Deno.copy(holder.reader, bodyBuf);
-    return (textBody = bodyBuf.toString());
+    return (textBody = decode(bodyBuf.bytes()));
   }
 
   async function arrayBuffer(): Promise<Uint8Array> {
@@ -139,7 +140,7 @@ export async function parseUrlEncodedForm(req: {
   }
   const buf = new Deno.Buffer();
   await Deno.copy(req.body, buf);
-  const params = new URLSearchParams(decodeURIComponent(buf.toString()));
+  const params = new URLSearchParams(decodeURIComponent(decode(buf.bytes())));
   function* entries() {
     for (const i of params.entries()) {
       yield i;

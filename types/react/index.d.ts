@@ -3286,9 +3286,9 @@ type MergePropTypes<P, T> =
   : // Prefer declared types which are not exactly any
   Pick<P, NotExactlyAnyPropertyKeys<P>>
   & // For props which are exactly any, use the type inferred from propTypes if present
-  Pick<T, Exclude<keyof T, NotExactlyAnyPropertyKeys<P>>>
+   Pick<T, Exclude<keyof T, NotExactlyAnyPropertyKeys<P>>>
   & // Keep leftover props not specified in propTypes
-  Pick<P, Exclude<keyof P, keyof T>>
+   Pick<P, Exclude<keyof P, keyof T>>
     : never;
 
 // Any prop that has a default prop becomes optional, but its type is unchanged

@@ -6,7 +6,7 @@ import {
   assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { serveJsx } from "./serve_jsx.ts";
-import { pathResolver, readString } from "./util.ts";
+import { pathResolver } from "./util.ts";
 import { group } from "./test_util.ts";
 
 group("serveJsx", (t) => {
@@ -24,7 +24,7 @@ group("serveJsx", (t) => {
     assertEquals(resp.status, 200);
     assertMatch(resp.headers.get("content-type")!, /text\/html/);
     assertEquals(
-      await readString(resp.body),
+      await resp.text(),
       '<html data-reactroot="">deno</html>',
     );
   });

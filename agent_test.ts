@@ -6,17 +6,8 @@ import {
   assertEquals,
   assertThrows,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import Reader = Deno.Reader;
-import Buffer = Deno.Buffer;
-import copy = Deno.copy;
 import { group } from "./test_util.ts";
 import { ServeListener } from "./server.ts";
-
-async function readString(r: Reader) {
-  const buf = new Buffer();
-  await copy(r, buf);
-  return buf.toString();
-}
 
 function setupRouter(port: number): ServeListener {
   const app = createApp();
@@ -51,7 +42,7 @@ group("agent", ({ test, setupAll }) => {
           method: "GET",
         });
         assertEquals(res.status, 200);
-        assertEquals(await readString(res.body), "ok");
+        assertEquals(await res.text(), "ok");
       }
       {
         const res = await agent.send({
@@ -60,7 +51,7 @@ group("agent", ({ test, setupAll }) => {
           body: encode("denoland"),
         });
         assertEquals(res.status, 200);
-        assertEquals(await readString(res.body), "denoland");
+        assertEquals(await res.text(), "denoland");
       }
     } finally {
       agent.conn.close();
@@ -75,7 +66,7 @@ group("agent", ({ test, setupAll }) => {
           method: "GET",
         });
         assertEquals(res.status, 200);
-        const resp = JSON.parse(await readString(res.body));
+        const resp = await res.json();
         assertEquals(resp["args"]["deno"], "land");
       }
       {
@@ -88,8 +79,7 @@ group("agent", ({ test, setupAll }) => {
           body: "deno=land",
         });
         assertEquals(res.status, 200);
-        const body = await readString(res.body);
-        const resp = JSON.parse(body);
+        const resp = await res.json();
         assertEquals(resp["form"]["deno"], "land");
       }
     } finally {
@@ -101,12 +91,12 @@ group("agent", ({ test, setupAll }) => {
     try {
       await agent.send({ path: "/get", method: "GET" });
       await agent.send({ path: "/post", method: "POST", body: encode("ko") });
-      const { body } = await agent.send({
+      const resp = await agent.send({
         path: "/post",
         method: "POST",
         body: encode("denoland"),
       });
-      assertEquals(await readString(body), "denoland");
+      assertEquals(await resp.text(), "denoland");
     } finally {
       agent.conn.close();
     }

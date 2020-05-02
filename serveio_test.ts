@@ -17,7 +17,6 @@ import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
 import { ServerResponse } from "./server.ts";
-import { readString } from "./util.ts";
 import { group } from "./test_util.ts";
 
 group("serveio", (t) => {
@@ -87,7 +86,7 @@ group("serveio", (t) => {
     assertEquals(req.headers.get("content-type"), "text/plain");
     assertEquals(req.headers.get("content-length"), "69");
     assertEquals(
-      await readString(req.body!),
+      await req.text(),
       "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
     );
     f.close();
@@ -105,7 +104,7 @@ group("serveio", (t) => {
       assertEquals(req.headers.get("content-type"), "text/plain");
       assertEquals(req.headers.get("transfer-encoding"), "chunked");
       assertEquals(
-        await readString(req.body!),
+        await req.text(),
         "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
       );
       f.close();
@@ -247,9 +246,7 @@ group("serveio", (t) => {
       assertEquals(res.status, 200);
       assertEquals(res.headers.get("content-type"), expContentType);
       assertEquals(res.headers.get("content-length"), len);
-      const resBody = new Buffer();
-      await Deno.copy(res.body, resBody);
-      assertEquals(resBody.toString(), "ok");
+      assertEquals(await res.text(), "ok");
     }
   });
 
@@ -262,9 +259,7 @@ group("serveio", (t) => {
     const res = await readResponse(buf);
     assertEquals(res.status, 200);
     assertEquals(res.headers.get("content-length"), "2");
-    const resBody = new Buffer();
-    await Deno.copy(res.body, resBody);
-    assertEquals(resBody.toString(), "ok");
+    assertEquals(await res.text(), "ok");
   });
 
   t.test("serveioWriteResponseWithTrailers", async function () {
