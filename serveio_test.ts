@@ -33,7 +33,7 @@ group("serveio", (t) => {
     assertEquals(req.headers.get("host"), "deno.land");
     assertEquals(req.headers.get("content-type"), "text/plain");
     const eof = await req.body.read(new Uint8Array());
-    assertEquals(eof, Deno.EOF);
+    assertEquals(eof, null);
     f.close();
   });
 
@@ -50,7 +50,7 @@ group("serveio", (t) => {
       assertEquals(req.headers.get("host"), "deno.land");
       assertEquals(req.headers.get("content-type"), "text/plain");
       const eof = await req.body.read(new Uint8Array());
-      assertEquals(eof, Deno.EOF);
+      assertEquals(eof, null);
       f.close();
     },
   );
@@ -71,7 +71,7 @@ group("serveio", (t) => {
       assertEquals(req.headers.get("host"), "deno.land");
       assertEquals(req.headers.get("content-type"), "text/plain");
       const eof = await req.body.read(new Uint8Array());
-      assertEquals(eof, Deno.EOF);
+      assertEquals(eof, null);
       f.close();
     },
   );
@@ -248,7 +248,7 @@ group("serveio", (t) => {
       assertEquals(res.headers.get("content-type"), expContentType);
       assertEquals(res.headers.get("content-length"), len);
       const resBody = new Buffer();
-      await copy(resBody, res.body);
+      await Deno.copy(res.body, resBody);
       assertEquals(resBody.toString(), "ok");
     }
   });
@@ -263,7 +263,7 @@ group("serveio", (t) => {
     assertEquals(res.status, 200);
     assertEquals(res.headers.get("content-length"), "2");
     const resBody = new Buffer();
-    await copy(resBody, res.body);
+    await Deno.copy(res.body, resBody);
     assertEquals(resBody.toString(), "ok");
   });
 

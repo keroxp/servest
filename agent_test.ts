@@ -14,7 +14,7 @@ import { ServeListener } from "./server.ts";
 
 async function readString(r: Reader) {
   const buf = new Buffer();
-  await copy(buf, r);
+  await copy(r, buf);
   return buf.toString();
 }
 

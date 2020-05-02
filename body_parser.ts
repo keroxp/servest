@@ -67,7 +67,7 @@ export function createBodyParser(holder: {
       return (jsonBody = JSON.parse(bodyBuf.toString()));
     }
     bodyBuf = new Deno.Buffer();
-    await Deno.copy(bodyBuf, holder.reader);
+    await Deno.copy(holder.reader, bodyBuf);
     return JSON.parse(bodyBuf.toString());
   }
 
@@ -78,7 +78,7 @@ export function createBodyParser(holder: {
       return (textBody = bodyBuf.toString());
     }
     bodyBuf = new Deno.Buffer();
-    await Deno.copy(bodyBuf, holder.reader);
+    await Deno.copy(holder.reader, bodyBuf);
     return (textBody = bodyBuf.toString());
   }
 
@@ -87,7 +87,7 @@ export function createBodyParser(holder: {
       return bodyBuf.bytes();
     }
     bodyBuf = new Deno.Buffer();
-    await Deno.copy(bodyBuf, holder.reader);
+    await Deno.copy(holder.reader, bodyBuf);
     return bodyBuf.bytes();
   }
   return { json, text, formData, arrayBuffer };
@@ -138,7 +138,7 @@ export async function parseUrlEncodedForm(req: {
     throw new Error("is not form urlencoded request");
   }
   const buf = new Deno.Buffer();
-  await Deno.copy(buf, req.body);
+  await Deno.copy(req.body, buf);
   const params = new URLSearchParams(decodeURIComponent(buf.toString()));
   function* entries() {
     for (const i of params.entries()) {

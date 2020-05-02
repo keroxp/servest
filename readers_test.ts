@@ -19,8 +19,8 @@ group("streamReader", ({ test }) => {
     const sr = streamReader(stream);
     const buf = new Uint8Array(3);
     const dest = new Deno.Buffer();
-    let result: Deno.EOF | number = 0;
-    while ((result = await sr.read(buf)) !== Deno.EOF) {
+    let result: null | number = 0;
+    while ((result = await sr.read(buf)) !== null) {
       await dest.write(buf.subarray(0, result));
     }
     assertEquals(dest.toString(), "Go To -> [deno.land]");

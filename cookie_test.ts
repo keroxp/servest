@@ -26,9 +26,11 @@ group("parseSetCookie", ({ test }) => {
   const path = "/path";
   const sameSite = "Lax";
   test("basic", () => {
-    const e = `deno=land; Expires=${toIMF(
-      expires,
-    )}; Max-Age=${maxAge}; Domain=${domain}; Path=${path}; Secure; HttpOnly; SameSite=${sameSite}`;
+    const e = `deno=land; Expires=${
+      toIMF(
+        expires,
+      )
+    }; Max-Age=${maxAge}; Domain=${domain}; Path=${path}; Secure; HttpOnly; SameSite=${sameSite}`;
     const { name, value, ...opts } = parseSetCookie(e);
     assertEquals(name, "deno");
     assertEquals(value, "land");
@@ -59,9 +61,11 @@ group("cookieToString", ({ test }) => {
     });
     assertEquals(
       cookie,
-      `deno=land; Expires=${toIMF(
-        expires,
-      )}; Max-Age=${maxAge}; Domain=${domain}; Path=${path}; Secure; HttpOnly; SameSite=${sameSite}`,
+      `deno=land; Expires=${
+        toIMF(
+          expires,
+        )
+      }; Max-Age=${maxAge}; Domain=${domain}; Path=${path}; Secure; HttpOnly; SameSite=${sameSite}`,
     );
   });
   test("should throw if maxAge is not integer", () => {

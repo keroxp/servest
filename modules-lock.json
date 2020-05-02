@@ -1,6 +1,6 @@
 {
   "https://deno.land/std": {
-    "version": "@v0.41.0",
+    "version": "@v0.42.0",
     "modules": [
       "/testing/asserts.ts",
       "/textproto/mod.ts",
@@ -17,8 +17,8 @@
       "/fmt/colors.ts",
       "/mime/multipart.ts",
       "/util/async.ts",
-      "/ws/mod.ts",
-      "/ws/sha1.ts"
+      "/util/sha1.ts",
+      "/ws/mod.ts"
     ]
   },
   "https://dev.jspm.io/react": {

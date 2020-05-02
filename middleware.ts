@@ -1,6 +1,6 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { RoutingError } from "./error.ts";
-import { Sha1 } from "./vendor/https/deno.land/std/ws/sha1.ts";
+import { Sha1 } from "./vendor/https/deno.land/std/util/sha1.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { ServeHandler } from "./server.ts";
 

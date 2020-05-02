@@ -12,14 +12,18 @@ import { createResponder, ServerResponder } from "./responder.ts";
 import ListenOptions = Deno.ListenOptions;
 import Listener = Deno.Listener;
 import { BodyReader } from "./readers.ts";
-import ListenTLSOptions = Deno.ListenTLSOptions;
+import ListenTlsOptions = Deno.ListenTlsOptions;
 import { promiseWaitQueue } from "./util.ts";
 import { BodyParser } from "./body_parser.ts";
 import { DataHolder, createDataHolder } from "./data_holder.ts";
 
-export type HttpBody = string | Uint8Array | Reader | ReadableStream<
-  Uint8Array
->;
+export type HttpBody =
+  | string
+  | Uint8Array
+  | Reader
+  | ReadableStream<
+    Uint8Array
+  >;
 /** request data for building http request to server */
 export type ClientRequest = {
   /** full request url with queries */
@@ -118,12 +122,12 @@ function createListener(opts: HostPort): Listener {
   return Deno.listen({ ...opts, transport: "tcp" });
 }
 
-export function listenAndServeTLS(
-  listenOptions: ListenTLSOptions,
+export function listenAndServeTls(
+  listenOptions: ListenTlsOptions,
   handler: ServeHandler,
   opts?: ServeOptions,
 ): ServeListener {
-  const listener = Deno.listenTLS(listenOptions);
+  const listener = Deno.listenTls(listenOptions);
   return listenInternal(listener, handler, opts);
 }
 
@@ -231,10 +235,10 @@ export function handleKeepAliveConn(
     }
     let keepAliveTimeout = originalOpts.keepAliveTimeout;
     if (req.keepAlive && req.keepAlive.max <= 0) {
-      throw Deno.EOF;
+      throw new Error("keep-alive ended");
     }
     if (req.headers.get("connection") === "close") {
-      throw Deno.EOF;
+      throw new Error("connection closed header");
     }
     if (req.keepAlive) {
       keepAliveTimeout = Math.min(

@@ -5,3 +5,8 @@ export class RoutingError extends Error {
     super(msg ?? kHttpStatusMessages[status]);
   }
 }
+export class UnexpectedEofError extends Error {
+}
+
+/** error that is thrown when tcp connection is closed */
+export class ConnectionClosedError extends Error {}

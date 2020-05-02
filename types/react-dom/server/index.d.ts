@@ -26,7 +26,7 @@ export function renderToString(element: ReactElement): string;
  * `ReactDOMServer.renderToString()` would return.
  */
 export function renderToNodeStream(
-  element: ReactElement
+  element: ReactElement,
 ): NodeJS.ReadableStream;
 
 /**
@@ -43,7 +43,7 @@ export function renderToStaticMarkup(element: ReactElement): string;
  * is exactly equal to what `ReactDOMServer.renderToStaticMarkup()` would return.
  */
 export function renderToStaticNodeStream(
-  element: ReactElement
+  element: ReactElement,
 ): NodeJS.ReadableStream;
 
 export const version: string;

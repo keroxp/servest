@@ -10,7 +10,7 @@ export function pathResolver(meta: ImportMeta): (p: string) => string {
 
 export async function readString(r: Deno.Reader): Promise<string> {
   const buf = new Deno.Buffer();
-  await Deno.copy(buf, r);
+  await Deno.copy(r, buf);
   return buf.toString();
 }
 

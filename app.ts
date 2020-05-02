@@ -1,7 +1,7 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   listenAndServe,
-  listenAndServeTLS,
+  listenAndServeTls,
   ServeListener,
   ServeOptions,
   ServerRequest,
@@ -19,8 +19,8 @@ export interface App extends Router {
   listen(addr: Deno.ListenOptions, opts?: ServeOptions): ServeListener;
 
   /** Start listening for HTTPS server */
-  listenTLS(
-    tlsOptions: Deno.ListenTLSOptions,
+  listenTls(
+    tlsOptions: Deno.ListenTlsOptions,
     opts?: ServeOptions,
   ): ServeListener;
 }
@@ -84,11 +84,11 @@ export function createApp(
     info(`listening on ${addr.hostname}:${addr.port}`);
     return listener;
   }
-  function listenTLS(
-    listenOptions: Deno.ListenTLSOptions,
+  function listenTls(
+    listenOptions: Deno.ListenTlsOptions,
     opts?: ServeOptions,
   ): ServeListener {
-    const listener = listenAndServeTLS(
+    const listener = listenAndServeTls(
       listenOptions,
       (req) => handleRoute("", req),
       opts,
@@ -96,5 +96,5 @@ export function createApp(
     info(`listening on ${listenOptions.hostname || ""}:${listenOptions.port}`);
     return listener;
   }
-  return { ...router, handleRoute, listen, listenTLS };
+  return { ...router, handleRoute, listen, listenTls };
 }

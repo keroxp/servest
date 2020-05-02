@@ -30,7 +30,7 @@ group("responder", (t) => {
     assertEquals(resp.status, 200);
     assertEquals(resp.headers.get("content-type"), "text/plain");
     const sw = new StringWriter();
-    await copy(sw, resp.body as Reader);
+    await copy(resp.body, sw);
     assertEquals(sw.toString(), "ok");
   });
 
@@ -41,11 +41,15 @@ group("responder", (t) => {
       status: 200,
       headers: new Headers(),
     });
-    await assertThrowsAsync(async () =>
-      res.respond({
-        status: 200,
-        headers: new Headers(),
-      }), Error, "responded");
+    await assertThrowsAsync(
+      async () =>
+        res.respond({
+          status: 200,
+          headers: new Headers(),
+        }),
+      Error,
+      "responded",
+    );
   });
 
   t.test("sendFile() basic", async function () {
