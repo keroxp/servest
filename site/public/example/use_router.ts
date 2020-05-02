@@ -21,7 +21,7 @@ function UserRoutes() {
     // POST /users
   });
   router.get("/sign_in", (req) => {
-    // POST /sign_in,
+    // GET /users/sign_in,
   });
   function UserPostRoutes() {
     const router = createRouter();

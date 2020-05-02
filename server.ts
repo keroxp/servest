@@ -83,6 +83,8 @@ export interface ServerRequest
   conn: Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
+  /** Match result of path patterns */
+  match: RegExpMatchArray;
 }
 
 /** Incoming http response for receiving from server */
@@ -103,8 +105,9 @@ export interface ClientResponse extends IncomingHttpResponse {
   conn: Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
-} /** serve options */
+}
 
+/** serve options */
 export type ServeOptions = {
   /** canceller promise for async iteration. use defer() */
   cancel?: Promise<void>;
@@ -217,6 +220,10 @@ export function handleKeepAliveConn(
       return responded;
     };
     const responder = createResponder(bufWriter, onResponse);
+    const match = baseReq.url.match(/^\//);
+    if (!match) {
+      throw new Error("malformed url");
+    }
     const dataHolder = createDataHolder();
     const req: ServerRequest = {
       ...baseReq,
@@ -225,6 +232,7 @@ export function handleKeepAliveConn(
       conn,
       ...responder,
       ...dataHolder,
+      match,
     };
     await handler(req);
     await responded;

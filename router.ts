@@ -12,17 +12,14 @@ import {
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
 /** Router handler */
-export type RouteHandler = (req: ServerRequest, params: RouteParams) =>
+export type RouteHandler = (req: ServerRequest) =>
   | void
   | Promise<void>;
-export type RouteParams = {
-  match: RegExpMatchArray;
-};
+
 /** WebSocket Handler */
 export type WebSocketHandler = (
   sock: WebSocket,
   req: ServerRequest,
-  params: RouteParams,
 ) => void | Promise<void>;
 
 /** Global error handler for requests */
@@ -176,14 +173,13 @@ export function createRouter(): Router {
   async function chainRoutes(
     prefix: string,
     req: ServerRequest,
-    params: RouteParams,
     handlers: (RouteHandler | Router)[],
   ): Promise<boolean> {
     for (const handler of handlers) {
       if (isRoute(handler)) {
         await handler.handleRoute(prefix, req);
       } else {
-        await handler(req, params);
+        await handler(req);
       }
       if (req.isResponded()) {
         return true;
@@ -206,14 +202,8 @@ export function createRouter(): Router {
       if (subpath.startsWith(prefix)) {
         const match = subpath.match(new RegExp(`^${prefix}`));
         assert(match != null);
-        if (
-          await chainRoutes(
-            parentMatch + prefix,
-            req,
-            { match },
-            handlers,
-          )
-        ) {
+        req.match = match;
+        if (await chainRoutes(parentMatch + prefix, req, handlers)) {
           return;
         }
       }
@@ -228,13 +218,14 @@ export function createRouter(): Router {
         if (methods && !methods.includes(req.method)) {
           continue;
         }
-        if (await chainRoutes(parentMatch + match, req, { match }, handlers)) {
+        req.match = match;
+        if (await chainRoutes(parentMatch + match, req, handlers)) {
           return;
         }
         if (wsHandler && acceptable(req)) {
           const sock = await acceptWebSocket(req);
           req.markAsResponded(101);
-          wsHandler(sock, req, { match });
+          wsHandler(sock, req);
         }
       }
       if (!req.isResponded()) {

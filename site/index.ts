@@ -14,8 +14,8 @@ app.use(serveStatic(resolve("./public")));
 app.use(serveJsx(resolve("./pages"), (f) => import(f), Layout));
 app.get(
   new RegExp("^/@(?<version>.*?)/(?<pathname>.+?)$"),
-  async (req, { match }) => {
-    let { version, pathname } = match.groups!;
+  async (req) => {
+    let { version, pathname } = req.match.groups!;
     if (!version) {
       version = "master";
     }

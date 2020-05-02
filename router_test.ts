@@ -32,8 +32,8 @@ group("router", (t) => {
     router.handle(new RegExp("^/Var"), async (req) => {
       await req.respond({ status: 200, body: req.url });
     });
-    router.handle(new RegExp("/foo/(?<id>.+)"), async (req, params) => {
-      const { id } = params.match.groups!;
+    router.handle(new RegExp("^/foo/(?<id>.+)"), async (req) => {
+      const { id } = req.match.groups!;
       await req.respond({
         status: 200,
         headers: new Headers({
