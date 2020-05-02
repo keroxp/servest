@@ -8,12 +8,6 @@ export function pathResolver(meta: ImportMeta): (p: string) => string {
   return (p) => new URL(p, meta.url).pathname;
 }
 
-export async function readString(r: Deno.Reader): Promise<string> {
-  const buf = new Deno.Buffer();
-  await Deno.copy(buf, r);
-  return buf.toString();
-}
-
 export interface PromiseWaitQueue<T, P> {
   enqueue(t: T): Promise<P>;
 }

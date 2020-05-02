@@ -6,9 +6,11 @@ export type CodeState = {
   code: string;
 };
 
-export const Code: FC<CodeState & {
-  lang?: string;
-}> = ({ code, href, lang }) => {
+export const Code: FC<
+  CodeState & {
+    lang?: string;
+  }
+> = ({ code, href, lang }) => {
   let cls = "";
   let basename: string | undefined;
   if (href) {

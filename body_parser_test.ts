@@ -41,28 +41,40 @@ group("multipart", ({ test }) => {
   });
   test("should throw if content-type is invalid", async () => {
     const body = new Buffer();
-    await assertThrowsAsync(async () => {
-      await parserMultipartRequest({
-        headers: new Headers(),
-        body,
-      });
-    }, Error, "is not multipart");
-    await assertThrowsAsync(async () => {
-      await parserMultipartRequest({
-        headers: new Headers({
-          "content-type": "application/json",
-        }),
-        body,
-      });
-    }, Error, "is not multipart");
-    await assertThrowsAsync(async () => {
-      await parserMultipartRequest({
-        headers: new Headers({
-          "content-type": "multipart/form-data; ",
-        }),
-        body,
-      });
-    }, Error, "doesn't have boundary");
+    await assertThrowsAsync(
+      async () => {
+        await parserMultipartRequest({
+          headers: new Headers(),
+          body,
+        });
+      },
+      Error,
+      "is not multipart",
+    );
+    await assertThrowsAsync(
+      async () => {
+        await parserMultipartRequest({
+          headers: new Headers({
+            "content-type": "application/json",
+          }),
+          body,
+        });
+      },
+      Error,
+      "is not multipart",
+    );
+    await assertThrowsAsync(
+      async () => {
+        await parserMultipartRequest({
+          headers: new Headers({
+            "content-type": "multipart/form-data; ",
+          }),
+          body,
+        });
+      },
+      Error,
+      "doesn't have boundary",
+    );
   });
 });
 
@@ -95,9 +107,13 @@ group("bodyParser", ({ test }) => {
     const j = `{ deno: "land" `;
     const r = new StringReader(j);
     const br = createBodyParser({ reader: r, contentType: "application/json" });
-    await assertThrowsAsync(async () => {
-      await br.json();
-    }, SyntaxError, "JSON");
+    await assertThrowsAsync(
+      async () => {
+        await br.json();
+      },
+      SyntaxError,
+      "JSON",
+    );
   });
   test("arrayBuffer()", async () => {
     const bin = new Deno.Buffer(new Uint8Array([0, 1, 2, 3]));

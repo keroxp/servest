@@ -64,7 +64,7 @@ export function serveStatic(
           headers,
         });
       } else {
-        const file = await Deno.open(filepath, "r");
+        const file = await Deno.open(filepath, { read: true });
         try {
           await req.respond({ status: 200, headers, body: file });
         } finally {

@@ -20,7 +20,7 @@ export async function readUntilEof(reader: Deno.Reader): Promise<number> {
   let total = 0;
   while (true) {
     const result = await reader.read(nullBuffer);
-    if (result === Deno.EOF) {
+    if (result == null) {
       break;
     }
     total += result;
@@ -43,7 +43,7 @@ export function timeoutReader(
   }
   let timeoutOrCancel = promiseInterrupter(opts);
   return {
-    async read(p: Uint8Array): Promise<number | Deno.EOF> {
+    async read(p: Uint8Array): Promise<number | null> {
       return await timeoutOrCancel(r.read(p));
     },
   };
@@ -53,7 +53,7 @@ export function streamReader(stream: ReadableStream<Uint8Array>): Deno.Reader {
   const reader = stream.getReader();
   const chunks: Uint8Array[] = [];
 
-  const read = async (p: Uint8Array): Promise<number | Deno.EOF> => {
+  const read = async (p: Uint8Array): Promise<number | null> => {
     const set = (bytes: Uint8Array): number => {
       p.set(bytes);
       return bytes.byteLength;
@@ -70,7 +70,7 @@ export function streamReader(stream: ReadableStream<Uint8Array>): Deno.Reader {
     }
     const { value, done } = await reader.read();
     if (done || !value) {
-      return Deno.EOF;
+      return null;
     }
     if (value.byteLength <= p.byteLength) {
       return set(value);

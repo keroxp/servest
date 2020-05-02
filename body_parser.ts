@@ -4,6 +4,7 @@ import {
   MultipartFormData,
 } from "./vendor/https/deno.land/std/mime/multipart.ts";
 import Reader = Deno.Reader;
+import { decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 
 export interface BodyParser {
   text(): Promise<string>;
@@ -64,22 +65,22 @@ export function createBodyParser(holder: {
     if (jsonBody) {
       return jsonBody as T;
     } else if (bodyBuf) {
-      return (jsonBody = JSON.parse(bodyBuf.toString()));
+      return (jsonBody = JSON.parse(decode(bodyBuf.bytes())));
     }
     bodyBuf = new Deno.Buffer();
-    await Deno.copy(bodyBuf, holder.reader);
-    return JSON.parse(bodyBuf.toString());
+    await Deno.copy(holder.reader, bodyBuf);
+    return JSON.parse(decode(bodyBuf.bytes()));
   }
 
   async function text(): Promise<string> {
     if (textBody) {
       return textBody;
     } else if (bodyBuf) {
-      return (textBody = bodyBuf.toString());
+      return (textBody = decode(bodyBuf.bytes()));
     }
     bodyBuf = new Deno.Buffer();
-    await Deno.copy(bodyBuf, holder.reader);
-    return (textBody = bodyBuf.toString());
+    await Deno.copy(holder.reader, bodyBuf);
+    return (textBody = decode(bodyBuf.bytes()));
   }
 
   async function arrayBuffer(): Promise<Uint8Array> {
@@ -87,7 +88,7 @@ export function createBodyParser(holder: {
       return bodyBuf.bytes();
     }
     bodyBuf = new Deno.Buffer();
-    await Deno.copy(bodyBuf, holder.reader);
+    await Deno.copy(holder.reader, bodyBuf);
     return bodyBuf.bytes();
   }
   return { json, text, formData, arrayBuffer };
@@ -138,8 +139,8 @@ export async function parseUrlEncodedForm(req: {
     throw new Error("is not form urlencoded request");
   }
   const buf = new Deno.Buffer();
-  await Deno.copy(buf, req.body);
-  const params = new URLSearchParams(decodeURIComponent(buf.toString()));
+  await Deno.copy(req.body, buf);
+  const params = new URLSearchParams(decodeURIComponent(decode(buf.bytes())));
   function* entries() {
     for (const i of params.entries()) {
       yield i;

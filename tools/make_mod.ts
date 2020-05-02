@@ -1,6 +1,6 @@
 #!/usr/bin/env deno --allow-read --allow-write
 
-const files = [...Deno.readdirSync(".")].filter((f) => {
+const files = [...Deno.readDirSync(".")].filter((f) => {
   const name = f.name;
   if (!name || name === "mod.ts") return false;
   return name.endsWith(".ts") && !name.endsWith("_test.ts") &&

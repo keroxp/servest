@@ -4,7 +4,7 @@ import {
   assertEquals,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { group } from "./test_util.ts";
-import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
+import { encode, decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 
 group("streamReader", ({ test }) => {
   test("basic", async () => {
@@ -19,10 +19,10 @@ group("streamReader", ({ test }) => {
     const sr = streamReader(stream);
     const buf = new Uint8Array(3);
     const dest = new Deno.Buffer();
-    let result: Deno.EOF | number = 0;
-    while ((result = await sr.read(buf)) !== Deno.EOF) {
+    let result: null | number = 0;
+    while ((result = await sr.read(buf)) !== null) {
       await dest.write(buf.subarray(0, result));
     }
-    assertEquals(dest.toString(), "Go To -> [deno.land]");
+    assertEquals(decode(dest.bytes()), "Go To -> [deno.land]");
   });
 });

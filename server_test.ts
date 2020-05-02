@@ -163,7 +163,6 @@ function dummyConn(r: Deno.Reader, w: Deno.Writer): Deno.Conn {
     rid: -1,
     close(): void {},
     closeWrite(): void {},
-    closeRead(): void {},
     localAddr: addr,
     remoteAddr: addr,
     read: (p) => r.read(p),

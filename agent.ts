@@ -7,9 +7,7 @@ import {
   BufReader,
   BufWriter,
 } from "./vendor/https/deno.land/std/io/bufio.ts";
-import Conn = Deno.Conn;
-import Reader = Deno.Reader;
-import DialOptions = Deno.ConnectOptions;
+import { UnexpectedEofError, ConnectionClosedError } from "./error.ts";
 
 /** keep-alive http agent for single host. each message will be sent in serial */
 export interface HttpAgent {
@@ -20,11 +18,8 @@ export interface HttpAgent {
   /** send request to host. it throws EOF if conn is closed */
   send(opts: HttpAgentSendOptions): Promise<ClientResponse>;
   /** tcp connection for http agent */
-  conn: Conn;
+  conn: Deno.Conn;
 }
-
-/** error that is thrown when tcp connection is closed */
-export class ConnectionClosedError extends Error {}
 
 export type HttpAgentOptions = {
   cancel?: Promise<void>;
@@ -54,7 +49,7 @@ export function createAgent(
 ): HttpAgent {
   let connected = false;
   let connecting = false;
-  let _conn: Conn;
+  let _conn: Deno.Conn;
   let connectDeferred = deferred<void>();
   let bufReader: BufReader;
   let bufWriter: BufWriter;
@@ -70,7 +65,7 @@ export function createAgent(
     if (connected) return;
     if (connecting) return connectDeferred;
     connecting = true;
-    const opts: DialOptions = {
+    const opts: Deno.ConnectOptions = {
       port,
       transport: "tcp",
     };
@@ -80,7 +75,7 @@ export function createAgent(
     if (url.protocol === "http:") {
       _conn = await Deno.connect(opts);
     } else {
-      _conn = await Deno.connectTLS(opts);
+      _conn = await Deno.connectTls(opts);
     }
     bufReader = new BufReader(_conn);
     bufWriter = new BufWriter(_conn);
@@ -119,7 +114,7 @@ export function createAgent(
         conn: _conn,
       }));
     } catch (e) {
-      if (e === Deno.EOF) {
+      if (e === UnexpectedEofError) {
         throw new ConnectionClosedError();
       } else {
         throw e;

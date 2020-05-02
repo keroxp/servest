@@ -4,10 +4,10 @@ import * as path from "../vendor/https/deno.land/std/path/mod.ts";
 export async function fetchDir(dir: string): Promise<number> {
   let codes: string[] = [];
   const glob = path.join(dir, "**/*.ts*");
-  for await (const { filename } of fs.expandGlob(glob)) {
-    if (!filename.endsWith(".d.ts") && filename.match(/\.tsx?$/)) {
-      console.log(filename);
-      codes.push('import "' + filename + '"');
+  for await (const f of fs.expandGlob(glob)) {
+    if (!f.path.endsWith(".d.ts") && f.path.match(/\.tsx?$/)) {
+      console.log(f.path);
+      codes.push('import "' + f.path + '"');
     }
   }
   const encoder = new TextEncoder();

@@ -31,7 +31,6 @@ import { encode, decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
-import EOF = Deno.EOF;
 import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 import { parseCookie } from "./cookie.ts";
 import {
@@ -41,6 +40,7 @@ import {
   writeTrailers,
 } from "./vendor/https/deno.land/std/http/io.ts";
 import { createBodyParser } from "./body_parser.ts";
+import { UnexpectedEofError } from "./error.ts";
 
 export const kDefaultKeepAliveTimeout = 75000; // ms
 
@@ -77,8 +77,8 @@ export async function readRequest(
     timeout: opts.keepAliveTimeout,
     cancel: opts.cancel,
   })(tpReader.readLine());
-  if (resLine === EOF) {
-    throw EOF;
+  if (resLine === null) {
+    throw new UnexpectedEofError();
   }
   const m = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
   assert(m != null, "invalid start line");
@@ -90,8 +90,8 @@ export async function readRequest(
     timeout: opts.readTimeout,
     cancel: opts.cancel,
   })(tpReader.readMIMEHeader());
-  if (headers === EOF) {
-    throw EOF;
+  if (headers === null) {
+    throw new UnexpectedEofError();
   }
   let keepAlive;
   if (headers.has("keep-alive")) {
@@ -112,9 +112,11 @@ export async function readRequest(
       const contentLength = parseInt(headers.get("content-length")!);
       assert(
         contentLength >= 0,
-        `content-length is missing or invalid: ${headers.get(
-          "content-length",
-        )}`,
+        `content-length is missing or invalid: ${
+          headers.get(
+            "content-length",
+          )
+        }`,
       );
       const tr = timeoutReader(bodyReader(contentLength, reader), {
         timeout: opts.readTimeout,
@@ -187,13 +189,13 @@ export async function readResponse(
   const timeoutOrCancel = promiseInterrupter({ timeout, cancel });
   // First line: HTTP/1,1 200 OK
   const line = await timeoutOrCancel(tp.readLine());
-  if (line === EOF) {
-    throw EOF;
+  if (line === null) {
+    throw new UnexpectedEofError();
   }
   const [proto, status, statusText] = line.split(" ", 3);
   const headers = await timeoutOrCancel(tp.readMIMEHeader());
-  if (headers === EOF) {
-    throw EOF;
+  if (headers === null) {
+    throw new UnexpectedEofError();
   }
   const contentLength = headers.get("content-length");
   const isChunked = headers.get("transfer-encoding")?.match(/^chunked/);
@@ -350,14 +352,14 @@ export async function writeBody(
   const hasContentLength = typeof contentLength === "number" &&
     Number.isInteger(contentLength);
   if (hasContentLength) {
-    await Deno.copy(writer, body);
+    await Deno.copy(body, writer);
     await writer.flush();
   } else {
     while (true) {
       // TODO: add opts for buffer size
       const buf = new Uint8Array(2048);
       const result = await body.read(buf);
-      if (result === EOF) {
+      if (result === null) {
         await writer.write(encode("0\r\n\r\n"));
         await writer.flush();
         break;

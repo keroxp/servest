@@ -7,11 +7,11 @@ const dec = new TextDecoder();
 const opts = JSON.parse(dec.decode(Deno.readFileSync(".licenserc.json")));
 const ignore: string[] = opts["ignore"];
 delete opts["ignore"];
-async function readLine(f: Deno.Reader): Promise<string | Deno.EOF> {
+async function readLine(f: Deno.Reader): Promise<string | null> {
   const bufr = BufReader.create(f);
   const tpr = new tp.TextProtoReader(bufr);
   let line = await tpr.readLine();
-  if (line === Deno.EOF) {
+  if (line === null) {
     return line;
   }
   line = line.trimStart();
@@ -23,12 +23,12 @@ async function readLine(f: Deno.Reader): Promise<string | Deno.EOF> {
 let code = 0;
 for (const [key, val] of Object.entries(opts)) {
   const files = [...fs.expandGlobSync(key)]
-    .map((v) => path.relative(".", v.filename))
+    .map((v) => path.relative(".", v.path))
     .filter((v) => !ignore.some((i) => v.startsWith(i)));
   for (const file of files) {
     const f = Deno.openSync(file);
     const line = await readLine(f);
-    if (line == Deno.EOF) {
+    if (line == null) {
       throw new Error("unexpected EOF: " + file);
     }
     if (line !== val) {
