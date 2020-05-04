@@ -11,6 +11,7 @@
       "/io/readers.ts",
       "/io/writers.ts",
       "/http/io.ts",
+      "/http/http_status.ts",
       "/encoding/utf8.ts",
       "/flags/mod.ts",
       "/fmt/sprintf.ts",

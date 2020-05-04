@@ -12,8 +12,6 @@ import {
   Router,
 } from "./router.ts";
 import { RoutingError } from "./error.ts";
-import { kHttpStatusMessages } from "./serveio.ts";
-
 export interface App extends Router {
   /** Start listening with given addr */
   listen(addr: Deno.ListenOptions, opts?: ServeOptions): ServeListener;
@@ -56,7 +54,7 @@ export function createApp(
       } else {
         await req.respond({
           status: 500,
-          body: kHttpStatusMessages[500],
+          body: "Internal Server Error",
         });
         error(e);
       }

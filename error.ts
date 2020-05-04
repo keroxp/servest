@@ -1,8 +1,8 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import { kHttpStatusMessages } from "./serveio.ts";
+import { STATUS_TEXT } from "./vendor/https/deno.land/std/http/http_status.ts";
 export class RoutingError extends Error {
   constructor(readonly status: number, msg?: string) {
-    super(msg ?? kHttpStatusMessages[status]);
+    super(msg ?? STATUS_TEXT.get(status) ?? "");
   }
 }
 export class UnexpectedEofError extends Error {
