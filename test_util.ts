@@ -5,10 +5,10 @@ import {
   AssertionError,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { RoutingError } from "./error.ts";
-import { kHttpStatusMessages } from "./serveio.ts";
 import { createRecorder } from "./testing.ts";
 import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import { red, green } from "./vendor/https/deno.land/std/fmt/colors.ts";
+import { STATUS_TEXT } from "./vendor/https/deno.land/std/http/http_status.ts";
 
 type PromiseOrVal<T> = T | Promise<T>;
 export type SetupFunc = () => PromiseOrVal<TearDownFunc | void>;
@@ -117,5 +117,5 @@ export async function assertRoutingError(
   f: () => Promise<any>,
   status: number,
 ) {
-  await assertThrowsAsync(f, RoutingError, kHttpStatusMessages[status]);
+  await assertThrowsAsync(f, RoutingError, STATUS_TEXT.get(status));
 }

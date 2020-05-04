@@ -29,10 +29,7 @@ export interface ServerResponder extends CookieSetter {
   /** Redirect request with 302 (Found ) */
   redirect(
     url: string,
-    opts?: {
-      headers?: Headers;
-      body?: HttpBody;
-    },
+    resp?: Partial<ServerResponse>,
   ): Promise<void>;
 
   /** Headers to be used for response */
@@ -60,13 +57,16 @@ export function createResponder(
   }
   async function redirect(
     url: string,
-    {
-      headers = new Headers(),
-      body,
-    }: { headers?: Headers; body?: ServerResponse["body"] } = {},
+    resp: Partial<ServerResponse> = {},
   ) {
+    let { status, headers, body, ...rest } = resp;
+    status = status ?? 302;
+    if (status < 300 || 400 <= status) {
+      throw new Error("redirection status code must be 300 ~ 399");
+    }
+    headers = headers ?? new Headers();
     headers.set("location", url);
-    await respond({ status: 302, headers, body });
+    await respond({ status, headers, body, ...rest });
   }
   async function respond(response: ServerResponse): Promise<void> {
     if (isResponded()) {

@@ -92,13 +92,39 @@ group("responder", (t) => {
     assertEquals(await resp.text(), "sample");
   });
 
-  t.test("responder redirect should set Location header", async () => {
+  t.test("redirect() should set Location header", async () => {
     const w = new Deno.Buffer();
     const res = createResponder(w);
     await res.redirect("/index.html");
     const { status, headers } = await readResponse(w);
     assertEquals(status, 302);
     assertEquals(headers.get("location"), "/index.html");
+  });
+
+  t.test("redirect() should use partial body for response", async () => {
+    const w = new Deno.Buffer();
+    const res = createResponder(w);
+    await res.redirect("/", {
+      status: 303,
+      headers: new Headers({ "content-type": "text/plain" }),
+      body: "Redirecting...",
+    });
+    const resp = await readResponse(w);
+    assertEquals(resp.status, 303);
+    assertEquals(resp.headers.get("content-type"), "text/plain");
+    assertEquals(await resp.text(), "Redirecting...");
+  });
+
+  t.test("resirect() should throw error if status code is not in 300~399", async () => {
+    const w = new Deno.Buffer();
+    const res = createResponder(w);
+    await assertThrowsAsync(
+      async () => {
+        await res.redirect("/", { status: 200 });
+      },
+      Error,
+      "redirection status code",
+    );
   });
 
   t.test("markResponded()", async () => {

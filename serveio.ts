@@ -25,7 +25,6 @@ import {
   ServeOptions,
   ServerResponse,
   HttpBody,
-  ClientResponse,
 } from "./server.ts";
 import { encode, decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import Reader = Deno.Reader;
@@ -41,6 +40,10 @@ import {
 } from "./vendor/https/deno.land/std/http/io.ts";
 import { createBodyParser } from "./body_parser.ts";
 import { UnexpectedEofError } from "./error.ts";
+import {
+  Status,
+  STATUS_TEXT,
+} from "./vendor/https/deno.land/std/http/http_status.ts";
 
 export const kDefaultKeepAliveTimeout = 75000; // ms
 
@@ -229,24 +232,6 @@ export async function readResponse(
   };
 }
 
-export const kHttpStatusMessages: { [k: number]: string } = {
-  100: "Continue",
-  101: "Switching Protocols",
-  102: "Processing",
-  103: "Early Hints",
-  200: "OK",
-  201: "Created",
-  202: "Accepted",
-  301: "Moved Permanently",
-  302: "Found",
-  304: "Not Modified",
-  400: "Bad Request",
-  401: "Unauthorized",
-  403: "Forbidden",
-  404: "Not Found",
-  500: "Internal Server Error",
-};
-
 function bodyToReader(
   body: HttpBody,
   headers: Headers,
@@ -302,7 +287,7 @@ export async function writeResponse(
     res.headers = new Headers();
   }
   // status line
-  const statusText = kHttpStatusMessages[res.status];
+  const statusText = STATUS_TEXT.get(res.status);
   assert(!!statusText, `unsupported status code: ${statusText}`);
   await writer.write(encode(`HTTP/1.1 ${res.status} ${statusText}\r\n`));
   let bodyReader: Reader | undefined;
