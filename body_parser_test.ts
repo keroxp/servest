@@ -8,7 +8,7 @@ import {
   assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { parserMultipartRequest, createBodyParser } from "./body_parser.ts";
-import * as fs from "./vendor/https/deno.land/std/fs/mod.ts";
+import { exists as fsExists } from "./vendor/https/deno.land/std/fs/exists.ts";
 import Buffer = Deno.Buffer;
 import { group } from "./test_util.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
@@ -37,7 +37,7 @@ group("multipart", ({ test }) => {
     assertEquals(mfile.filename, "README.md");
     assert(mfile.tempfile !== undefined, "temp file should be created");
     await m.removeAll();
-    assertEquals(await fs.exists(mfile.tempfile!), false);
+    assertEquals(await fsExists(mfile.tempfile!), false);
   });
   test("should throw if content-type is invalid", async () => {
     const body = new Buffer();

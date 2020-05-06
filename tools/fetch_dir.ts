@@ -1,10 +1,10 @@
-#!/usr/bin/env deno -A
-import * as fs from "../vendor/https/deno.land/std/fs/mod.ts";
+#!/usr/bin/env deno run -A
+import { expandGlob } from "../vendor/https/deno.land/std/fs/expand_glob.ts";
 import * as path from "../vendor/https/deno.land/std/path/mod.ts";
 export async function fetchDir(dir: string): Promise<number> {
   let codes: string[] = [];
   const glob = path.join(dir, "**/*.ts*");
-  for await (const f of fs.expandGlob(glob)) {
+  for await (const f of expandGlob(glob)) {
     if (!f.path.endsWith(".d.ts") && f.path.match(/\.tsx?$/)) {
       console.log(f.path);
       codes.push('import "' + f.path + '"');

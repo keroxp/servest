@@ -324,8 +324,10 @@ interface ReactComponentElement<
   function createElement(
     type: "input",
     props?:
-      | (InputHTMLAttributes<HTMLInputElement>
-        & ClassAttributes<HTMLInputElement>)
+      | (
+        & InputHTMLAttributes<HTMLInputElement>
+        & ClassAttributes<HTMLInputElement>
+      )
       | null,
     ...children: ReactNode[]
   ): DetailedReactHTMLElement<
@@ -964,9 +966,10 @@ interface ReactComponentElement<
 
   // will show `Memo(${Component.displayName || Component.name})` in devtools by default,
   // but can be given its own specific name
-  type MemoExoticComponent<T extends ComponentType<any>> = NamedExoticComponent<
-    ComponentPropsWithRef<T>
-  >
+  type MemoExoticComponent<T extends ComponentType<any>> =
+    & NamedExoticComponent<
+      ComponentPropsWithRef<T>
+    >
     & {
       readonly type: T;
     };
@@ -986,9 +989,10 @@ interface ReactComponentElement<
     ) => boolean,
   ): MemoExoticComponent<T>;
 
-  type LazyExoticComponent<T extends ComponentType<any>> = ExoticComponent<
-    ComponentPropsWithRef<T>
-  >
+  type LazyExoticComponent<T extends ComponentType<any>> =
+    & ExoticComponent<
+      ComponentPropsWithRef<T>
+    >
     & {
       readonly _result: T;
     };
@@ -1503,7 +1507,8 @@ interface ReactComponentElement<
 
   interface HTMLProps<T> extends AllHTMLAttributes<T>, ClassAttributes<T> {}
 
-  type DetailedHTMLProps<E extends HTMLAttributes<T>, T> = ClassAttributes<T>
+  type DetailedHTMLProps<E extends HTMLAttributes<T>, T> =
+    & ClassAttributes<T>
     & E;
 
   interface SVGProps<T> extends SVGAttributes<T>, ClassAttributes<T> {}
@@ -3284,11 +3289,11 @@ type MergePropTypes<P, T> =
   : // If declared props have indexed properties, ignore inferred props entirely as keyof gets widened
   string extends keyof P ? P
   : // Prefer declared types which are not exactly any
-  Pick<P, NotExactlyAnyPropertyKeys<P>>
+  & Pick<P, NotExactlyAnyPropertyKeys<P>>
   & // For props which are exactly any, use the type inferred from propTypes if present
-   Pick<T, Exclude<keyof T, NotExactlyAnyPropertyKeys<P>>>
+  Pick<T, Exclude<keyof T, NotExactlyAnyPropertyKeys<P>>>
   & // Keep leftover props not specified in propTypes
-   Pick<P, Exclude<keyof P, keyof T>>
+  Pick<P, Exclude<keyof P, keyof T>>
     : never;
 
 // Any prop that has a default prop becomes optional, but its type is unchanged
@@ -3296,7 +3301,8 @@ type MergePropTypes<P, T> =
 // If declared props have indexed properties, ignore default props entirely as keyof gets widened
 // Wrap in an outer-level conditional type to allow distribution over props that are unions
 type Defaultize<P, D> = P extends any ? string extends keyof P ? P
-: Pick<P, Exclude<keyof P, keyof D>>
+: 
+  & Pick<P, Exclude<keyof P, keyof D>>
   & Partial<Pick<P, Extract<keyof P, keyof D>>>
   & Partial<Pick<D, Exclude<keyof D, keyof P>>>
   : never;

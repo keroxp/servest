@@ -1,4 +1,4 @@
-#!/usr/bin/env deno --allow-read --allow-write
+#!/usr/bin/env deno run --allow-read --allow-write
 
 const files = [...Deno.readDirSync(".")].filter((f) => {
   const name = f.name;

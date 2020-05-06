@@ -51,7 +51,7 @@ group({
   });
   test("should accept ws", async () => {
     const sock = await connectWebSocket("ws://127.0.0.1:8890/ws");
-    const it = sock.receive();
+    const it = sock[Symbol.asyncIterator]();
     const { value: msg1 } = await it.next();
     assertEquals(msg1, "Hello");
     const { value: msg2 } = await it.next();

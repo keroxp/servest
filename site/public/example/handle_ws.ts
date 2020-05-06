@@ -4,7 +4,7 @@ import type { WebSocket } from "https://deno.land/std/ws/mod.ts";
 
 function handleHandshake(sock: WebSocket) {
   async function handleMessage(sock: WebSocket) {
-    for await (const msg of sock.receive()) {
+    for await (const msg of sock) {
       if (typeof msg === "string") {
         sock.send(msg);
       }
