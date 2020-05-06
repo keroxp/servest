@@ -1,11 +1,7 @@
-_: deno.d.ts tsconfig.json
-deno.d.ts:
-	deno --types > deno.d.ts
-tsconfig.json:
-	./make.sh > tsconfig.json
+default: test
 .PHONY: types	
 types:
-	deno -A tools/gen_types.ts
+	deno run -A tools/gen_types.ts
 	deno fmt types/**/*.ts
 test:
 	deno test -A *_test.ts
@@ -18,7 +14,7 @@ do-bench: bench
 do-std-bench: bench
 	docker run -e TARGET=/servest/benchmark/std_bench.ts -t servest/bench
 dev:
-	./tools/dev.ts "site/**/*.ts" "site/**/*.tsx" "site/index.ts"
+	./tools/dev.ts site/ "site/index.ts"
 .PHONY: mod.ts	
 mod.ts:
-	deno --allow-read --allow-write ./tools/make_mod.ts
+	deno run --allow-read --allow-write ./tools/make_mod.ts

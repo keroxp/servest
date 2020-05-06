@@ -1,5 +1,5 @@
-#!/usr/bin/env deno --allow-read
-import * as fs from "../vendor/https/deno.land/std/fs/mod.ts";
+#!/usr/bin/env deno run --allow-read
+import * as fs from "../vendor/https/deno.land/std/fs/expand_glob.ts";
 import * as path from "../vendor/https/deno.land/std/path/mod.ts";
 import * as tp from "../vendor/https/deno.land/std/textproto/mod.ts";
 import { BufReader } from "../vendor/https/deno.land/std/io/bufio.ts";

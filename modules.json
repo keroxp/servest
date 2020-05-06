@@ -1,12 +1,13 @@
 {
   "https://deno.land/std": {
-    "version": "@v0.42.0",
+    "version": "@v1.0.0-rc1",
     "modules": [
       "/testing/asserts.ts",
       "/textproto/mod.ts",
       "/path/mod.ts",
       "/datetime/mod.ts",
-      "/fs/mod.ts",
+      "/fs/expand_glob.ts",
+      "/fs/exists.ts",
       "/io/bufio.ts",
       "/io/readers.ts",
       "/io/writers.ts",

@@ -3,6 +3,7 @@ import { pathResolver } from "../util.ts";
 import * as path from "../vendor/https/deno.land/std/path/mod.ts";
 
 const decoder = new TextDecoder();
+
 const resolve = pathResolver(import.meta);
 export async function fetchExample(filename: string): Promise<string> {
   const p = resolve("./public/example/" + filename);
