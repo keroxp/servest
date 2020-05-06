@@ -27,10 +27,10 @@ jobs:
         make mod.ts
         git diff --exit-code
     - name: Check license
-      run: deno --allow-read tools/license_checker.ts
+      run: deno run --allow-read tools/license_checker.ts
     - name: Run Tests
       run: |
         make test
     - name: Check Site
       run: |
-        deno -A ./tools/fetch_dir.ts ./site
+        deno run -A ./tools/fetch_dir.ts ./site
