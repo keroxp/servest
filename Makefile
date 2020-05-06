@@ -5,7 +5,7 @@ tsconfig.json:
 	./make.sh > tsconfig.json
 .PHONY: types	
 types:
-	deno -A tools/gen_types.ts
+	deno run -A tools/gen_types.ts
 	deno fmt types/**/*.ts
 test:
 	deno test -A *_test.ts
