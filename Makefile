@@ -1,8 +1,4 @@
-_: deno.d.ts tsconfig.json
-deno.d.ts:
-	deno --types > deno.d.ts
-tsconfig.json:
-	./make.sh > tsconfig.json
+default: test
 .PHONY: types	
 types:
 	deno run -A tools/gen_types.ts
