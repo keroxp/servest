@@ -21,4 +21,4 @@ dev:
 	./tools/dev.ts site/ "site/index.ts"
 .PHONY: mod.ts	
 mod.ts:
-	deno --allow-read --allow-write ./tools/make_mod.ts
+	deno run --allow-read --allow-write ./tools/make_mod.ts
