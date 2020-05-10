@@ -2,7 +2,7 @@
 import {
   deferred,
   Deferred,
-} from "./vendor/https/deno.land/std/util/async.ts";
+} from "./vendor/https/deno.land/std/async/mod.ts";
 
 export function pathResolver(meta: ImportMeta): (p: string) => string {
   return (p) => new URL(p, meta.url).pathname;

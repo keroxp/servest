@@ -37,7 +37,7 @@ import {
   chunkedBodyReader,
   emptyReader,
   writeTrailers,
-} from "./vendor/https/deno.land/std/http/io.ts";
+} from "./vendor/https/deno.land/std/http/_io.ts";
 import { createBodyParser } from "./body_parser.ts";
 import { UnexpectedEofError } from "./error.ts";
 import {

@@ -12,7 +12,7 @@ import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import { createAgent } from "./agent.ts";
 import { readResponse, writeRequest } from "./serveio.ts";
 import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { deferred, delay } from "./vendor/https/deno.land/std/util/async.ts";
+import { deferred, delay } from "./vendor/https/deno.land/std/async/mod.ts";
 import Buffer = Deno.Buffer;
 import { group } from "./test_util.ts";
 

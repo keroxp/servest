@@ -2,7 +2,7 @@
 import { ClientResponse, HttpBody } from "./server.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { readResponse, writeRequest } from "./serveio.ts";
-import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
+import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
 import {
   BufReader,
   BufWriter,
