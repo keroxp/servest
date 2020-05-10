@@ -6,7 +6,7 @@ import {
   BufWriter,
 } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { promiseInterrupter } from "./promises.ts";
-import { deferred } from "./vendor/https/deno.land/std/util/async.ts";
+import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
 import { initServeOptions, readRequest, writeResponse } from "./serveio.ts";
 import { createResponder, ServerResponder } from "./responder.ts";
 import ListenOptions = Deno.ListenOptions;

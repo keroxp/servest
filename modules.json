@@ -1,6 +1,6 @@
 {
   "https://deno.land/std": {
-    "version": "@v1.0.0-rc1",
+    "version": "@v0.50.0",
     "modules": [
       "/testing/asserts.ts",
       "/textproto/mod.ts",
@@ -11,15 +11,15 @@
       "/io/bufio.ts",
       "/io/readers.ts",
       "/io/writers.ts",
-      "/http/io.ts",
+      "/http/_io.ts",
       "/http/http_status.ts",
       "/encoding/utf8.ts",
       "/flags/mod.ts",
       "/fmt/sprintf.ts",
       "/fmt/colors.ts",
       "/mime/multipart.ts",
-      "/util/async.ts",
-      "/util/sha1.ts",
+      "/async/mod.ts",
+      "/hash/sha1.ts",
       "/ws/mod.ts"
     ]
   },

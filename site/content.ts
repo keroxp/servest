@@ -19,15 +19,16 @@ export async function fetchExample(filename: string): Promise<string> {
   if (ret.match("{{ServestVersion}}")) {
     ret = ret.replace(/{{ServestVersion}}/g, v);
   }
-  if (ret.match("https://deno.land/std")) {
-    const denov = await getDenoVersion();
-    if (denov) {
-      ret = ret.replace(
-        /https:\/\/deno.land\/std/g,
-        `https://deno.land/std@${denov}`,
-      );
-    }
-  }
+  // Disabled temporally because there is no way to get std's latest release now
+  // if (ret.match("https://deno.land/std")) {
+  //   const denov = await getDenoVersion();
+  //   if (denov) {
+  //     ret = ret.replace(
+  //       /https:\/\/deno.land\/std/g,
+  //       `https://deno.land/std@${denov}`,
+  //     );
+  //   }
+  // }
   return ret;
 }
 

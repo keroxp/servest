@@ -16,7 +16,7 @@ import {
   bodyReader,
   chunkedBodyReader,
   emptyReader,
-} from "./vendor/https/deno.land/std/http/io.ts";
+} from "./vendor/https/deno.land/std/http/_io.ts";
 import { createBodyParser, BodyParser } from "./body_parser.ts";
 import { createDataHolder } from "./data_holder.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
