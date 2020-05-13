@@ -9,7 +9,7 @@ import { createResponder, Responder } from "./responder.ts";
 import { BodyReader } from "./readers.ts";
 import { promiseWaitQueue, promiseInterrupter } from "./_util.ts";
 import { DataHolder, createDataHolder } from "./data_holder.ts";
-import { MultipartFormData } from "./vendor/https/deno.land/std/mime/multipart.ts";
+import { BodyParser } from "./body_parser.ts";
 
 export type HttpBody =
   | string
@@ -43,15 +43,8 @@ export interface ServerResponse {
   trailers?(): Promise<Headers> | Headers;
 }
 
-export interface BodyParser {
-  text(): Promise<string>;
-  json(): Promise<any>;
-  arrayBuffer(): Promise<Uint8Array>;
-  formData(): Promise<MultipartFormData>;
-}
-
 /** Incoming http request for handling request from client */
-export interface IncomingHttpRequest extends BodyParser {
+export interface IncomingRequest extends BodyParser {
   /** Raw requested URL (path + query): /path/to/resource?a=1&b=2 */
   url: string;
   /** Path part of url: /path/to/resource */
@@ -78,8 +71,7 @@ export interface KeepAlive {
 }
 
 /** Outgoing http response for building request to server */
-export interface ServerRequest
-  extends IncomingHttpRequest, DataHolder, Responder {
+export interface ServerRequest extends IncomingRequest, DataHolder, Responder {
   conn: Deno.Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
@@ -87,8 +79,8 @@ export interface ServerRequest
   match: RegExpMatchArray;
 }
 
-/** Incoming http response for receiving from server */
-export interface IncomingHttpResponse extends BodyParser {
+/** Incoming http response from server to client */
+export interface IncomingResponse extends BodyParser {
   /** requested protocol. like HTTP/1.1 */
   proto: string;
   /** request path with queries. always begin with / */
@@ -101,7 +93,7 @@ export interface IncomingHttpResponse extends BodyParser {
   body: BodyReader;
 }
 
-export interface ClientResponse extends IncomingHttpResponse {
+export interface ClientResponse extends IncomingResponse {
   conn: Deno.Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
@@ -122,12 +114,10 @@ export interface ServeHandler {
   (req: ServerRequest): void | Promise<void>;
 }
 
-interface HostPort {
+function createListener(opts: {
   hostname?: string;
   port: number;
-}
-
-function createListener(opts: HostPort): Deno.Listener {
+}): Deno.Listener {
   return Deno.listen({ ...opts, transport: "tcp" });
 }
 

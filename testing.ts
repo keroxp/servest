@@ -4,7 +4,7 @@ import {
   BufWriter,
 } from "./vendor/https/deno.land/std/io/bufio.ts";
 import {
-  IncomingHttpResponse,
+  IncomingResponse,
   ServerRequest,
   HttpBody,
 } from "./server.ts";
@@ -23,7 +23,7 @@ import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
 export interface ResponseRecorder extends ServerRequest {
   /** Obtain recorded response */
-  response(): Promise<IncomingHttpResponse & BodyParser>;
+  response(): Promise<IncomingResponse & BodyParser>;
 }
 
 /** Create dummy request & responder that records a response from HTTPHandler  */
@@ -69,7 +69,7 @@ export function createRecorder({
   } else {
     br = closableBodyReader(emptyReader());
   }
-  async function response(): Promise<IncomingHttpResponse & BodyParser> {
+  async function response(): Promise<IncomingResponse & BodyParser> {
     const resp = await readResponse(bufReader);
     const bodyParser = createBodyParser({
       reader: resp.body,
