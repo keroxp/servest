@@ -6,7 +6,6 @@ import {
 import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
 import { initServeOptions, readRequest, writeResponse } from "./serveio.ts";
 import { createResponder, Responder } from "./responder.ts";
-import { BodyReader } from "./readers.ts";
 import { promiseWaitQueue, promiseInterrupter } from "./_util.ts";
 import { DataHolder, createDataHolder } from "./data_holder.ts";
 import { BodyParser } from "./body_parser.ts";
@@ -91,6 +90,10 @@ export interface IncomingResponse extends BodyParser {
   headers: Headers;
   /** HTTP Body */
   body: BodyReader;
+}
+
+export interface BodyReader extends Deno.Reader {
+  close(): Promise<void>;
 }
 
 export interface ClientResponse extends IncomingResponse {

@@ -1,11 +1,8 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { promiseInterrupter } from "./_util.ts";
+import { BodyReader } from "./server.ts";
 
 const nullBuffer = new Uint8Array(1024);
-
-export interface BodyReader extends Deno.Reader {
-  close(): Promise<void>;
-}
 
 export function closableBodyReader(r: Deno.Reader): BodyReader {
   return {

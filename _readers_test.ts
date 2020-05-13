@@ -1,5 +1,5 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import { streamReader } from "./readers.ts";
+import { streamReader } from "./_readers.ts";
 import {
   assertEquals,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";

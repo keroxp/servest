@@ -7,17 +7,17 @@ import {
   TextProtoReader,
 } from "./vendor/https/deno.land/std/textproto/mod.ts";
 import {
-  BodyReader,
   streamReader,
   timeoutReader,
   closableBodyReader,
-} from "./readers.ts";
+} from "./_readers.ts";
 import { promiseInterrupter } from "./_util.ts";
 import {
   assert,
   AssertionError,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import {
+  BodyReader,
   ClientRequest,
   IncomingRequest,
   IncomingResponse,
@@ -26,7 +26,7 @@ import {
   ServerResponse,
   HttpBody,
 } from "./server.ts";
-import { encode, decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
+import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;

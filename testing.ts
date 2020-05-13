@@ -4,13 +4,14 @@ import {
   BufWriter,
 } from "./vendor/https/deno.land/std/io/bufio.ts";
 import {
+  BodyReader,
   IncomingResponse,
   ServerRequest,
   HttpBody,
 } from "./server.ts";
 import { readResponse, setupBody } from "./serveio.ts";
-import { createResponder, Responder } from "./responder.ts";
-import { BodyReader, closableBodyReader } from "./readers.ts";
+import { createResponder } from "./responder.ts";
+import { closableBodyReader } from "./_readers.ts";
 import { parseCookie } from "./cookie.ts";
 import {
   bodyReader,

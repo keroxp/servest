@@ -6,7 +6,6 @@ import {
   gray,
 } from "./vendor/https/deno.land/std/fmt/colors.ts";
 import { sprintf } from "./vendor/https/deno.land/std/fmt/sprintf.ts";
-import { ServerRequest } from "./server.ts";
 export enum Loglevel {
   DEBUG,
   INFO,
@@ -28,7 +27,7 @@ const kPrefixMap = new Map<Loglevel, string>([
   [Loglevel.WARN, "W"],
   [Loglevel.ERROR, "E"],
 ]);
-export interface ColorFunc {
+interface ColorFunc {
   (msg: string): string;
 }
 const plain: ColorFunc = (msg) => msg;
