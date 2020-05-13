@@ -4,8 +4,13 @@ const app = createApp();
 // Add global auth middleware
 app.use(
   basicAuth({
-    username: "deno",
-    password: "deno is nice",
+    credentials: [{
+      username: "deno",
+      password: "deno is nice",
+    }, {
+      username: "node",
+      password: "node is awesome",
+    }],
   }),
 );
 app.get("/", async (req) => {

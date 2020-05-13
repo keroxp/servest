@@ -4,6 +4,7 @@ import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { DFC } from "../../jsx.ts";
 import { fetchExample } from "../content.ts";
 import { Content } from "../components/content.tsx";
+import { DocLink } from "../components/doc-link.tsx";
 
 const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
   codes,
@@ -16,9 +17,11 @@ const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
           Like serving static files, JSX files can also be served as a web page.
         </p>
         <p>
-          <a href={"/@/serve_jsx.ts"}>serveJsx</a>
+          <DocLink>serveJsx</DocLink>
+          {" "}
           is built-in middleware to serve JSX files. It is similar to{" "}
-          <a href={"/@/serve_static.ts"}>serveStatic</a>
+          <DocLink>serveStatic</DocLink>
+          {", "}
           but It uses dynamic import to build a response based on JSX file.
         </p>
         <Code

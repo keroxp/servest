@@ -5,6 +5,7 @@ import { DFC } from "../../jsx.ts";
 import { fetchExample } from "../content.ts";
 import { Content } from "../components/content.tsx";
 import { Q } from "../components/common.tsx";
+import { DocLink } from "../components/doc-link.tsx";
 
 const RouterApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
   <Content>
@@ -12,8 +13,9 @@ const RouterApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
       <section id={"router-api"}>
         <h2>Use router</h2>
         <p>
-          <Q>Router</Q> is a set of routes and handlers. <Q>App</Q>
-          is also Router.
+          <DocLink>Router</DocLink> is a set of routes and handlers.
+          <DocLink>App</DocLink>
+          {" "}is also Router.
         </p>
         <p>There are two difference between App and Router</p>
         <ul>

@@ -4,7 +4,7 @@ import {
   assertEquals,
   assertMatch,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { group, makeGet } from "./test_util.ts";
+import { group, makeGet } from "./_test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 import { connectWebSocket } from "./vendor/https/deno.land/std/ws/mod.ts";
 setLevel(Loglevel.NONE);

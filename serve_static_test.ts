@@ -5,7 +5,7 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createRecorder } from "./testing.ts";
 import { serveStatic } from "./serve_static.ts";
-import { group } from "./test_util.ts";
+import { group } from "./_test_util.ts";
 import { createApp } from "./app.ts";
 
 group("serveStatic", (t) => {

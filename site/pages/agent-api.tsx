@@ -4,6 +4,7 @@ import { Code } from "../components/code.tsx";
 import { DFC } from "../../jsx.ts";
 import { fetchExample } from "../content.ts";
 import { Content } from "../components/content.tsx";
+import { DocLink } from "../components/doc-link.tsx";
 
 const AgentApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
   <Content>
@@ -11,8 +12,10 @@ const AgentApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
       <section id={"agent-api"}>
         <h2>Agent API</h2>
         <p>
-          Agent API is low level interface for managing HTTP/1.1 Keep-Alive
-          connection to the host.
+          <DocLink>Agent</DocLink>
+          {" "}
+          is low level interface for managing HTTP/1.1 Keep-Alive connection to
+          the host.
         </p>
         <p>
           It is the persist HTTP client to the same host and can be used as a

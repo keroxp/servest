@@ -1,7 +1,7 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 
-export type SetCookieOpts = {
+export interface SetCookieOpts {
   expires?: Date;
   maxAge?: number;
   domain?: string;
@@ -9,12 +9,12 @@ export type SetCookieOpts = {
   secure?: boolean;
   httpOnly?: boolean;
   sameSite?: "Strict" | "Lax" | "None";
-};
+}
 
-export type Cookie = {
+export interface Cookie extends SetCookieOpts {
   name: string;
   value: string;
-} & SetCookieOpts;
+}
 
 export function parseCookie(header: string): Map<string, string> {
   const query = decodeURIComponent(header)

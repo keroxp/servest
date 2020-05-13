@@ -10,7 +10,7 @@ import {
 import { parserMultipartRequest, createBodyParser } from "./body_parser.ts";
 import { exists as fsExists } from "./vendor/https/deno.land/std/fs/exists.ts";
 import Buffer = Deno.Buffer;
-import { group } from "./test_util.ts";
+import { group } from "./_test_util.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 
 group("multipart", ({ test }) => {

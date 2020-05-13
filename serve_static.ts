@@ -1,10 +1,10 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import * as path from "./vendor/https/deno.land/std/path/mod.ts";
-import { resolveIndexPath } from "./matcher.ts";
+import { resolveIndexPath } from "./_matcher.ts";
 import { ServeHandler } from "./server.ts";
 import { contentTypeByExt } from "./media_types.ts";
 
-export type ServeStaticOptions = {
+export interface ServeStaticOptions {
   /**
    * Custom Content-Type mapper.
    * .ext -> application/some-type
@@ -19,11 +19,10 @@ export type ServeStaticOptions = {
   contentDispositionMap?: Map<string, "inline" | "attachment">;
   /** Custom filter function for files */
   filter?: (file: string) => boolean | Promise<boolean>;
-};
-
-/**
+} /**
  * Serve static files in specified directory.
  * */
+
 export function serveStatic(
   dir: string,
   opts: ServeStaticOptions = {},

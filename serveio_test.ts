@@ -17,7 +17,7 @@ import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import Buffer = Deno.Buffer;
 import copy = Deno.copy;
 import { ServerResponse } from "./server.ts";
-import { group } from "./test_util.ts";
+import { group } from "./_test_util.ts";
 
 group("serveio", (t) => {
   t.test("serveioReadRequestGet", async function serveioReadRequestGet() {
