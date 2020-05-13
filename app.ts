@@ -79,7 +79,7 @@ export function createApp(
     opts?: ServeOptions,
   ): ServeListener {
     const listener = listenAndServe(addr, (req) => handleRoute("", req), opts);
-    info(`listening on ${addr.hostname}:${addr.port}`);
+    info(`listening on ${addr.hostname || ""}:${addr.port}`);
     return listener;
   }
   function listenTls(
