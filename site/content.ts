@@ -1,5 +1,5 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import { pathResolver } from "../util.ts";
+import { pathResolver } from "../_util.ts";
 import * as path from "../vendor/https/deno.land/std/path/mod.ts";
 
 const decoder = new TextDecoder();

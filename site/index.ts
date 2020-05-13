@@ -3,7 +3,7 @@
 import { serveStatic } from "../serve_static.ts";
 import { Loglevel } from "../logger.ts";
 import { Layout } from "./components/layout.tsx";
-import { pathResolver } from "../util.ts";
+import { pathResolver } from "../_util.ts";
 import { serveJsx } from "../serve_jsx.ts";
 import { RoutingError } from "../error.ts";
 import { createApp } from "../app.ts";
