@@ -9,7 +9,8 @@ export default () => (
         <h2>Concept</h2>
         <blockquote>"For a rich harvest of HTTP server"</blockquote>
         <p>
-          Servest was developed as the optional HTTP server module to Deno's{" "}
+          Servest was developed as the optional HTTP server module to
+          Deno's{" "}
           <a href={"https://github.com/denoland/deno/tree/master/std/http"}>
             standard http module
           </a>
@@ -24,17 +25,18 @@ export default () => (
           concept and decisions. Some progressive and highly abstracted features
           are tend to be refused in the conservative context like a standard
           module. <b>"Being standard"</b>
-          must be tough situation and many
-          people request it be stable and unchanged. In that situation, some
-          experimental but maybe innovative features are omitted.
+          must be tough situation and many people request it be stable and
+          unchanged. In that situation, some experimental but maybe innovative
+          features are omitted.
         </p>
         <p>
           So I'd started making the handy and less opinionated next generation
           http module at one day.
         </p>
         <p style={{ textAlign: "center" }}>
-          October 2019, By <a href={"https://github.com/keroxp"}>@keroxp</a>,
-          author of Servest
+          October 2019, By <a href={"https://github.com/keroxp"}>
+            @keroxp
+          </a>, author of Servest
         </p>
       </section>
     </Article>

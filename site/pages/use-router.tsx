@@ -18,16 +18,17 @@ const RouterApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
         <p>There are two difference between App and Router</p>
         <ul>
           <li>
-            App never throws error while processing request.
-            All requests that caused error and not responded will be captured and correctly finalized.
+            App never throws error while processing request. All requests that
+            caused error and not responded will be captured and correctly
+            finalized.
           </li>
           <li>
             Router has no <Q>listen()</Q> method so it can't be started by self.
           </li>
         </ul>
         <p>
-          Router is used to by passing to <Q>router.route()</Q>.
-          Different from <Q>router.handle()</Q>
+          Router is used to by passing to <Q>router.route()</Q>. Different from
+          <Q>router.handle()</Q>
           <Q>route()</Q> accept only string prefix for matching prefix of route.
         </p>
         <Code
