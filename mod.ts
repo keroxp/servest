@@ -18,6 +18,5 @@ export * from "./serve_jsx.ts";
 export * from "./serve_static.ts";
 export * from "./serveio.ts";
 export * from "./server.ts";
-export * from "./test_util.ts";
 export * from "./testing.ts";
 export * from "./util.ts";
