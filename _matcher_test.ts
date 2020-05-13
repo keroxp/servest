@@ -2,7 +2,7 @@
 import {
   findLongestAndNearestMatches,
   resolveIndexPath,
-} from "./matcher.ts";
+} from "./_matcher.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { group } from "./_test_util.ts";
 

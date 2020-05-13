@@ -2,7 +2,7 @@
 import React from "./vendor/https/dev.jspm.io/react/index.js";
 import ReactDOMServer from "./vendor/https/dev.jspm.io/react-dom/server.js";
 import { ServeHandler } from "./server.ts";
-import { resolveIndexPath } from "./matcher.ts";
+import { resolveIndexPath } from "./_matcher.ts";
 import { DFC } from "./jsx.ts";
 
 /**

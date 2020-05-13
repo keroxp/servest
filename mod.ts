@@ -7,7 +7,6 @@ export * from "./data_holder.ts";
 export * from "./error.ts";
 export * from "./jsx.ts";
 export * from "./logger.ts";
-export * from "./matcher.ts";
 export * from "./media_types.ts";
 export * from "./middleware.ts";
 export * from "./readers.ts";

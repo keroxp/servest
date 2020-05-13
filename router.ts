@@ -1,7 +1,7 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   findLongestAndNearestMatches,
-} from "./matcher.ts";
+} from "./_matcher.ts";
 import { ServerRequest, ServeHandler } from "./server.ts";
 import { RoutingError } from "./error.ts";
 import {
