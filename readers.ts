@@ -1,5 +1,5 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import { promiseInterrupter } from "./promises.ts";
+import { promiseInterrupter } from "./_util.ts";
 
 const nullBuffer = new Uint8Array(1024);
 

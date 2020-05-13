@@ -3,12 +3,11 @@ import {
   BufReader,
   BufWriter,
 } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { promiseInterrupter } from "./promises.ts";
 import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
 import { initServeOptions, readRequest, writeResponse } from "./serveio.ts";
 import { createResponder, Responder } from "./responder.ts";
 import { BodyReader } from "./readers.ts";
-import { promiseWaitQueue } from "./util.ts";
+import { promiseWaitQueue, promiseInterrupter } from "./_util.ts";
 import { DataHolder, createDataHolder } from "./data_holder.ts";
 import { MultipartFormData } from "./vendor/https/deno.land/std/mime/multipart.ts";
 

@@ -6,7 +6,7 @@ import {
   assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { serveJsx } from "./serve_jsx.ts";
-import { pathResolver } from "./util.ts";
+import { pathResolver } from "./_util.ts";
 import { group } from "./_test_util.ts";
 
 group("serveJsx", (t) => {

@@ -12,7 +12,7 @@ import {
   timeoutReader,
   closableBodyReader,
 } from "./readers.ts";
-import { promiseInterrupter } from "./promises.ts";
+import { promiseInterrupter } from "./_util.ts";
 import {
   assert,
   AssertionError,
