@@ -2,37 +2,51 @@ import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { SideBar, SideBarLink, SideBarSection } from "./sidebar.tsx";
 import { FC } from "../../types/react/index.d.ts";
 
+export const Links = {
+  getStarted: [
+    ["/get-started", "Get Started"],
+    ["/installation", "Installation"],
+  ],
+  api: [
+    ["/app-api", "App API"],
+    ["/server-api", "Server API"],
+    ["/agent-api", "Agent API"],
+  ],
+  features: [
+    ["/reading-body", "Reading body"],
+    ["/use-middleware", "Use middleware"],
+    ["/use-router", "Use Router"],
+    ["/use-jsx", "Use JSX"],
+    ["/handle-errors", "Handle errors"],
+    ["/use-serve-static", "Serve static files"],
+    ["/use-serve-jsx", "Serve JSX files as a page"],
+    ["/testing-handler", "Testing Handler"],
+    ["/manage-cookie", "Manage Cookie"],
+    ["/handle-ws", "Handle WebSocket"],
+    ["/basic-auth", "Basic Auth"],
+  ],
+};
+
 export const Content: FC = ({ children }) => (
   <div className="content">
     <SideBar>
       <SideBarSection title={"Get Started"}>
-        <SideBarLink href={"/get-started"}>Get Started</SideBarLink>
-        <SideBarLink href={"/installation"}>Installation</SideBarLink>
+        {Links.getStarted.map(([href, text]) => (
+          <SideBarLink href={href}>{text}</SideBarLink>
+        ))}
       </SideBarSection>
       <SideBarSection title={"API"}>
-        <SideBarLink href={"/app-api"}>App API</SideBarLink>
-        <SideBarLink href={"/server-api"}>Server API</SideBarLink>
-        <SideBarLink href={"/agent-api"}>Agent API</SideBarLink>
+        {Links.api.map(([href, text]) => (
+          <SideBarLink href={href}>{text}</SideBarLink>
+        ))}
       </SideBarSection>
       <SideBarSection title={"Concept"}>
         <SideBarLink href={"/concept"}>Concept</SideBarLink>
       </SideBarSection>
       <SideBarSection title={"Features"}>
-        <SideBarLink href={"/reading-body"}>Reading body</SideBarLink>
-        <SideBarLink href={"/use-middleware"}>Use middleware</SideBarLink>
-        <SideBarLink href={"/use-router"}>Use Router</SideBarLink>
-        <SideBarLink href={"/use-jsx"}>Use JSX</SideBarLink>
-        <SideBarLink href={"/handle-errors"}>Handle errors</SideBarLink>
-        <SideBarLink href={"/use-serve-static"}>
-          Serve static files
-        </SideBarLink>
-        <SideBarLink href={"/use-serve-jsx"}>
-          Serve JSX files as a page
-        </SideBarLink>
-        <SideBarLink href={"/testing-handler"}>Testing Handler</SideBarLink>
-        <SideBarLink href={"/manage-cookie"}>Manage Cookie</SideBarLink>
-        <SideBarLink href={"/handle-ws"}>Handle WebSocket</SideBarLink>
-        <SideBarLink href={"/basic-auth"}>Basic Auth</SideBarLink>
+        {Links.features.map(([href, text]) => (
+          <SideBarLink href={href}>{text}</SideBarLink>
+        ))}
       </SideBarSection>
     </SideBar>
     {children}

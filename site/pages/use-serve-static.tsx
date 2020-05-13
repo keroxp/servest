@@ -4,6 +4,7 @@ import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { DFC } from "../../jsx.ts";
 import { fetchExample } from "../content.ts";
 import { Content } from "../components/content.tsx";
+import { DocLink } from "../components/doc-link.tsx";
 
 const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
   codes,
@@ -13,7 +14,8 @@ const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
       <section id={"use-serve-static"}>
         <h2>Host static files</h2>
         <p>
-          <a href={"/@/serve_static.ts"}>serve_static.ts</a>
+          <DocLink>serveStatic</DocLink>
+          {" "}
           is a built-in middleware for hosting static files (html, image,
           stylesheets and more).
         </p>

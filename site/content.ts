@@ -46,6 +46,10 @@ export async function fetchExampleCodes(
 
 let servestVersion: string | undefined;
 let denoVersoin: string | undefined;
+export function version(): string {
+  if (!servestVersion) getServerstVersion();
+  return servestVersion ?? "";
+}
 export async function getServerstVersion(): Promise<string> {
   if (servestVersion) return servestVersion;
   const v = await getLatestVersion("keroxp", "servest");
