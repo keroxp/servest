@@ -6,6 +6,7 @@ import {
   gray,
 } from "./vendor/https/deno.land/std/fmt/colors.ts";
 import { sprintf } from "./vendor/https/deno.land/std/fmt/sprintf.ts";
+import { ServerRequest } from "./server.ts";
 export enum Loglevel {
   DEBUG,
   INFO,
@@ -14,7 +15,9 @@ export enum Loglevel {
   NONE,
 }
 
-export type Logger = (level: Loglevel, msg: string, ...args: any[]) => void;
+export interface Logger {
+  (level: Loglevel, msg: string, ...args: any[]): void;
+}
 let logLevel = Loglevel.INFO;
 export function setLevel(level: Loglevel) {
   logLevel = level;
@@ -25,7 +28,9 @@ const kPrefixMap = new Map<Loglevel, string>([
   [Loglevel.WARN, "W"],
   [Loglevel.ERROR, "E"],
 ]);
-export type ColorFunc = (msg: string) => string;
+export interface ColorFunc {
+  (msg: string): string;
+}
 const plain: ColorFunc = (msg) => msg;
 const kColorFuncMap = new Map<Loglevel, ColorFunc>([
   [Loglevel.DEBUG, gray],

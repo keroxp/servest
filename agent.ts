@@ -10,24 +10,23 @@ import {
 import { UnexpectedEofError, ConnectionClosedError } from "./error.ts";
 
 /** keep-alive http agent for single host. each message will be sent in serial */
-export interface HttpAgent {
+export interface Agent {
   /** Hostname of host. deno.land of deno.land:80 */
   hostname: string;
   /** Port of host. 80 of deno.land:80 */
   port: number;
   /** send request to host. it throws EOF if conn is closed */
-  send(opts: HttpAgentSendOptions): Promise<ClientResponse>;
+  send(opts: AgentSendOptions): Promise<ClientResponse>;
   /** tcp connection for http agent */
   conn: Deno.Conn;
 }
 
-export type HttpAgentOptions = {
+export interface AgentOptions {
   cancel?: Promise<void>;
   timeout?: number; // ms
-};
+}/** http agent send options */
 
-/** http agent send options */
-export type HttpAgentSendOptions = {
+export interface AgentSendOptions {
   /** relative path that continues after base url. must begin with /. include queries, hash */
   path: string;
   /** http method. */
@@ -36,7 +35,7 @@ export type HttpAgentSendOptions = {
   headers?: Headers;
   /** http body */
   body?: HttpBody;
-};
+}
 
 const kPortMap = {
   "http:": 80,
@@ -45,8 +44,8 @@ const kPortMap = {
 
 export function createAgent(
   baseUrl: string,
-  opts: HttpAgentOptions = {},
-): HttpAgent {
+  opts: AgentOptions = {},
+): Agent {
   let connected = false;
   let connecting = false;
   let _conn: Deno.Conn;
@@ -86,7 +85,7 @@ export function createAgent(
   let prevResponse: ClientResponse;
   let sending = false;
   async function send(
-    sendOptions: HttpAgentSendOptions,
+    sendOptions: AgentSendOptions,
   ): Promise<ClientResponse> {
     if (sending) {
       throw new Error("It is not able to send http request concurrently");

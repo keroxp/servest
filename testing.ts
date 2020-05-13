@@ -21,12 +21,11 @@ import { createBodyParser, BodyParser } from "./body_parser.ts";
 import { createDataHolder } from "./data_holder.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
-export type ResponseRecorder = ServerRequest & {
+export interface ResponseRecorder extends ServerRequest {
   /** Obtain recorded response */
   response(): Promise<IncomingHttpResponse & BodyParser>;
-};
+}/** Create dummy request & responder that records a response from HTTPHandler  */
 
-/** Create dummy request & responder that records a response from HTTPHandler  */
 export function createRecorder({
   url,
   method = "GET",
