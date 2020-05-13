@@ -10,7 +10,7 @@
 
 `Servest` is a http module suite for Deno. It is composed of three major APIs of HTTP protocol:
 
-- Router API: General puropose HTTP routing server.
+- App API: General puropose HTTP routing server.
 - Server API: Low-level HTTP API for processing HTTP/1.1 requests.
 - Agent API: Low-level API for managing HTTP/1.1 Keep-Alive connection to the host.
 
@@ -47,10 +47,6 @@ app.handle("/", async req => {
 });
 app.listen({port: 8888});
 ```
-
-## Roadmap to v1
-
-[See this](https://github.com/keroxp/servest/issues/83)
 
 ## License
 
