@@ -34,7 +34,8 @@ export default () => (
           http module at one day.
         </p>
         <p style={{ textAlign: "center" }}>
-          October 2019, By <a href={"https://github.com/keroxp"}>@keroxp
+          October 2019, By <a href={"https://github.com/keroxp"}>
+            @keroxp
           </a>, author of Servest
         </p>
       </section>
