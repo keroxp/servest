@@ -16,10 +16,10 @@ const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
           Like serving static files, JSX files can also be served as a web page.
         </p>
         <p>
-          <a href={"/@/serve_jsx.ts"}>serveJsx</a> is built-in middleware to
-          serve JSX files. It is similar to{" "}
-          <a href={"/@/serve_static.ts"}>serveStatic</a> but It uses dynamic
-          import to build a response based on JSX file.
+          <a href={"/@/serve_jsx.ts"}>serveJsx</a>
+          is built-in middleware to serve JSX files. It is similar to{" "}
+          <a href={"/@/serve_static.ts"}>serveStatic</a>
+          but It uses dynamic import to build a response based on JSX file.
         </p>
         <Code
           href={"/example/use_serve_jsx.ts"}
@@ -51,9 +51,9 @@ const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
           </code>
           {" "}
           of property type of the component. This methodology is similar to{" "}
-          <a href="https://nextjs.org/">Next.js</a> but totally different.
-          Component will be rendered only on the server side and won't be
-          hydrated on the client side.
+          <a href="https://nextjs.org/">Next.js</a>
+          but totally different. Component will be rendered only on the server
+          side and won't be hydrated on the client side.
         </p>
         <Code
           href={"/example/pages/index.tsx"}

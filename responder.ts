@@ -95,8 +95,8 @@ export function createResponder(
     const body = await Deno.open(path);
     const headers = opts?.headers ?? new Headers();
     try {
-      const contentType =
-        contentTypeByExt(extname(path)) ?? "application/octet-stream";
+      const contentType = contentTypeByExt(extname(path)) ??
+        "application/octet-stream";
       headers.set("content-type", contentType);
       const contentDisposition = opts?.contentDisposition;
       if (contentDisposition === "inline") {

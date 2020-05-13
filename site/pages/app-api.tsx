@@ -11,12 +11,13 @@ const AppApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
       <section id={"app-api"}>
         <h2>App API</h2>
         <p>
-          App API is high level HTTP interface for building general purpose
-          http servers. It is highly affected by{" "}
+          App API is high level HTTP interface for building general purpose http
+          servers. It is highly affected by{" "}
           <a href={"http://expressjs.com"}>Express</a> from{" "}
-          <a href={"https://nodejs.org"}>Node.js</a>. Router maps route with
-          handler. Handler will be called for each request matched to given
-          pattern.
+          <a href={"https://nodejs.org"}>
+            Node.js
+          </a>. Router maps route with handler. Handler will be called for each
+          request matched to given pattern.
         </p>
         <Code
           href={"/example/app_server.ts"}

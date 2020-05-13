@@ -20,24 +20,23 @@ const UseJsx: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
           <code className="q">.tsx</code>) will be transformed by{" "}
           <code className="q">
             React.createElement()
-          </code>. So you must import
-          React on the head of your jsx file.
+          </code>. So you must import React on the head of your jsx file.
         </p>
         <p>
           React is developed in Node.js and Browser ecosystem and there are no
           official ESM-based distribution. We recommend you get React for deno
           from <a href="https://jspm.io">
             https://jspm.io
-          </a>, which is ESModule
-          CDN for CommonJS.
+          </a>, which is ESModule CDN for CommonJS.
         </p>
         <p>
           React is written by pure JavaScript and has no type definition by
           default. Optionally, you can use type definitions for React by
           annotating import statement with{" "}
-          <code className="q">@deno-types</code>. This is Deno's extension
-          method for mapping JavaScript file and type definition. You can find
-          more detail information on{" "}
+          <code className="q">
+            @deno-types
+          </code>. This is Deno's extension method for mapping JavaScript file
+          and type definition. You can find more detail information on{" "}
           <a
             href={"https://deno.land/manual.html#usingexternaltypedefinitions"}
           >
