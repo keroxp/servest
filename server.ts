@@ -1,6 +1,4 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import Conn = Deno.Conn;
-import Reader = Deno.Reader;
 import {
   BufReader,
   BufWriter,
@@ -8,24 +6,20 @@ import {
 import { promiseInterrupter } from "./promises.ts";
 import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
 import { initServeOptions, readRequest, writeResponse } from "./serveio.ts";
-import { createResponder, ServerResponder } from "./responder.ts";
-import ListenOptions = Deno.ListenOptions;
-import Listener = Deno.Listener;
+import { createResponder, Responder } from "./responder.ts";
 import { BodyReader } from "./readers.ts";
-import ListenTlsOptions = Deno.ListenTlsOptions;
 import { promiseWaitQueue } from "./util.ts";
-import { BodyParser } from "./body_parser.ts";
 import { DataHolder, createDataHolder } from "./data_holder.ts";
+import { MultipartFormData } from "./vendor/https/deno.land/std/mime/multipart.ts";
 
 export type HttpBody =
   | string
   | Uint8Array
-  | Reader
-  | ReadableStream<
-    Uint8Array
-  >;
+  | Deno.Reader
+  | ReadableStream<Uint8Array>;
+
 /** request data for building http request to server */
-export type ClientRequest = {
+export interface ClientRequest {
   /** full request url with queries */
   url: string;
   /** HTTP method */
@@ -35,11 +29,11 @@ export type ClientRequest = {
   /** HTTP Body */
   body?: HttpBody;
   /** HTTP Trailers setter. It will be after finishing writing body. */
-  trailers?: () => Promise<Headers> | Headers;
-};
+  trailers?(): Promise<Headers> | Headers;
+}
 
 /** response data for building http response to client */
-export type ServerResponse = {
+export interface ServerResponse {
   /** HTTP status code */
   status: number;
   /** HTTP headers */
@@ -47,8 +41,15 @@ export type ServerResponse = {
   /** HTTP body */
   body?: HttpBody | null;
   /** HTTP Trailers setter. It will be after finishing writing body. */
-  trailers?: () => Promise<Headers> | Headers;
-};
+  trailers?(): Promise<Headers> | Headers;
+}
+
+export interface BodyParser {
+  text(): Promise<string>;
+  json(): Promise<any>;
+  arrayBuffer(): Promise<Uint8Array>;
+  formData(): Promise<MultipartFormData>;
+}
 
 /** Incoming http request for handling request from client */
 export interface IncomingHttpRequest extends BodyParser {
@@ -72,15 +73,15 @@ export interface IncomingHttpRequest extends BodyParser {
   keepAlive?: KeepAlive;
 }
 
-export type KeepAlive = {
+export interface KeepAlive {
   timeout: number;
   max: number;
-};
+}
 
 /** Outgoing http response for building request to server */
 export interface ServerRequest
-  extends IncomingHttpRequest, DataHolder, ServerResponder {
-  conn: Conn;
+  extends IncomingHttpRequest, DataHolder, Responder {
+  conn: Deno.Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
   /** Match result of path patterns */
@@ -102,31 +103,37 @@ export interface IncomingHttpResponse extends BodyParser {
 }
 
 export interface ClientResponse extends IncomingHttpResponse {
-  conn: Conn;
+  conn: Deno.Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
 }
 
 /** serve options */
-export type ServeOptions = {
+export interface ServeOptions {
   /** canceller promise for async iteration. use defer() */
   cancel?: Promise<void>;
   /** read timeout for keep-alive connection. ms. default=75000(ms) */
   keepAliveTimeout?: number;
   /** read timeout for all read request. ms. default=75000(ms) */
   readTimeout?: number;
-};
+}
 
 export type ServeListener = Deno.Closer;
-export type ServeHandler = (req: ServerRequest) => void | Promise<void>;
+export interface ServeHandler {
+  (req: ServerRequest): void | Promise<void>;
+}
 
-export type HostPort = { hostname?: string; port: number };
-function createListener(opts: HostPort): Listener {
+interface HostPort {
+  hostname?: string;
+  port: number;
+}
+
+function createListener(opts: HostPort): Deno.Listener {
   return Deno.listen({ ...opts, transport: "tcp" });
 }
 
 export function listenAndServeTls(
-  listenOptions: ListenTlsOptions,
+  listenOptions: Deno.ListenTlsOptions,
   handler: ServeHandler,
   opts?: ServeOptions,
 ): ServeListener {
@@ -135,7 +142,7 @@ export function listenAndServeTls(
 }
 
 export function listenAndServe(
-  listenOptions: ListenOptions,
+  listenOptions: Deno.ListenOptions,
   handler: ServeHandler,
   opts: ServeOptions = {},
 ): ServeListener {
@@ -145,7 +152,7 @@ export function listenAndServe(
 }
 
 function listenInternal(
-  listener: Listener,
+  listener: Deno.Listener,
   handler: ServeHandler,
   opts: ServeOptions = {},
 ): ServeListener {
@@ -182,7 +189,7 @@ function listenInternal(
 
 /** Try to continually read and process requests from keep-alive connection. */
 export function handleKeepAliveConn(
-  conn: Conn,
+  conn: Deno.Conn,
   handler: ServeHandler,
   opts: ServeOptions = {},
 ): void {

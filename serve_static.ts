@@ -19,7 +19,7 @@ export interface ServeStaticOptions {
   contentDispositionMap?: Map<string, "inline" | "attachment">;
   /** Custom filter function for files */
   filter?: (file: string) => boolean | Promise<boolean>;
-}/**
+} /**
  * Serve static files in specified directory.
  * */
 

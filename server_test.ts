@@ -14,7 +14,7 @@ import { readResponse, writeRequest } from "./serveio.ts";
 import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { deferred, delay } from "./vendor/https/deno.land/std/async/mod.ts";
 import Buffer = Deno.Buffer;
-import { group } from "./test_util.ts";
+import { group } from "./_test_util.ts";
 
 let port = 8880;
 const handler = (req: ServerRequest) =>

@@ -7,7 +7,7 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { serveJsx } from "./serve_jsx.ts";
 import { pathResolver } from "./util.ts";
-import { group } from "./test_util.ts";
+import { group } from "./_test_util.ts";
 
 group("serveJsx", (t) => {
   const func = serveJsx(

@@ -7,7 +7,7 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { readResponse } from "./serveio.ts";
-import { group } from "./test_util.ts";
+import { group } from "./_test_util.ts";
 
 group("responder", (t) => {
   t.test("basic", async function () {

@@ -4,7 +4,7 @@ import {
   resolveIndexPath,
 } from "./matcher.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { group } from "./test_util.ts";
+import { group } from "./_test_util.ts";
 
 group("matcher", ({ test }) => {
   type Pat = [string, (string | RegExp)[], number[]][];

@@ -24,8 +24,9 @@ export interface Agent {
 export interface AgentOptions {
   cancel?: Promise<void>;
   timeout?: number; // ms
-}/** http agent send options */
+}
 
+/** http agent send options */
 export interface AgentSendOptions {
   /** relative path that continues after base url. must begin with /. include queries, hash */
   path: string;

@@ -6,7 +6,7 @@ import {
   assertEquals,
   assertThrows,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { group } from "./test_util.ts";
+import { group } from "./_test_util.ts";
 import { ServeListener } from "./server.ts";
 
 function setupRouter(port: number): ServeListener {

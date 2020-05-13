@@ -26,8 +26,9 @@ export interface App extends Router {
 export interface AppOptions {
   logger?: Logger;
   logLevel?: Loglevel;
-}/** Create App */
+}
 
+/** Create App */
 export function createApp(
   opts: AppOptions = {
     logger: createLogger(),

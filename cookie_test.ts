@@ -4,7 +4,7 @@ import {
   assertEquals,
   assertThrows,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { group } from "./test_util.ts";
+import { group } from "./_test_util.ts";
 import { cookieToString, parseCookie, parseSetCookie } from "./cookie.ts";
 import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 import { createApp } from "./app.ts";
