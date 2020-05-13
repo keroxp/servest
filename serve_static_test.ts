@@ -4,9 +4,10 @@ import {
   assertMatch,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createRecorder } from "./testing.ts";
-import { serveStatic } from "./serve_static.ts";
+import { serveStatic, buildCacheControlHeader } from "./serve_static.ts";
 import { group } from "./test_util.ts";
 import { createApp } from "./app.ts";
+import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 
 group("serveStatic", (t) => {
   const func = serveStatic("./fixtures/public", {
@@ -31,6 +32,68 @@ group("serveStatic", (t) => {
       const contentType = resp.headers.get("content-type");
       assertMatch(contentType!, new RegExp(type));
     });
+  });
+
+  t.test("cace-control", async () => {
+    const f = serveStatic("./fixtures/public", {
+      cacheControl: {
+        public: true,
+        maxAge: 3600,
+      },
+    });
+    const rec = createRecorder({ url: "/" });
+    await f(rec);
+    const resp = await rec.response();
+    assertEquals(resp.headers.get("cache-control"), "public, max-age=3600");
+  });
+
+  t.test("expires", async () => {
+    const expires = new Date();
+    const f = serveStatic("./fixtures/public", {
+      expires,
+    });
+    const rec = createRecorder({ url: "/" });
+    await f(rec);
+    const resp = await rec.response();
+    assertEquals(resp.headers.get("expires"), toIMF(expires));
+  });
+});
+
+group("serveStatic/cacheControl", (t) => {
+  t.test("empty", () => {
+    const s = buildCacheControlHeader({});
+    assertEquals(s, "");
+  });
+  t.test("basic", () => {
+    assertEquals(
+      buildCacheControlHeader({
+        public: true,
+        maxAge: 3600,
+        mustRevalidate: true,
+        noTransform: true,
+      }),
+      "public, max-age=3600, must-revalidate, no-transform",
+    );
+    assertEquals(
+      buildCacheControlHeader({
+        private: true,
+        sMaxAge: 3600,
+        proxyRevalidate: true,
+      }),
+      "private, s-maxage=3600, proxy-revalidate",
+    );
+    assertEquals(
+      buildCacheControlHeader({
+        noCache: true,
+      }),
+      "no-cache",
+    );
+    assertEquals(
+      buildCacheControlHeader({
+        noStore: true,
+      }),
+      "no-store",
+    );
   });
 });
 
