@@ -14,11 +14,11 @@
 - Server API: Low-level HTTP API for processing HTTP/1.1 requests.
 - Agent API: Low-level API for managing HTTP/1.1 Keep-Alive connection to the host.
 
-We have our own implementation of HTTP/1.1 server apart from [std/http](https://deno.land/std/http). It is because of beeing progressive and experimental.
+In order to experiment and be progressive, we have our own implementation of HTTP/1.1 server apart from [std/http](https://deno.land/std/http).
 
 ## Usage
 
-To get more detialed information, go to https://servestjs.org
+To get a more detailed information, go to https://servestjs.org
 
 ```ts
 // @deno-types="https://servestjs.org/@/types/react/index.d.ts"
