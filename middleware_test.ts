@@ -1,6 +1,6 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { basicAuth } from "./middleware.ts";
-import { group } from "./test_util.ts";
+import { group } from "./_test_util.ts";
 import {
   assertEquals,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
@@ -8,8 +8,10 @@ import { createRecorder } from "./testing.ts";
 group("middleware", ({ test }) => {
   test("basicAuth", async () => {
     const auth = basicAuth({
-      username: "deno",
-      password: "land",
+      credentials: [{
+        username: "deno",
+        password: "land",
+      }],
       message: "hello",
     });
     let req = createRecorder({
@@ -40,8 +42,10 @@ group("middleware", ({ test }) => {
       "Basic",
     ];
     const auth = basicAuth({
-      username: "deno",
-      password: "land",
+      credentials: [{
+        username: "deno",
+        password: "land",
+      }],
       message: "hello",
     });
     for (const pat of patterns) {

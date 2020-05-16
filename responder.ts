@@ -6,7 +6,7 @@ import { writeResponse } from "./serveio.ts";
 import { extname, basename } from "./vendor/https/deno.land/std/path/mod.ts";
 import { contentTypeByExt } from "./media_types.ts";
 /** Basic responder for http response */
-export interface ServerResponder extends CookieSetter {
+export interface Responder extends CookieSetter {
   /**
    * Respond to request 
    * Error will be thrown if request has already been responded.
@@ -48,7 +48,7 @@ export function createResponder(
   w: Writer,
   onResponse: (r: ServerResponse) => Promise<void> = (resp) =>
     writeResponse(w, resp),
-): ServerResponder {
+): Responder {
   const responseHeaders = new Headers();
   const cookie = cookieSetter(responseHeaders);
   let responseStatus: number | undefined;

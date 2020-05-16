@@ -10,25 +10,25 @@
 
 `Servest` is a http module suite for Deno. It is composed of three major APIs of HTTP protocol:
 
-- Router API: General puropose HTTP routing server.
+- App API: General puropose HTTP routing server.
 - Server API: Low-level HTTP API for processing HTTP/1.1 requests.
 - Agent API: Low-level API for managing HTTP/1.1 Keep-Alive connection to the host.
 
-We have our own implementation of HTTP/1.1 server apart from [std/http](https://deno.land/std/http). It is because of beeing progressive and experimental.
+In order to experiment and be progressive, we have our own implementation of HTTP/1.1 server apart from [std/http](https://deno.land/std/http).
 
 ## Usage
 
-To get more detialed information, go to https://servestjs.org
+To get a more detailed information, go to https://servestjs.org
 
 ```ts
 // @deno-types="https://servestjs.org/@/types/react/index.d.ts"
 import React from "https://dev.jspm.io/react/index.js";
 // @deno-types="https://servestjs.org/@/types/react-dom/server/index.d.ts"
 import ReactDOMServer from "https://dev.jspm.io/react-dom/server.js";
-import { createRouter } from "https://servestjs.org/@/mod.ts";
+import { createApp } from "https://servestjs.org/@/mod.ts";
 
-const router = createRouter();
-router.handle("/", async req => {
+const app = createApp();
+app.handle("/", async req => {
   await req.respond({
     status: 200,
     headers: new Headers({
@@ -45,12 +45,8 @@ router.handle("/", async req => {
     )
   });
 });
-router.listen(":8899");
+app.listen({port: 8888});
 ```
-
-## Roadmap to v1
-
-[See this](https://github.com/keroxp/servest/issues/83)
 
 ## License
 

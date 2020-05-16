@@ -23,14 +23,24 @@ function timeSafeCompare(secret: string, other: string): boolean {
   return a.toString() === b.toString();
 }
 
-/** Basic Auth middleware */
-export function basicAuth({ username, password, message }: {
-  username: string;
-  password: string;
+export interface BasicAuthOption {
+  credentials: {
+    username: string;
+    password: string;
+  }[];
   message?: string;
-}): ServeHandler {
-  assert(username, "username must be defined and not be empty");
-  assert(password, "password must be defined and not be ampty");
+}
+
+/** Basic Auth middleware */
+export function basicAuth(
+  { credentials, message }: BasicAuthOption,
+): ServeHandler {
+  const users = new Map<string, string>();
+  for (const { username, password } of credentials) {
+    assert(username, "username must be defined and not be empty");
+    assert(password, "password must be defined and not be ampty");
+    users.set(username, password);
+  }
   //  WWW-Authenticate: Basic realm="SECRET AREA"
   return async function basicAuth(req) {
     const authorization = req.headers.get("authorization");
@@ -53,7 +63,11 @@ export function basicAuth({ username, password, message }: {
       if (u == null || p == null) {
         return unauthorized();
       }
-      if (!timeSafeCompare(username, u) || !timeSafeCompare(password, p)) {
+      const password = users.get(u);
+      if (password == null) {
+        return unauthorized();
+      }
+      if (!timeSafeCompare(password, p)) {
         return unauthorized();
       }
     }

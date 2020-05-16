@@ -7,26 +7,26 @@ import {
   TextProtoReader,
 } from "./vendor/https/deno.land/std/textproto/mod.ts";
 import {
-  BodyReader,
   streamReader,
   timeoutReader,
   closableBodyReader,
-} from "./readers.ts";
-import { promiseInterrupter } from "./promises.ts";
+} from "./_readers.ts";
+import { promiseInterrupter } from "./_util.ts";
 import {
   assert,
   AssertionError,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import {
+  BodyReader,
   ClientRequest,
-  IncomingHttpRequest,
-  IncomingHttpResponse,
+  IncomingRequest,
+  IncomingResponse,
   KeepAlive,
   ServeOptions,
   ServerResponse,
   HttpBody,
 } from "./server.ts";
-import { encode, decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
+import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;
@@ -41,7 +41,6 @@ import {
 import { createBodyParser } from "./body_parser.ts";
 import { UnexpectedEofError } from "./error.ts";
 import {
-  Status,
   STATUS_TEXT,
 } from "./vendor/https/deno.land/std/http/http_status.ts";
 
@@ -70,7 +69,7 @@ export function initServeOptions(opts: ServeOptions = {}): ServeOptions {
 export async function readRequest(
   r: Reader,
   opts: ServeOptions = {},
-): Promise<IncomingHttpRequest> {
+): Promise<IncomingRequest> {
   opts = initServeOptions(opts);
   const reader = BufReader.create(r);
   const tpReader = new TextProtoReader(reader);
@@ -186,7 +185,7 @@ export async function writeRequest(
 export async function readResponse(
   r: Reader,
   { timeout, cancel }: { timeout?: number; cancel?: Promise<void> } = {},
-): Promise<IncomingHttpResponse> {
+): Promise<IncomingResponse> {
   const reader = BufReader.create(r);
   const tp = new TextProtoReader(reader);
   const timeoutOrCancel = promiseInterrupter({ timeout, cancel });

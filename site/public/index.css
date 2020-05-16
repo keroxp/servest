@@ -133,6 +133,13 @@ body {
   margin: auto;
   /*padding-top: 50px;*/
 }
+.v1 {
+  background-color: rgba(255,255,255,0.75);
+  height: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 
 .indexHead {
   padding-top: 50px;

@@ -16,7 +16,7 @@ const BasicAuth: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
           <a href="https://tools.ietf.org/html/rfc7617" target="_blank">
             RFC7617
           </a>
-          ) middleware by official. Add <Q>hasicAuth()</Q>
+          ) middleware by official. Add <Q>basicAuth()</Q>
           middleware into your router or routes.
         </p>
         <Code href={"/example/basic_auth.ts"} code={codes["basic_auth.ts"]} />

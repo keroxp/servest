@@ -1,31 +1,23 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import Conn = Deno.Conn;
-import Reader = Deno.Reader;
 import {
   BufReader,
   BufWriter,
 } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { promiseInterrupter } from "./promises.ts";
 import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
 import { initServeOptions, readRequest, writeResponse } from "./serveio.ts";
-import { createResponder, ServerResponder } from "./responder.ts";
-import ListenOptions = Deno.ListenOptions;
-import Listener = Deno.Listener;
-import { BodyReader } from "./readers.ts";
-import ListenTlsOptions = Deno.ListenTlsOptions;
-import { promiseWaitQueue } from "./util.ts";
-import { BodyParser } from "./body_parser.ts";
+import { createResponder, Responder } from "./responder.ts";
+import { promiseWaitQueue, promiseInterrupter } from "./_util.ts";
 import { DataHolder, createDataHolder } from "./data_holder.ts";
+import { BodyParser } from "./body_parser.ts";
 
 export type HttpBody =
   | string
   | Uint8Array
-  | Reader
-  | ReadableStream<
-    Uint8Array
-  >;
+  | Deno.Reader
+  | ReadableStream<Uint8Array>;
+
 /** request data for building http request to server */
-export type ClientRequest = {
+export interface ClientRequest {
   /** full request url with queries */
   url: string;
   /** HTTP method */
@@ -35,11 +27,11 @@ export type ClientRequest = {
   /** HTTP Body */
   body?: HttpBody;
   /** HTTP Trailers setter. It will be after finishing writing body. */
-  trailers?: () => Promise<Headers> | Headers;
-};
+  trailers?(): Promise<Headers> | Headers;
+}
 
 /** response data for building http response to client */
-export type ServerResponse = {
+export interface ServerResponse {
   /** HTTP status code */
   status: number;
   /** HTTP headers */
@@ -47,11 +39,11 @@ export type ServerResponse = {
   /** HTTP body */
   body?: HttpBody | null;
   /** HTTP Trailers setter. It will be after finishing writing body. */
-  trailers?: () => Promise<Headers> | Headers;
-};
+  trailers?(): Promise<Headers> | Headers;
+}
 
 /** Incoming http request for handling request from client */
-export interface IncomingHttpRequest extends BodyParser {
+export interface IncomingRequest extends BodyParser {
   /** Raw requested URL (path + query): /path/to/resource?a=1&b=2 */
   url: string;
   /** Path part of url: /path/to/resource */
@@ -72,23 +64,22 @@ export interface IncomingHttpRequest extends BodyParser {
   keepAlive?: KeepAlive;
 }
 
-export type KeepAlive = {
+export interface KeepAlive {
   timeout: number;
   max: number;
-};
+}
 
 /** Outgoing http response for building request to server */
-export interface ServerRequest
-  extends IncomingHttpRequest, DataHolder, ServerResponder {
-  conn: Conn;
+export interface ServerRequest extends IncomingRequest, DataHolder, Responder {
+  conn: Deno.Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
   /** Match result of path patterns */
   match: RegExpMatchArray;
 }
 
-/** Incoming http response for receiving from server */
-export interface IncomingHttpResponse extends BodyParser {
+/** Incoming http response from server to client */
+export interface IncomingResponse extends BodyParser {
   /** requested protocol. like HTTP/1.1 */
   proto: string;
   /** request path with queries. always begin with / */
@@ -101,32 +92,40 @@ export interface IncomingHttpResponse extends BodyParser {
   body: BodyReader;
 }
 
-export interface ClientResponse extends IncomingHttpResponse {
-  conn: Conn;
+export interface BodyReader extends Deno.Reader {
+  close(): Promise<void>;
+}
+
+export interface ClientResponse extends IncomingResponse {
+  conn: Deno.Conn;
   bufWriter: BufWriter;
   bufReader: BufReader;
 }
 
 /** serve options */
-export type ServeOptions = {
+export interface ServeOptions {
   /** canceller promise for async iteration. use defer() */
   cancel?: Promise<void>;
   /** read timeout for keep-alive connection. ms. default=75000(ms) */
   keepAliveTimeout?: number;
   /** read timeout for all read request. ms. default=75000(ms) */
   readTimeout?: number;
-};
+}
 
 export type ServeListener = Deno.Closer;
-export type ServeHandler = (req: ServerRequest) => void | Promise<void>;
+export interface ServeHandler {
+  (req: ServerRequest): void | Promise<void>;
+}
 
-export type HostPort = { hostname?: string; port: number };
-function createListener(opts: HostPort): Listener {
+function createListener(opts: {
+  hostname?: string;
+  port: number;
+}): Deno.Listener {
   return Deno.listen({ ...opts, transport: "tcp" });
 }
 
 export function listenAndServeTls(
-  listenOptions: ListenTlsOptions,
+  listenOptions: Deno.ListenTlsOptions,
   handler: ServeHandler,
   opts?: ServeOptions,
 ): ServeListener {
@@ -135,7 +134,7 @@ export function listenAndServeTls(
 }
 
 export function listenAndServe(
-  listenOptions: ListenOptions,
+  listenOptions: Deno.ListenOptions,
   handler: ServeHandler,
   opts: ServeOptions = {},
 ): ServeListener {
@@ -145,7 +144,7 @@ export function listenAndServe(
 }
 
 function listenInternal(
-  listener: Listener,
+  listener: Deno.Listener,
   handler: ServeHandler,
   opts: ServeOptions = {},
 ): ServeListener {
@@ -182,7 +181,7 @@ function listenInternal(
 
 /** Try to continually read and process requests from keep-alive connection. */
 export function handleKeepAliveConn(
-  conn: Conn,
+  conn: Deno.Conn,
   handler: ServeHandler,
   opts: ServeOptions = {},
 ): void {

@@ -1,7 +1,7 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   findLongestAndNearestMatches,
-} from "./matcher.ts";
+} from "./_matcher.ts";
 import { ServerRequest, ServeHandler } from "./server.ts";
 import { RoutingError } from "./error.ts";
 import {
@@ -12,21 +12,27 @@ import {
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
 /** Router handler */
-export type RouteHandler = (req: ServerRequest) =>
-  | void
-  | Promise<void>;
+export interface RouteHandler {
+  (req: ServerRequest):
+    | void
+    | Promise<void>;
+}
 
 /** WebSocket Handler */
-export type WebSocketHandler = (
-  sock: WebSocket,
-  req: ServerRequest,
-) => void | Promise<void>;
+export interface WebSocketHandler {
+  (
+    sock: WebSocket,
+    req: ServerRequest,
+  ): void | Promise<void>;
+}
 
 /** Global error handler for requests */
-export type ErrorHandler = (
-  e: any | RoutingError,
-  req: ServerRequest,
-) => void | Promise<void>;
+export interface ErrorHandler {
+  (
+    e: any | RoutingError,
+    req: ServerRequest,
+  ): void | Promise<void>;
+}
 
 export interface Route {
   // internal

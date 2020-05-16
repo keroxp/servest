@@ -4,13 +4,14 @@ import {
   BufWriter,
 } from "./vendor/https/deno.land/std/io/bufio.ts";
 import {
-  IncomingHttpResponse,
+  BodyReader,
+  IncomingResponse,
   ServerRequest,
   HttpBody,
 } from "./server.ts";
 import { readResponse, setupBody } from "./serveio.ts";
-import { createResponder, ServerResponder } from "./responder.ts";
-import { BodyReader, closableBodyReader } from "./readers.ts";
+import { createResponder } from "./responder.ts";
+import { closableBodyReader } from "./_readers.ts";
 import { parseCookie } from "./cookie.ts";
 import {
   bodyReader,
@@ -21,10 +22,10 @@ import { createBodyParser, BodyParser } from "./body_parser.ts";
 import { createDataHolder } from "./data_holder.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
-export type ResponseRecorder = ServerRequest & {
+export interface ResponseRecorder extends ServerRequest {
   /** Obtain recorded response */
-  response(): Promise<IncomingHttpResponse & BodyParser>;
-};
+  response(): Promise<IncomingResponse & BodyParser>;
+}
 
 /** Create dummy request & responder that records a response from HTTPHandler  */
 export function createRecorder({
@@ -69,7 +70,7 @@ export function createRecorder({
   } else {
     br = closableBodyReader(emptyReader());
   }
-  async function response(): Promise<IncomingHttpResponse & BodyParser> {
+  async function response(): Promise<IncomingResponse & BodyParser> {
     const resp = await readResponse(bufReader);
     const bodyParser = createBodyParser({
       reader: resp.body,

@@ -3,7 +3,7 @@ import {
   assertEquals,
   assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { group, makeGet, assertRoutingError } from "./test_util.ts";
+import { group, makeGet, assertRoutingError } from "./_test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 import { writeResponse } from "./serveio.ts";
 import {

@@ -4,6 +4,7 @@ import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { DFC } from "../../jsx.ts";
 import { fetchExample } from "../content.ts";
 import { Content } from "../components/content.tsx";
+import { DocLink } from "../components/doc-link.tsx";
 
 const AppApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
   <Content>
@@ -11,7 +12,8 @@ const AppApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
       <section id={"app-api"}>
         <h2>App API</h2>
         <p>
-          App API is high level HTTP interface for building general purpose http
+          <DocLink>App</DocLink>
+          API is high level HTTP interface for building general purpose http
           servers. It is highly affected by{" "}
           <a href={"http://expressjs.com"}>Express</a> from{" "}
           <a href={"https://nodejs.org"}>

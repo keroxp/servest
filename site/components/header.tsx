@@ -1,5 +1,7 @@
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { FC } from "../../types/react/index.d.ts";
+import { Links } from "./content.tsx";
+import { version } from "../content.ts";
 
 export const Header: FC = () => (
   <div className="header">
@@ -11,6 +13,15 @@ export const Header: FC = () => (
       </div>
       <div className="spacer" />
       <div className="headerItem">
+        <a
+          className="headerLink"
+          target="_blank"
+          href={`https://doc.deno.land/https/servestjs.org/@${version()}/mod.ts`}
+        >
+          Doc
+        </a>
+      </div>
+      <div className="headerItem">
         <a className="headerLink" href="/get-started">
           Get Started
         </a>
@@ -18,15 +29,9 @@ export const Header: FC = () => (
       <div className="headerItem">
         <a className="headerLink">API</a>
         <ul className={"headerSublist"}>
-          <li>
-            <a href={"/router-api"}>Router API</a>
-          </li>
-          <li>
-            <a href={"/server-api"}>Server API</a>
-          </li>
-          <li>
-            <a href={"/agent-api"}>Agent API</a>
-          </li>
+          {Links.api.map(([href, text]) => (
+            <li><a href={href}>{text}</a></li>
+          ))}
         </ul>
       </div>
       <div className="headerItem">
@@ -37,18 +42,9 @@ export const Header: FC = () => (
       <div className="headerItem">
         <a className="headerLink">Features</a>
         <ul className={"headerSublist"}>
-          <li>
-            <a href={"/use-middleware"}>Use Middleware</a>
-          </li>
-          <li>
-            <a href={"/use-jsx"}>Use JSX</a>
-          </li>
-          <li>
-            <a href={"/use-serve-static"}>Serve static files</a>
-          </li>
-          <li>
-            <a href={"/use-serve-jsx"}>Serve JSX files as a page</a>
-          </li>
+          {Links.features.map(([href, text]) => (
+            <li><a href={href}>{text}</a></li>
+          ))}
         </ul>
       </div>
       <div className="headerItem">
@@ -60,6 +56,9 @@ export const Header: FC = () => (
           />
         </a>
       </div>
+    </div>
+    <div className="v1">
+      🎉2020/05/13 Servest v1 has been released! 🎉
     </div>
   </div>
 );
