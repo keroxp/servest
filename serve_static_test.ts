@@ -69,10 +69,11 @@ group("serveStatic/cacheControl", (t) => {
       buildCacheControlHeader({
         public: true,
         maxAge: 3600,
+        sMaxAge: 1000,
         mustRevalidate: true,
         noTransform: true,
       }),
-      "public, max-age=3600, must-revalidate, no-transform",
+      "public, max-age=3600, s-maxage=1000, must-revalidate, no-transform",
     );
     assertEquals(
       buildCacheControlHeader({

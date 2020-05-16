@@ -125,10 +125,11 @@ export function buildCacheControlHeader(opts: CacheControlOptions): string {
   } else if (opts.noStore) {
     ret.push("no-store");
   }
+  if (opts.maxAge != null) {
+    ret.push("max-age=" + opts.maxAge);
+  }
   if (opts.sMaxAge != null) {
     ret.push("s-maxage=" + opts.sMaxAge);
-  } else if (opts.maxAge != null) {
-    ret.push("max-age=" + opts.maxAge);
   }
   if (opts.mustRevalidate) {
     ret.push("must-revalidate");
