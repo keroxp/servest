@@ -2,8 +2,9 @@ import { Article } from "../components/article.tsx";
 import { Code } from "../components/code.tsx";
 import React from "../../vendor/https/dev.jspm.io/react/index.js";
 import { DFC } from "../../jsx.ts";
-import { fetchExample, getServerstVersion } from "../content.ts";
+import { fetchExample } from "../content.ts";
 import { Content } from "../components/content.tsx";
+import { Version } from "../../_version.ts";
 
 const Installation: DFC<{
   codes: { [key: string]: string };
@@ -54,7 +55,7 @@ Installation.getInitialProps = async () => {
       }),
     ),
   );
-  const latestVersion = await getServerstVersion();
+  const latestVersion = Version;
   return { codes, latestVersion };
 };
 
