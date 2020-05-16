@@ -1,6 +1,7 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { pathResolver } from "../_util.ts";
 import * as path from "../vendor/https/deno.land/std/path/mod.ts";
+import { Version } from "../_version.ts";
 
 const decoder = new TextDecoder();
 
@@ -11,24 +12,16 @@ export async function fetchExample(filename: string): Promise<string> {
   const relative = path.relative(p, resolve("../"));
   const m = relative.match(/(..\/)+/);
   let ret = decoder.decode(b);
-  const v = await getServerstVersion();
   if (m) {
     const [pat] = m;
-    ret = ret.replace(new RegExp(pat, "g"), `https://servestjs.org/@${v}/`);
+    ret = ret.replace(
+      new RegExp(pat, "g"),
+      `https://servestjs.org/@${Version}/`,
+    );
   }
   if (ret.match("{{ServestVersion}}")) {
-    ret = ret.replace(/{{ServestVersion}}/g, v);
+    ret = ret.replace(/{{ServestVersion}}/g, Version);
   }
-  // Disabled temporally because there is no way to get std's latest release now
-  // if (ret.match("https://deno.land/std")) {
-  //   const denov = await getDenoVersion();
-  //   if (denov) {
-  //     ret = ret.replace(
-  //       /https:\/\/deno.land\/std/g,
-  //       `https://deno.land/std@${denov}`,
-  //     );
-  //   }
-  // }
   return ret;
 }
 
@@ -42,33 +35,4 @@ export async function fetchExampleCodes(
       }),
     ),
   );
-}
-
-let servestVersion: string | undefined;
-let denoVersoin: string | undefined;
-export function version(): string {
-  if (!servestVersion) getServerstVersion();
-  return servestVersion ?? "";
-}
-export async function getServerstVersion(): Promise<string> {
-  if (servestVersion) return servestVersion;
-  const v = await getLatestVersion("keroxp", "servest");
-  return (servestVersion = v) ?? "";
-}
-export async function getDenoVersion(): Promise<string> {
-  if (denoVersoin) return denoVersoin;
-  const v = await getLatestVersion("denoland", "deno");
-  return (denoVersoin = v) ?? "";
-}
-async function getLatestVersion(
-  owner: string,
-  repo: string,
-): Promise<string | undefined> {
-  const resp = await fetch(
-    `https://api.github.com/repos/${owner}/${repo}/releases/latest`,
-  );
-  if (resp.status === 200) {
-    const j = await resp.json();
-    return j["name"];
-  }
 }

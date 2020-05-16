@@ -45,6 +45,7 @@ export const Layout: FC = ({ children }) => (
         crossOrigin="anonymous"
       />
       {/*<script>hljs.initHighlightingOnLoad();</script>*/}
+      <script src="/js/index.js"></script>
     </body>
   </html>
 );

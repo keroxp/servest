@@ -13,6 +13,7 @@ const AppApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
         <h2>App API</h2>
         <p>
           <DocLink>App</DocLink>
+          {" "}
           API is high level HTTP interface for building general purpose http
           servers. It is highly affected by{" "}
           <a href={"http://expressjs.com"}>Express</a> from{" "}
