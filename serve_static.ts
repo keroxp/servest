@@ -3,6 +3,7 @@ import * as path from "./vendor/https/deno.land/std/path/mod.ts";
 import { resolveIndexPath } from "./_matcher.ts";
 import { ServeHandler } from "./server.ts";
 import { contentTypeByExt } from "./media_types.ts";
+import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 
 export interface ServeStaticOptions {
   /**
@@ -19,7 +20,37 @@ export interface ServeStaticOptions {
   contentDispositionMap?: Map<string, "inline" | "attachment">;
   /** Custom filter function for files */
   filter?: (file: string) => boolean | Promise<boolean>;
-} /**
+  /** 
+   * Delactives for Cache-Control header
+   * No value will be sent by default.
+   *  */
+  cacheControl?: CacheControlOptions;
+  /** Value for Expires header */
+  expires?: Date;
+}
+
+export interface CacheControlOptions {
+  // public: default none
+  public?: boolean;
+  // private: default none
+  private?: boolean;
+  // max-age=<sec>: default: 0
+  maxAge?: number;
+  // s-maxage: default none
+  sMaxAge?: number;
+  // no-cache: default none
+  noCache?: boolean;
+  // no-store: default none
+  noStore?: boolean;
+  // no-transform: default none
+  noTransform?: boolean;
+  // must-revalidate: default none
+  mustRevalidate?: boolean;
+  // proxy-revalidate: default none
+  proxyRevalidate?: boolean;
+}
+
+/**
  * Serve static files in specified directory.
  * */
 
@@ -57,6 +88,15 @@ export function serveStatic(
       } else if (contentDisposition === "inline") {
         headers.set("content-disposition", "inline");
       }
+      if (opts.cacheControl) {
+        const val = buildCacheControlHeader(opts.cacheControl);
+        if (val) {
+          headers.set("cache-control", val);
+        }
+      }
+      if (opts.expires) {
+        headers.set("expires", toIMF(opts.expires));
+      }
       if (req.method === "HEAD") {
         return req.respond({
           status: 200,
@@ -72,4 +112,33 @@ export function serveStatic(
       }
     }
   };
+}
+
+export function buildCacheControlHeader(opts: CacheControlOptions): string {
+  let ret: string[] = [];
+  if (opts.public) {
+    ret.push("public");
+  } else if (opts.private) {
+    ret.push("private");
+  } else if (opts.noCache) {
+    ret.push("no-cache");
+  } else if (opts.noStore) {
+    ret.push("no-store");
+  }
+  if (opts.maxAge != null) {
+    ret.push("max-age=" + opts.maxAge);
+  }
+  if (opts.sMaxAge != null) {
+    ret.push("s-maxage=" + opts.sMaxAge);
+  }
+  if (opts.mustRevalidate) {
+    ret.push("must-revalidate");
+  }
+  if (opts.proxyRevalidate) {
+    ret.push("proxy-revalidate");
+  }
+  if (opts.noTransform) {
+    ret.push("no-transform");
+  }
+  return ret.join(", ");
 }
