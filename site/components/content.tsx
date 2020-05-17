@@ -29,26 +29,29 @@ export const Links = {
 
 export const Content: FC = ({ children }) => (
   <div className="content">
-    <SideBar>
-      <SideBarSection title={"Get Started"}>
-        {Links.getStarted.map(([href, text]) => (
-          <SideBarLink href={href}>{text}</SideBarLink>
-        ))}
-      </SideBarSection>
-      <SideBarSection title={"API"}>
-        {Links.api.map(([href, text]) => (
-          <SideBarLink href={href}>{text}</SideBarLink>
-        ))}
-      </SideBarSection>
-      <SideBarSection title={"Concept"}>
-        <SideBarLink href={"/concept"}>Concept</SideBarLink>
-      </SideBarSection>
-      <SideBarSection title={"Features"}>
-        {Links.features.map(([href, text]) => (
-          <SideBarLink href={href}>{text}</SideBarLink>
-        ))}
-      </SideBarSection>
-    </SideBar>
+    <SideBarContent />
     {children}
   </div>
+);
+export const SideBarContent = () => (
+  <SideBar>
+    <SideBarSection title={"Get Started"}>
+      {Links.getStarted.map(([href, text]) => (
+        <SideBarLink href={href}>{text}</SideBarLink>
+      ))}
+    </SideBarSection>
+    <SideBarSection title={"API"}>
+      {Links.api.map(([href, text]) => (
+        <SideBarLink href={href}>{text}</SideBarLink>
+      ))}
+    </SideBarSection>
+    <SideBarSection title={"Concept"}>
+      <SideBarLink href={"/concept"}>Concept</SideBarLink>
+    </SideBarSection>
+    <SideBarSection title={"Features"}>
+      {Links.features.map(([href, text]) => (
+        <SideBarLink href={href}>{text}</SideBarLink>
+      ))}
+    </SideBarSection>
+  </SideBar>
 );
