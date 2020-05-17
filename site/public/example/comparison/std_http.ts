@@ -1,3 +1,4 @@
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import {
   serve,
 } from "https://deno.land/std/http/mod.ts";
