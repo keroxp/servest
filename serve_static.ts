@@ -118,11 +118,14 @@ export function buildCacheControlHeader(opts: CacheControlOptions): string {
   let ret: string[] = [];
   if (opts.public) {
     ret.push("public");
-  } else if (opts.private) {
+  }
+  if (opts.private) {
     ret.push("private");
-  } else if (opts.noCache) {
+  }
+  if (opts.noCache) {
     ret.push("no-cache");
-  } else if (opts.noStore) {
+  }
+  if (opts.noStore) {
     ret.push("no-store");
   }
   if (opts.maxAge != null) {

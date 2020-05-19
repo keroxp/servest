@@ -95,6 +95,20 @@ group("serveStatic/cacheControl", (t) => {
       }),
       "no-store",
     );
+    assertEquals(
+      buildCacheControlHeader({
+        public: true,
+        private: true,
+        maxAge: 3600,
+        sMaxAge: 1000,
+        noCache: true,
+        noStore: true,
+        mustRevalidate: true,
+        proxyRevalidate: true,
+        noTransform: true,
+      }),
+      "public, private, no-cache, no-store, max-age=3600, s-maxage=1000, must-revalidate, proxy-revalidate, no-transform",
+    );
   });
 });
 
