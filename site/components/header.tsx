@@ -11,7 +11,7 @@ export const Header: FC = () => (
           Servest
         </a>
         <a href="#" className="navButton mobileOnly" role="button">
-          <img src="/img/nav-icon.svg" />
+          <img src="/img/nav-icon.svg" alt="navigation icon" />
         </a>
       </div>
       <div className="headerItemList">
