@@ -24,6 +24,7 @@ export const Links = {
     ["/manage-cookie", "Manage Cookie"],
     ["/handle-ws", "Handle WebSocket"],
     ["/basic-auth", "Basic Auth"],
+    ["/handle-cors", "Handle CORS"],
   ],
 };
 

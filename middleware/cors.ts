@@ -1,7 +1,10 @@
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { ServeHandler } from "../server.ts";
 type OriginVerifier = string | RegExp | ((s: string) => boolean);
 export interface CORSOptions {
-  // verifier for Access-Control-Allow-Origin
+  /**
+   * verifier for Access-Control-Allow-Origin
+   */
   origin: OriginVerifier | OriginVerifier[];
   /**
    * values for Access-Control-Allow-Method

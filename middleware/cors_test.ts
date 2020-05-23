@@ -1,3 +1,4 @@
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { group } from "../_test_util.ts";
 import { createRecorder } from "../testing.ts";
 import { cors } from "./cors.ts";
