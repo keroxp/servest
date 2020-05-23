@@ -13,6 +13,7 @@ const UseJsx: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
         <p>
           Deno has a built-in{" "}
           <a href={"https://reactjs.org/docs/introducing-jsx.html"}>JSX</a>
+          {" "}
           support powered by TypeScript.
         </p>
         <p>

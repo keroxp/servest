@@ -55,6 +55,7 @@ const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
           {" "}
           of property type of the component. This methodology is similar to{" "}
           <a href="https://nextjs.org/">Next.js</a>
+          {" "}
           but totally different. Component will be rendered only on the server
           side and won't be hydrated on the client side.
         </p>

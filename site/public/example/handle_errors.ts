@@ -1,4 +1,3 @@
-// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { createApp, RoutingError } from "../../../mod.ts";
 
 const app = createApp();

@@ -28,19 +28,18 @@ export interface ResponseRecorder extends ServerRequest {
 }
 
 /** Create dummy request & responder that records a response from HTTPHandler  */
-export function createRecorder({
-  url,
-  method = "GET",
-  headers = new Headers(),
-  body,
-  proto = "http",
-}: {
-  url: string;
+export function createRecorder(opts?: {
+  url?: string;
   method?: string;
   proto?: string;
   headers?: Headers;
   body?: HttpBody;
 }): ResponseRecorder {
+  const url = opts?.url ?? "/";
+  const method = opts?.method ?? "GET";
+  const headers = opts?.headers ?? new Headers();
+  const body = opts?.body;
+  const proto = opts?.proto ?? "http";
   const conn: Deno.Conn = {
     localAddr: { transport: "tcp", hostname: "0.0.0.0", port: 80 },
     remoteAddr: { transport: "tcp", hostname: "0.0.0.0", port: 80 },
