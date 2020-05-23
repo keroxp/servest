@@ -6,9 +6,20 @@ export class RoutingError extends Error {
   }
 }
 export class UnexpectedEofError extends Error {
+  constructor(msg = "unexpected eof") {
+    super(msg);
+  }
 }
 
 /** error that is thrown when tcp connection is closed */
-export class ConnectionClosedError extends Error {}
+export class ConnectionClosedError extends Error {
+  constructor(msg = "connection closed") {
+    super(msg);
+  }
+}
 
-export class TimeoutError extends Error {}
+export class TimeoutError extends Error {
+  constructor(msg = "operation timeout") {
+    super(msg);
+  }
+}
