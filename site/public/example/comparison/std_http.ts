@@ -9,6 +9,6 @@ for await (const req of server) {
     headers: new Headers({
       "content-type": "text/plain",
     }),
-    body: "hellow deno!",
+    body: "hello deno!",
   });
 }
