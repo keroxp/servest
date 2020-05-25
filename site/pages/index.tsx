@@ -37,15 +37,64 @@ const Index: DFC<{
             <div>
               <h3>std/http</h3>
               <Code
-                href={"/example/comparison/std_http.ts"}
-                code={codes["comparison/std_http.ts"]}
+                href={"/example/comparison/basic/std_http.ts"}
+                code={codes["comparison/basic/std_http.ts"]}
               />
             </div>
             <div>
               <h3>servest</h3>
               <Code
-                href={"/example/comparison/servest.ts"}
-                code={codes["comparison/servest.ts"]}
+                href={"/example/comparison/basic/servest.ts"}
+                code={codes["comparison/basic/servest.ts"]}
+              />
+            </div>
+          </div>
+        </section>
+        <section>
+          <h2>Designed for Real World</h2>
+          <p>
+            Servest provides <a href="/reading-body">many shorthands</a>
+            {" "}to handle HTTP request.
+          </p>
+          <div className="codeComparison">
+            <div>
+              <h3>std/http</h3>
+              <Code
+                href={"/example/comparison/body/std_http.ts"}
+                code={codes["comparison/body/std_http.ts"]}
+              />
+            </div>
+            <div>
+              <h3>servest</h3>
+              <Code
+                href={"/example/comparison/body/servest.ts"}
+                code={codes["comparison/body/servest.ts"]}
+              />
+            </div>
+          </div>
+        </section>
+        <section>
+          <h2>Ready for WebSocket</h2>
+          <p>
+            Make your real-time application with <a
+              href="/handle-ws"
+            >
+              several lines of code
+            </a>.
+          </p>
+          <div className="codeComparison">
+            <div>
+              <h3>std/http</h3>
+              <Code
+                href={"/example/comparison/ws/std_http.ts"}
+                code={codes["comparison/ws/std_http.ts"]}
+              />
+            </div>
+            <div>
+              <h3>servest</h3>
+              <Code
+                href={"/example/comparison/ws/servest.ts"}
+                code={codes["comparison/ws/servest.ts"]}
               />
             </div>
           </div>
@@ -68,7 +117,15 @@ const Index: DFC<{
 Index.getInitialProps = async () => {
   const codes = Object.fromEntries(
     await Promise.all(
-      ["use_jsx.tsx", "comparison/std_http.ts", "comparison/servest.ts"].map(
+      [
+        "use_jsx.tsx",
+        "comparison/basic/std_http.ts",
+        "comparison/basic/servest.ts",
+        "comparison/body/std_http.ts",
+        "comparison/body/servest.ts",
+        "comparison/ws/std_http.ts",
+        "comparison/ws/servest.ts",
+      ].map(
         async (v) => {
           return [v, await fetchExample(v)];
         },
