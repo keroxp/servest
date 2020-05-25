@@ -1,6 +1,6 @@
 import {
   createApp,
-} from "../../../../mod.ts";
+} from "../../../../../mod.ts";
 const app = createApp();
 app.handle("/", async (req) => {
   await req.respond({
