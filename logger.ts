@@ -5,7 +5,7 @@ import {
   cyan,
   gray,
 } from "./vendor/https/deno.land/std/fmt/colors.ts";
-import { sprintf } from "./vendor/https/deno.land/std/fmt/sprintf.ts";
+import { sprintf } from "./vendor/https/deno.land/std/fmt/printf.ts";
 export enum Loglevel {
   DEBUG,
   INFO,
