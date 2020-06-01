@@ -1,6 +1,6 @@
 {
   "https://deno.land/std": {
-    "version": "@v0.51.0",
+    "version": "@v0.54.0",
     "modules": [
       "/testing/asserts.ts",
       "/textproto/mod.ts",
@@ -15,7 +15,7 @@
       "/http/http_status.ts",
       "/encoding/utf8.ts",
       "/flags/mod.ts",
-      "/fmt/sprintf.ts",
+      "/fmt/printf.ts",
       "/fmt/colors.ts",
       "/mime/multipart.ts",
       "/async/mod.ts",
