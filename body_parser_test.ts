@@ -34,6 +34,7 @@ group("multipart", ({ test }) => {
     assertEquals(m.value("hoge"), undefined);
     assertEquals(m.value("deno"), "land");
     const mfile = m.file("file")!;
+    assert(!Array.isArray(mfile));
     assertEquals(mfile.filename, "README.md");
     assert(mfile.tempfile !== undefined, "temp file should be created");
     await m.removeAll();

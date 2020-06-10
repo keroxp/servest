@@ -1,1 +1,1 @@
-export * from "https://deno.land/std@v0.54.0/fs/exists.ts";
+export * from "https://deno.land/std@v0.56.0/fs/exists.ts";
