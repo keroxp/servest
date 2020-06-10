@@ -1,1 +1,1 @@
-export * from "https://deno.land/std@v0.54.0/textproto/mod.ts";
+export * from "https://deno.land/std@v0.56.0/textproto/mod.ts";
