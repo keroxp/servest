@@ -289,11 +289,15 @@ export async function writeResponse(
   const statusText = STATUS_TEXT.get(res.status);
   assert(!!statusText, `unsupported status code: ${statusText}`);
   await writer.write(encode(`HTTP/1.1 ${res.status} ${statusText}\r\n`));
+  const contentType = res.headers.get("content-type");
   let bodyReader: Reader | undefined;
   let contentLength: number | undefined;
   if (res.body) {
     [bodyReader, contentLength] = setupBody(res.body, res.headers);
-  } else if (!res.headers.has("content-length")) {
+  } else if (
+    !res.headers.has("content-length") &&
+    !contentType?.includes("text/event-stream")
+  ) {
     res.headers.set("content-length", "0");
   }
   await writeHeaders(writer, res.headers);
