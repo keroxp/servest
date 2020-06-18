@@ -10,7 +10,7 @@
 
 `Servest` is a http module suite for Deno. It is composed of three major APIs of HTTP protocol:
 
-- App API: General puropose HTTP routing server.
+- App API: General purpose HTTP routing server.
 - Server API: Low-level HTTP API for processing HTTP/1.1 requests.
 - Agent API: Low-level API for managing HTTP/1.1 Keep-Alive connection to the host.
 
