@@ -1,3 +1,4 @@
+DENO_VERSION=`cat .denov`
 default: test
 .PHONY: types	
 types:
@@ -6,9 +7,9 @@ types:
 test:
 	deno test -A *_test.ts
 build:
-	docker build --build-arg DENO_VERSION=`cat .denov` -t servest/site .
+	docker build --build-arg DENO_VERSION=$(DENO_VERSION) -t servest/site .
 bench:
-	docker build --build-arg DENO_VERSION=`cat .denov` -t servest/bench -f benchmark/Dockerfile .
+	docker build --build-arg DENO_VERSION=$(DENO_VERSION) -t servest/bench -f benchmark/Dockerfile .
 do-bench: bench
 	docker run -t servest/bench
 do-std-bench: bench
