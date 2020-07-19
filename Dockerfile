@@ -1,10 +1,9 @@
 FROM debian:stretch
 RUN apt update -y && apt install curl unzip -y
-ARG DENO_VERSION=v1.0.0
 ENV DENO_DIR=/deno
 ENV DENO_INSTALL=${DENO_DIR}/.deno
 ENV PATH=${DENO_INSTALL}/bin:${PATH}
-RUN curl -fsSL https://deno.land/x/install/install.sh | sh -s -- ${DENO_VERSION} \
+RUN curl -fsSL https://deno.land/x/install/install.sh | bash \
     && deno -V
 COPY modules.json modules-lock.json /servest/
 COPY ./vendor /servest/vendor
