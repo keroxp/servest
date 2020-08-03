@@ -21,11 +21,10 @@ export interface GroupBody {
 }
 export type GroupHead = Omit<Deno.TestDefinition, "fn">;
 type TestFunc = () => PromiseOrVal<void>;
-export async function group(
+export function group(
   desc: string | GroupHead,
   body: (p: GroupBody) => void,
-): Promise<void> {
-  const prefix = typeof desc === "string" ? desc : desc.name;
+): void {
   let opts: GroupHead;
   if (typeof desc !== "string") {
     opts = { ...desc };
