@@ -84,7 +84,9 @@ group("cookieToString", ({ test }) => {
   });
 });
 
-group("cookie integration", ({ setupAll, test }) => {
+group({
+  name: "cookie integration",
+}, ({ setupAll, test }) => {
   const now = new Date();
   now.setMilliseconds(0);
   setupAll(() => {
@@ -95,11 +97,23 @@ group("cookie integration", ({ setupAll, test }) => {
         maxAge: 1000,
         expires: now,
       });
-      return req.respond({ status: 200, body: "ok" });
+      return req.respond({
+        status: 200,
+        body: "ok",
+        headers: new Headers({
+          "Connection": "close",
+        }),
+      });
     });
     router.get("/deno", (req) => {
       const deno = req.cookies.get("deno");
-      return req.respond({ status: 200, body: deno || "" });
+      return req.respond({
+        status: 200,
+        body: deno || "",
+        headers: new Headers({
+          "Connection": "close",
+        }),
+      });
     });
     const lis = router.listen({ port: 9983 });
     return () => lis.close();

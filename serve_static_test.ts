@@ -115,6 +115,9 @@ group("serveStatic/cacheControl", (t) => {
 group("serveStatic integration", (t) => {
   t.setupAll(() => {
     const router = createApp();
+    router.use((req) => {
+      req.responseHeaders.set("Connection", "close");
+    });
     router.use(serveStatic("./fixtures/public"));
     const l = router.listen({ port: 9988 });
     return () => l.close();
