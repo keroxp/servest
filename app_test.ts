@@ -6,7 +6,6 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { group, makeGet } from "./_test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
-import { connectWebSocket } from "./vendor/https/deno.land/std/ws/mod.ts";
 setLevel(Loglevel.NONE);
 
 group({
@@ -39,6 +38,7 @@ group({
 });
 group({
   name: "app/ws",
+  sanitizeResources: false,
 }, ({ test, setupAll }) => {
   const app = createApp();
   app.ws("/ws", async (sock) => {
@@ -49,16 +49,23 @@ group({
     const l = app.listen({ port: 8890 });
     return () => l.close();
   });
-  test("should accept ws", async () => {
-    const sock = await connectWebSocket("ws://127.0.0.1:8890/ws");
-    const it = sock[Symbol.asyncIterator]();
-    const { value: msg1 } = await it.next();
-    assertEquals(msg1, "Hello");
-    const { value: msg2 } = await it.next();
-    assertEquals(msg2, { code: 1000, reason: "" });
-    const { done } = await it.next();
-    assertEquals(done, true);
-    assertEquals(sock.isClosed, true);
-    sock.closeForce();
+  test({
+    name: "should accept ws",
+    fn: async () => {
+      const sock = new WebSocket("ws://127.0.0.1:8890/ws");
+      const p1 = new Promise((resolve) => {
+        sock.onmessage = (msg) => {
+          resolve(msg.data);
+        };
+      });
+      const p2 = new Promise((resolve) => {
+        sock.onclose = () => {
+          resolve();
+        };
+      });
+      const [msg] = await Promise.all([p1, p2]);
+      assertEquals(msg, "Hello");
+      sock.close();
+    },
   });
 });
