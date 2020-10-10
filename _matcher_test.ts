@@ -1,8 +1,5 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  findLongestAndNearestMatches,
-  resolveIndexPath,
-} from "./_matcher.ts";
+import { findLongestAndNearestMatches, resolveIndexPath } from "./_matcher.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { group } from "./_test_util.ts";
 

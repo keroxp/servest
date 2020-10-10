@@ -1,8 +1,5 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  deferred,
-  Deferred,
-} from "./vendor/https/deno.land/std/async/mod.ts";
+import { Deferred, deferred } from "./vendor/https/deno.land/std/async/mod.ts";
 import { TimeoutError } from "./error.ts";
 
 export function pathResolver(meta: ImportMeta): (p: string) => string {

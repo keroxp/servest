@@ -1,6 +1,4 @@
-import {
-  serve,
-} from "https://deno.land/std/http/mod.ts";
+import { serve } from "https://deno.land/std/http/mod.ts";
 
 const server = serve({ port: 8888 });
 for await (const req of server) {

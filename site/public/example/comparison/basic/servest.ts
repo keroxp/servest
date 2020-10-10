@@ -1,6 +1,4 @@
-import {
-  createApp,
-} from "../../../../../mod.ts";
+import { createApp } from "../../../../../mod.ts";
 const app = createApp();
 app.handle("/", async (req) => {
   await req.respond({

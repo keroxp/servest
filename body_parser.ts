@@ -1,7 +1,7 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import {
-  MultipartReader,
   MultipartFormData,
+  MultipartReader,
 } from "./vendor/https/deno.land/std/mime/multipart.ts";
 import Reader = Deno.Reader;
 import { decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";

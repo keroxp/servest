@@ -1,4 +1,4 @@
-import { createApp, contentTypeFilter } from "../../../mod.ts";
+import { contentTypeFilter, createApp } from "../../../mod.ts";
 const app = createApp();
 app.post("/json", contentTypeFilter("application/json"), async (req) => {
   const bodyJson = (await req.json()) as { name: string; id: string };

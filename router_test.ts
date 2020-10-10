@@ -3,13 +3,10 @@ import {
   assertEquals,
   assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { group, makeGet, assertRoutingError } from "./_test_util.ts";
+import { assertRoutingError, group, makeGet } from "./_test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 import { writeResponse } from "./serveio.ts";
-import {
-  createRouter,
-  Router,
-} from "./router.ts";
+import { createRouter, Router } from "./router.ts";
 import { ServerRequest } from "./server.ts";
 import { createRecorder } from "./testing.ts";
 import { RoutingError } from "./error.ts";

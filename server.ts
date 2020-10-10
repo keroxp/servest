@@ -1,13 +1,10 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  BufReader,
-  BufWriter,
-} from "./vendor/https/deno.land/std/io/bufio.ts";
+import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
 import { initServeOptions, readRequest, writeResponse } from "./serveio.ts";
 import { createResponder, Responder } from "./responder.ts";
-import { promiseWaitQueue, promiseInterrupter } from "./_util.ts";
-import { DataHolder, createDataHolder } from "./data_holder.ts";
+import { promiseInterrupter, promiseWaitQueue } from "./_util.ts";
+import { createDataHolder, DataHolder } from "./data_holder.ts";
 import { BodyParser } from "./body_parser.ts";
 
 export type HttpBody =

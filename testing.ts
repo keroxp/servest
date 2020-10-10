@@ -1,13 +1,10 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  BufReader,
-  BufWriter,
-} from "./vendor/https/deno.land/std/io/bufio.ts";
+import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import {
   BodyReader,
+  HttpBody,
   IncomingResponse,
   ServerRequest,
-  HttpBody,
 } from "./server.ts";
 import { readResponse, setupBody } from "./serveio.ts";
 import { createResponder } from "./responder.ts";
@@ -18,7 +15,7 @@ import {
   chunkedBodyReader,
   emptyReader,
 } from "./vendor/https/deno.land/std/http/_io.ts";
-import { createBodyParser, BodyParser } from "./body_parser.ts";
+import { BodyParser, createBodyParser } from "./body_parser.ts";
 import { createDataHolder } from "./data_holder.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 

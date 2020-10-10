@@ -1,13 +1,13 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { Router } from "./router.ts";
 import {
-  assertThrowsAsync,
   AssertionError,
+  assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { RoutingError } from "./error.ts";
 import { createRecorder } from "./testing.ts";
 import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
-import { red, green } from "./vendor/https/deno.land/std/fmt/colors.ts";
+import { green, red } from "./vendor/https/deno.land/std/fmt/colors.ts";
 import { STATUS_TEXT } from "./vendor/https/deno.land/std/http/http_status.ts";
 
 type PromiseOrVal<T> = T | Promise<T>;

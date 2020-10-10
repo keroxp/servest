@@ -7,10 +7,7 @@ import {
   ServerRequest,
 } from "./server.ts";
 import { createLogger, Logger, Loglevel, namedLogger } from "./logger.ts";
-import {
-  createRouter,
-  Router,
-} from "./router.ts";
+import { createRouter, Router } from "./router.ts";
 import { RoutingError } from "./error.ts";
 export interface App extends Router {
   /** Start listening with given addr */

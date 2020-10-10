@@ -1,11 +1,5 @@
-import {
-  createApp,
-  createRouter,
-  serveStatic,
-} from "../../../mod.ts";
-import {
-  cors,
-} from "../../../middleware/cors.ts";
+import { createApp, createRouter, serveStatic } from "../../../mod.ts";
+import { cors } from "../../../middleware/cors.ts";
 const app = createApp();
 app.use(
   // allow access to static resource only from (*.)servestjs.org

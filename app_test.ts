@@ -1,5 +1,5 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import { createApp, App } from "./app.ts";
+import { App, createApp } from "./app.ts";
 import {
   assertEquals,
   assertMatch,
