@@ -1,9 +1,9 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import {
-  red,
-  yellow,
   cyan,
   gray,
+  red,
+  yellow,
 } from "./vendor/https/deno.land/std/fmt/colors.ts";
 import { sprintf } from "./vendor/https/deno.land/std/fmt/printf.ts";
 export enum Loglevel {

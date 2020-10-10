@@ -1,10 +1,8 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { streamReader } from "./_readers.ts";
-import {
-  assertEquals,
-} from "./vendor/https/deno.land/std/testing/asserts.ts";
+import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { group } from "./_test_util.ts";
-import { encode, decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
+import { decode, encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 
 group("streamReader", ({ test }) => {
   test("basic", async () => {

@@ -1,16 +1,7 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  BufReader,
-  BufWriter,
-} from "./vendor/https/deno.land/std/io/bufio.ts";
-import {
-  TextProtoReader,
-} from "./vendor/https/deno.land/std/textproto/mod.ts";
-import {
-  streamReader,
-  timeoutReader,
-  closableBodyReader,
-} from "./_readers.ts";
+import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
+import { TextProtoReader } from "./vendor/https/deno.land/std/textproto/mod.ts";
+import { closableBodyReader, streamReader, timeoutReader } from "./_readers.ts";
 import { promiseInterrupter } from "./_util.ts";
 import {
   assert,
@@ -19,12 +10,12 @@ import {
 import {
   BodyReader,
   ClientRequest,
+  HttpBody,
   IncomingRequest,
   IncomingResponse,
   KeepAlive,
   ServeOptions,
   ServerResponse,
-  HttpBody,
 } from "./server.ts";
 import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import Reader = Deno.Reader;
@@ -40,9 +31,7 @@ import {
 } from "./vendor/https/deno.land/std/http/_io.ts";
 import { createBodyParser } from "./body_parser.ts";
 import { UnexpectedEofError } from "./error.ts";
-import {
-  STATUS_TEXT,
-} from "./vendor/https/deno.land/std/http/http_status.ts";
+import { STATUS_TEXT } from "./vendor/https/deno.land/std/http/http_status.ts";
 
 export const kDefaultKeepAliveTimeout = 75000; // ms
 

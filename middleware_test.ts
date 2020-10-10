@@ -1,9 +1,7 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { basicAuth } from "./middleware.ts";
 import { group } from "./_test_util.ts";
-import {
-  assertEquals,
-} from "./vendor/https/deno.land/std/testing/asserts.ts";
+import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createRecorder } from "./testing.ts";
 group("middleware", ({ test }) => {
   test("basicAuth", async () => {

@@ -4,7 +4,7 @@ import {
   assertMatch,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createRecorder } from "./testing.ts";
-import { serveStatic, buildCacheControlHeader } from "./serve_static.ts";
+import { buildCacheControlHeader, serveStatic } from "./serve_static.ts";
 import { group } from "./_test_util.ts";
 import { createApp } from "./app.ts";
 import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";

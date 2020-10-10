@@ -1,4 +1,4 @@
-import { createApp, basicAuth } from "../../../mod.ts";
+import { basicAuth, createApp } from "../../../mod.ts";
 const app = createApp();
 // Add global auth middleware
 app.use(

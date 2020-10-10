@@ -1,12 +1,10 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import {
-  findLongestAndNearestMatches,
-} from "./_matcher.ts";
-import { ServerRequest, ServeHandler } from "./server.ts";
+import { findLongestAndNearestMatches } from "./_matcher.ts";
+import { ServeHandler, ServerRequest } from "./server.ts";
 import { RoutingError } from "./error.ts";
 import {
-  acceptWebSocket,
   acceptable,
+  acceptWebSocket,
   WebSocket,
 } from "./vendor/https/deno.land/std/ws/mod.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";

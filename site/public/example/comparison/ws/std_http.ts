@@ -1,10 +1,5 @@
-import {
-  serve,
-} from "https://deno.land/std/http/mod.ts";
-import {
-  acceptWebSocket,
-  acceptable,
-} from "https://deno.land/std/ws/mod.ts";
+import { serve } from "https://deno.land/std/http/mod.ts";
+import { acceptable, acceptWebSocket } from "https://deno.land/std/ws/mod.ts";
 
 const server = serve({ port: 8888 });
 for await (const req of server) {

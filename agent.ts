@@ -3,11 +3,8 @@ import { ClientResponse, HttpBody } from "./server.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { readResponse, writeRequest } from "./serveio.ts";
 import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
-import {
-  BufReader,
-  BufWriter,
-} from "./vendor/https/deno.land/std/io/bufio.ts";
-import { UnexpectedEofError, ConnectionClosedError } from "./error.ts";
+import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
+import { ConnectionClosedError, UnexpectedEofError } from "./error.ts";
 
 /** keep-alive http agent for single host. each message will be sent in serial */
 export interface Agent {

@@ -7,7 +7,7 @@ import {
   assertEquals,
   assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { parserMultipartRequest, createBodyParser } from "./body_parser.ts";
+import { createBodyParser, parserMultipartRequest } from "./body_parser.ts";
 import { exists as fsExists } from "./vendor/https/deno.land/std/fs/exists.ts";
 import Buffer = Deno.Buffer;
 import { group } from "./_test_util.ts";
