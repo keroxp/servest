@@ -21,11 +21,11 @@ In order to experiment and be progressive, we have our own implementation of HTT
 To get a more detailed information, go to https://servestjs.org
 
 ```ts
-// @deno-types="https://servestjs.org/@/types/react/index.d.ts"
+// @deno-types="https://deno.land/x/servest/types/react/index.d.ts"
 import React from "https://dev.jspm.io/react/index.js";
-// @deno-types="https://servestjs.org/@/types/react-dom/server/index.d.ts"
+// @deno-types="https://deno.land/x/servest/types/react-dom/server/index.d.ts"
 import ReactDOMServer from "https://dev.jspm.io/react-dom/server.js";
-import { createApp } from "https://servestjs.org/@/mod.ts";
+import { createApp } from "https://deno.land/x/servest/mod.ts";
 
 const app = createApp();
 app.handle("/", async req => {
