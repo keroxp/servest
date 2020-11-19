@@ -16,7 +16,7 @@ jobs:
     - uses: actions/checkout@v1
     - name: Install Deno
       run: |
-        echo "::set-env name=DENO_VERSION::$(cat .denov)"
+        echo "DENO_VERSION=$(cat .denov)" >> $GITHUB_ENV
     - uses: denolib/setup-deno@master
       with:
         deno-version: ${{ env.DENO_VERSION }}
