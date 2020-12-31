@@ -58,7 +58,7 @@ group({
           resolve(msg.data);
         };
       });
-      const p2 = new Promise((resolve) => {
+      const p2 = new Promise<void>((resolve) => {
         sock.onclose = () => {
           resolve();
         };
