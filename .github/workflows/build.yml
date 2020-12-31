@@ -14,12 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v1
-    - name: Install Deno
-      run: |
-        echo "DENO_VERSION=$(cat .denov)" >> $GITHUB_ENV
     - uses: denolib/setup-deno@master
-      with:
-        deno-version: ${{ env.DENO_VERSION }}
     - name: Fmt check
       run: deno fmt --check
     - name: Check mod.ts
