@@ -162,7 +162,7 @@ function dummyConn(r: Deno.Reader, w: Deno.Writer): Deno.Conn {
   return {
     rid: -1,
     close(): void {},
-    closeWrite(): void {},
+    async closeWrite(): Promise<void> {},
     localAddr: addr,
     remoteAddr: addr,
     read: (p) => r.read(p),
