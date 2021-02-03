@@ -42,7 +42,7 @@ export function createRecorder(opts?: {
     remoteAddr: { transport: "tcp", hostname: "0.0.0.0", port: 80 },
     rid: 0,
     close(): void {},
-    closeWrite(): void {},
+    async closeWrite(): Promise<void> {},
     async read(p: Uint8Array): Promise<number | null> {
       return 0;
     },
