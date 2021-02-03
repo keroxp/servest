@@ -8,13 +8,16 @@
 
 ## Description
 
-`Servest` is a http module suite for Deno. It is composed of three major APIs of HTTP protocol:
+`Servest` is a http module suite for Deno. It is composed of three major APIs of
+HTTP protocol:
 
 - App API: General purpose HTTP routing server.
 - Server API: Low-level HTTP API for processing HTTP/1.1 requests.
-- Agent API: Low-level API for managing HTTP/1.1 Keep-Alive connection to the host.
+- Agent API: Low-level API for managing HTTP/1.1 Keep-Alive connection to the
+  host.
 
-In order to experiment and be progressive, we have our own implementation of HTTP/1.1 server apart from [std/http](https://deno.land/std/http).
+In order to experiment and be progressive, we have our own implementation of
+HTTP/1.1 server apart from [std/http](https://deno.land/std/http).
 
 ## Usage
 
@@ -28,11 +31,11 @@ import ReactDOMServer from "https://dev.jspm.io/react-dom/server.js";
 import { createApp } from "https://deno.land/x/servest/mod.ts";
 
 const app = createApp();
-app.handle("/", async req => {
+app.handle("/", async (req) => {
   await req.respond({
     status: 200,
     headers: new Headers({
-      "content-type": "text/html; charset=UTF-8"
+      "content-type": "text/html; charset=UTF-8",
     }),
     body: ReactDOMServer.renderToString(
       <html>
@@ -41,11 +44,11 @@ app.handle("/", async req => {
           <title>servest</title>
         </head>
         <body>Hello Servest!</body>
-      </html>
-    )
+      </html>,
+    ),
   });
 });
-app.listen({port: 8888});
+app.listen({ port: 8888 });
 ```
 
 ## License
