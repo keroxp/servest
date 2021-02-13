@@ -84,6 +84,9 @@ export interface Router extends Route {
   /** Register DELETE route  */
   delete(pattern: string | RegExp, ...handlers: RouteHandler[]): void;
 
+  /** Register OPTIONS route */
+  options(pattern: string | RegExp, ...handlers: RouteHandler[]): void;
+
   /** Accept ws upgrade */
   ws(pattern: string | RegExp, handler: WebSocketHandler): void;
   ws(
@@ -150,6 +153,10 @@ export function createRouter(): Router {
 
   function _delete(pattern: string | RegExp, ...handlers: RouteHandler[]) {
     routes.push({ pattern, methods: ["DELETE"], handlers });
+  }
+
+  function options(pattern: string | RegExp, ...handlers: RouteHandler[]) {
+    routes.push({ pattern, methods: ["OPTIONS"], handlers });
   }
 
   function use(...handlers: ServeHandler[]) {
