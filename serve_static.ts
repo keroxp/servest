@@ -27,6 +27,8 @@ export interface ServeStaticOptions {
   cacheControl?: CacheControlOptions;
   /** Value for Expires header */
   expires?: Date;
+  /** contentTypeWithCharSet */
+  withCharSet?: string[];
 }
 
 export interface CacheControlOptions {
@@ -80,8 +82,12 @@ export function serveStatic(
         "application/octet-stream";
       const headers = new Headers({
         "content-length": stat.size + "",
-        "content-type": contentType,
       });
+      if (opts.withCharSet && opts.withCharSet.includes(contentType)) {
+        headers.set("content-type", `${contentType}; charset=UTF-8`)
+      } else {
+        headers.set("content-type", contentType)
+      }
       const contentDisposition = contentDispositionMap.get(ext);
       if (contentDisposition === "attachment") {
         headers.set("content-disposition", `attachment; filename="${base}"`);
