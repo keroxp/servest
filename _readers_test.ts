@@ -2,7 +2,7 @@
 import { streamReader } from "./_readers.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { group } from "./_test_util.ts";
-import { decode, encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
+import { decode, encode } from "./_util.ts";
 
 group("streamReader", ({ test }) => {
   test("basic", async () => {
