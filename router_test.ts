@@ -131,7 +131,7 @@ group("method routes", (t) => {
   });
   t.test("OPTIONS", async () => {
     router.options("/", handler);
-    assertMethods(router, "OPTIONS");
+    await assertMethods(router, "OPTIONS");
   });
 });
 
