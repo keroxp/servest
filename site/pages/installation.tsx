@@ -38,8 +38,7 @@ const Installation: DFC<{
             dink
           </a>
           . Firstly create <code className="q">modules.json</code>
-          and just run{" "}
-          <code className="q">dink</code>.
+          and just run <code className="q">dink</code>.
         </p>
         <Code href={"/example/modules.json"} code={codes["modules.json"]} />
       </section>

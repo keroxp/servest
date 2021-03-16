@@ -14,19 +14,19 @@ const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
       <section id={"use-serve-static"}>
         <h2>Host static files</h2>
         <p>
-          <DocLink>serveStatic</DocLink>
-          {" "}
+          <DocLink>serveStatic</DocLink>{" "}
           is a built-in middleware for hosting static files (html, image,
           stylesheets and more).
         </p>
         <p>
-          In the example below, all files in <code className="q">
+          In the example below, all files in{" "}
+          <code className="q">
             ./public
-          </code>
-          {" "}
+          </code>{" "}
           directories are automatically served if request path matches file. For
           instance, <code className="q">./public/index.css</code>
-          will be served as <code className="q">
+          will be served as{" "}
+          <code className="q">
             http://example.com/index.css
           </code>.
         </p>

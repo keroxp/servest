@@ -17,8 +17,7 @@ const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
           Like serving static files, JSX files can also be served as a web page.
         </p>
         <p>
-          <DocLink>serveJsx</DocLink>
-          {" "}
+          <DocLink>serveJsx</DocLink>{" "}
           is built-in middleware to serve JSX files. It is similar to{" "}
           <DocLink>serveStatic</DocLink>
           {", "}
@@ -49,13 +48,12 @@ const UseServeStatic: DFC<{ codes: { [key: string]: string } }> = ({
           <code className="q">getInitialProps</code> to the component.
         </p>
         <p>
-          It is async function that returns <code className="q">
+          It is async function that returns{" "}
+          <code className="q">
             Promise
-          </code>
-          {" "}
+          </code>{" "}
           of property type of the component. This methodology is similar to{" "}
-          <a href="https://nextjs.org/">Next.js</a>
-          {" "}
+          <a href="https://nextjs.org/">Next.js</a>{" "}
           but totally different. Component will be rendered only on the server
           side and won't be hydrated on the client side.
         </p>

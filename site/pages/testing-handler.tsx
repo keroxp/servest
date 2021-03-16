@@ -13,8 +13,7 @@ const ServerApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
         <h2>Testing Handler</h2>
         <p>
           <Q>ResponseRecorder</Q>
-          is dummy request that records response from{" "}
-          <Q>HttpHandler</Q>.
+          is dummy request that records response from <Q>HttpHandler</Q>.
         </p>
         <p>
           It behaves as an actual HTTP request for handlers and is useful for

@@ -9,8 +9,8 @@ export default () => (
         <h2>Concept</h2>
         <blockquote>"For a rich harvest of HTTP server"</blockquote>
         <p>
-          Servest was developed as the optional HTTP server module to
-          Deno's{" "}
+          Servest was developed as the optional HTTP server module to Deno's
+          {" "}
           <a href={"https://github.com/denoland/deno/tree/master/std/http"}>
             standard http module
           </a>
@@ -34,7 +34,8 @@ export default () => (
           http module at one day.
         </p>
         <p style={{ textAlign: "center" }}>
-          October 2019, By <a href={"https://github.com/keroxp"}>
+          October 2019, By{" "}
+          <a href={"https://github.com/keroxp"}>
             @keroxp
           </a>, author of Servest
         </p>
