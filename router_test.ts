@@ -129,6 +129,10 @@ group("method routes", (t) => {
     router.delete("/", handler);
     assertMethods(router, "DELETE");
   });
+  t.test("OPTIONS", async () => {
+    router.options("/", handler);
+    assertMethods(router, "OPTIONS");
+  });
 });
 
 group("same path routes", (t) => {
