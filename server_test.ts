@@ -8,7 +8,7 @@ import {
   assertEquals,
   assertThrowsAsync,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
+import { encode } from "./_util.ts";
 import { createAgent } from "./agent.ts";
 import { readResponse, writeRequest } from "./serveio.ts";
 import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";

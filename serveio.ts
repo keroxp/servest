@@ -2,7 +2,7 @@
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { TextProtoReader } from "./vendor/https/deno.land/std/textproto/mod.ts";
 import { closableBodyReader, streamReader, timeoutReader } from "./_readers.ts";
-import { promiseInterrupter } from "./_util.ts";
+import { encode, promiseInterrupter } from "./_util.ts";
 import {
   assert,
   AssertionError,
@@ -17,7 +17,6 @@ import {
   ServeOptions,
   ServerResponse,
 } from "./server.ts";
-import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import Buffer = Deno.Buffer;

@@ -3,9 +3,9 @@ import {
   MultipartFormData,
   MultipartReader,
 } from "./vendor/https/deno.land/std/mime/multipart.ts";
-import Reader = Deno.Reader;
-import { decode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
+import { decode } from "./_util.ts";
 
+import Reader = Deno.Reader;
 export interface BodyParser {
   text(): Promise<string>;
   json(): Promise<any>;

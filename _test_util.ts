@@ -6,7 +6,7 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { RoutingError } from "./error.ts";
 import { createRecorder } from "./testing.ts";
-import { encode } from "./vendor/https/deno.land/std/encoding/utf8.ts";
+import { encode } from "./_util.ts";
 import { green, red } from "./vendor/https/deno.land/std/fmt/colors.ts";
 import { STATUS_TEXT } from "./vendor/https/deno.land/std/http/http_status.ts";
 
