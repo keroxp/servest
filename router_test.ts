@@ -115,19 +115,19 @@ group("method routes", (t) => {
   });
   t.test("GET", async () => {
     router.get("/", handler);
-    assertMethods(router, "GET");
+    await assertMethods(router, "GET");
   });
   t.test("POST", async () => {
     router.post("/", handler);
-    assertMethods(router, "POST");
+    await assertMethods(router, "POST");
   });
   t.test("PUT", async () => {
     router.put("/", handler);
-    assertMethods(router, "PUT");
+    await assertMethods(router, "PUT");
   });
   t.test("DELETE", async () => {
     router.delete("/", handler);
-    assertMethods(router, "DELETE");
+    await assertMethods(router, "DELETE");
   });
 });
 
