@@ -12,8 +12,7 @@ const AgentApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
       <section id={"agent-api"}>
         <h2>Agent API</h2>
         <p>
-          <DocLink>Agent</DocLink>
-          {" "}
+          <DocLink>Agent</DocLink>{" "}
           is low level interface for managing HTTP/1.1 Keep-Alive connection to
           the host.
         </p>
@@ -24,8 +23,7 @@ const AgentApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
             href={"https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API"}
           >
             fetch
-          </a>
-          {" "}
+          </a>{" "}
           is enough for sending HTTP request but is useful to manage Keep-Alive
           connections.
         </p>

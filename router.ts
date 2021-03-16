@@ -269,6 +269,7 @@ export function createRouter(): Router {
     route,
     get,
     post,
+    options,
     put,
     delete: _delete,
     ws,

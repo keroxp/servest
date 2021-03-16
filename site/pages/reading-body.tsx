@@ -12,7 +12,8 @@ const ReadingBody: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
       <section id={"reading-body"}>
         <h2>Reading Body</h2>
         <p>
-          <Q>ServerRequest.body</Q> implements <Q>
+          <Q>ServerRequest.body</Q> implements{" "}
+          <Q>
             Deno.Reader
           </Q>. And also implemnts utility mixin methods to read body data.
         </p>
@@ -36,8 +37,7 @@ const ReadingBody: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
               </ul>
             </li>
             <li>
-              <Q>req.arryBuffer()</Q> returns full raw body as{" "}
-              <Q>Uint8Array</Q>
+              <Q>req.arryBuffer()</Q> returns full raw body as <Q>Uint8Array</Q>
             </li>
           </ul>
         </p>

@@ -26,7 +26,8 @@ const Index: DFC<{
         <section className="">
           <h2>High Compatibility with std/http</h2>
           <p>
-            Servest has similar api to <a
+            Servest has similar api to{" "}
+            <a
               href="https://deno.land/std/http"
               target="_blacnk"
             >
@@ -53,8 +54,8 @@ const Index: DFC<{
         <section>
           <h2>Designed for Real World</h2>
           <p>
-            Servest provides <a href="/reading-body">many shorthands</a>
-            {" "}to handle HTTP request.
+            Servest provides <a href="/reading-body">many shorthands</a>{" "}
+            to handle HTTP request.
           </p>
           <div className="codeComparison">
             <div>
@@ -76,7 +77,8 @@ const Index: DFC<{
         <section>
           <h2>Ready for WebSocket</h2>
           <p>
-            Make your real-time application with <a
+            Make your real-time application with{" "}
+            <a
               href="/handle-ws"
             >
               several lines of code

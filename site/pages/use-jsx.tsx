@@ -12,8 +12,7 @@ const UseJsx: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
         <h2>Use JSX as a template</h2>
         <p>
           Deno has a built-in{" "}
-          <a href={"https://reactjs.org/docs/introducing-jsx.html"}>JSX</a>
-          {" "}
+          <a href={"https://reactjs.org/docs/introducing-jsx.html"}>JSX</a>{" "}
           support powered by TypeScript.
         </p>
         <p>
@@ -26,7 +25,8 @@ const UseJsx: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
         <p>
           React is developed in Node.js and Browser ecosystem and there are no
           official ESM-based distribution. We recommend you get React for deno
-          from <a href="https://jspm.io">
+          from{" "}
+          <a href="https://jspm.io">
             https://jspm.io
           </a>, which is ESModule CDN for CommonJS.
         </p>

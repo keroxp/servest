@@ -14,8 +14,7 @@ const RouterApi: DFC<{ codes: { [key: string]: string } }> = ({ codes }) => (
         <h2>Use router</h2>
         <p>
           <DocLink>Router</DocLink> is a set of routes and handlers.
-          <DocLink>App</DocLink>
-          {" "}is also Router.
+          <DocLink>App</DocLink> is also Router.
         </p>
         <p>There are two difference between App and Router</p>
         <ul>

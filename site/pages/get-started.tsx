@@ -18,8 +18,7 @@ const GetStarted: DFC<{
         </p>
         <p>
           If you want to build HTTP server anyway,{" "}
-          <a href={"/app-api"}>App API</a>
-          {" "}
+          <a href={"/app-api"}>App API</a>{" "}
           is the best choice. Router API provides a high-level interfaces for
           building general purpose HTTP server (site, application, api or file
           server ...etc).
@@ -29,11 +28,10 @@ const GetStarted: DFC<{
       <section>
         <h2>Advanced API</h2>
         <p>
-          If you are familiar with HTTP/1.1 protocol and programing TCP
-          server,{" "}
-          <a href={"/server-api"}>Server API</a> and{" "}
-          <a href={"/agent-api"}>Agent API</a>
+          If you are familiar with HTTP/1.1 protocol and programing TCP server,
           {" "}
+          <a href={"/server-api"}>Server API</a> and{" "}
+          <a href={"/agent-api"}>Agent API</a>{" "}
           may be useful for building customized HTTP libraries.
         </p>
       </section>

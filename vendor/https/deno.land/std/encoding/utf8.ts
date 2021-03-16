@@ -1,1 +1,1 @@
-export * from "https://deno.land/std@0.85.0/encoding/utf8.ts";
+export * from "https://deno.land/std@0.87.0/encoding/utf8.ts";

@@ -1,13 +1,6 @@
 name: CI
 
-on:
-  push:
-    branches:
-      - "**"      
-  pull_request:
-    types:
-      - labeled
-
+on: [push]
 jobs:
   build:
     if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.label.name == 'CI start')
