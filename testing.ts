@@ -6,7 +6,7 @@ import {
   IncomingResponse,
   ServerRequest,
 } from "./server.ts";
-import { readResponse, setupBody } from "./serveio.ts";
+import { readResponse, setupBody, writeResponse } from "./serveio.ts";
 import { createResponder } from "./responder.ts";
 import { closableBodyReader } from "./_readers.ts";
 import { parseCookie } from "./cookie.ts";
@@ -74,7 +74,9 @@ export function createRecorder(opts?: {
     });
     return { ...resp, ...bodyParser };
   }
-  const responder = createResponder(bufWriter);
+  const responder = createResponder(async (resp) => {
+    return writeResponse(bufWriter, resp);
+  });
   const bodyParser = createBodyParser({
     reader: br,
     contentType: headers.get("content-type") ?? "",

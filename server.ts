@@ -1,11 +1,22 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
-import { initServeOptions, readRequest, writeResponse } from "./serveio.ts";
+import { Deferred, deferred } from "./vendor/https/deno.land/std/async/mod.ts";
+import { initServeOptions } from "./serveio.ts";
 import { createResponder, Responder } from "./responder.ts";
 import { promiseInterrupter, promiseWaitQueue } from "./_util.ts";
 import { createDataHolder, DataHolder } from "./data_holder.ts";
-import { BodyParser } from "./body_parser.ts";
+import { BodyParser, createBodyParser } from "./body_parser.ts";
+export interface RequestEvent {
+  readonly request: Request;
+  respondWith(r: Response | Promise<Response>): void;
+}
+
+export interface HttpConn extends AsyncIterable<RequestEvent> {
+  readonly rid: number;
+
+  nextRequest(): Promise<RequestEvent | null>;
+  close(): void;
+}
 
 export type HttpBody =
   | string
@@ -54,7 +65,7 @@ export interface IncomingRequest extends BodyParser {
   /** HTTP Headers */
   headers: Headers;
   /** HTTP Body */
-  body: BodyReader;
+  body: Deno.Reader;
   /** Cookie */
   cookies: Map<string, string>;
   /** keep-alive info */
@@ -182,13 +193,10 @@ export function handleKeepAliveConn(
   handler: ServeHandler,
   opts: ServeOptions = {},
 ): void {
+  const http: HttpConn = Deno.startHttp(conn);
   const bufReader = new BufReader(conn);
   const bufWriter = new BufWriter(conn);
   const originalOpts = opts;
-  const q = promiseWaitQueue<ServerResponse, void>((resp) =>
-    writeResponse(bufWriter, resp)
-  );
-
   // ignore keepAliveTimeout and use readTimeout for the first time
   scheduleReadRequest({
     keepAliveTimeout: opts.readTimeout,
@@ -196,7 +204,7 @@ export function handleKeepAliveConn(
     cancel: opts.cancel,
   });
 
-  function scheduleReadRequest(opts: ServeOptions) {
+  async function scheduleReadRequest(opts: ServeOptions) {
     processRequest(opts)
       .then((v) => {
         if (v) scheduleReadRequest(v);
@@ -209,30 +217,34 @@ export function handleKeepAliveConn(
   async function processRequest(
     opts: ServeOptions,
   ): Promise<ServeOptions | undefined> {
-    const baseReq = await readRequest(bufReader, opts);
-    let responded: Promise<void> = Promise.resolve();
-    const onResponse = (resp: ServerResponse) => {
-      responded = q.enqueue(resp);
-      return responded;
-    };
-    const responder = createResponder(bufWriter, onResponse);
-    const match = baseReq.url.match(/^\//);
+    const responded: Deferred<ServerResponse> = deferred();
+    const ev = await http.nextRequest();
+    if (!ev) return;
+    const responder = createResponder(async (resp) => {
+      responded.resolve(resp);
+    });
+    const match = ev.request.url.match(/^\//);
     if (!match) {
       throw new Error("malformed url");
     }
     const dataHolder = createDataHolder();
+    const baseReq = requestFromEvent(ev);
     const req: ServerRequest = {
-      ...baseReq,
       bufWriter,
       bufReader,
       conn,
+      ...baseReq,
       ...responder,
       ...dataHolder,
       match,
     };
     await handler(req);
-    await responded;
-    await req.body.close();
+    const resp = await responded;
+    const body = createStream(resp);
+    await ev.respondWith(
+      new Response(body, { status: resp.status, headers: resp.headers }),
+    );
+    // await ev.request.text();
     if (req.respondedStatus() === 101) {
       // If upgraded, stop processing
       return;
@@ -255,5 +267,96 @@ export function handleKeepAliveConn(
       readTimeout: opts.readTimeout,
       cancel: opts.cancel,
     };
+  }
+}
+
+function requestFromEvent(ev: RequestEvent): IncomingRequest {
+  const { pathname, search, searchParams } = new URL(ev.request.url);
+  const { method, headers } = ev.request;
+  const contentType = headers.get("content-type") ?? "";
+  let body: Deno.Reader;
+  if (ev.request.body) {
+    body = streamReader(ev.request.body);
+  } else {
+    body = {
+      async read() {
+        return null;
+      },
+    };
+  }
+  const bodyParser = createBodyParser({
+    reader: body,
+    contentType,
+  });
+  return {
+    url: pathname + search,
+    path: pathname,
+    query: searchParams,
+    method,
+    proto: "HTTP/1.1",
+    headers,
+    cookies: new Map(),
+    body,
+    ...bodyParser,
+  };
+}
+
+function streamReader(stream: ReadableStream<Uint8Array>): Deno.Reader {
+  const reader = stream.getReader();
+  async function read(buf: Uint8Array): Promise<number | null> {
+    const result = await reader.read();
+    if (result.value) {
+      const read = Math.min(result.value.byteLength, buf.byteLength);
+      buf.set(result.value.subarray(0, read));
+      return read;
+    } else {
+      return null;
+    }
+  }
+  return { read };
+}
+
+const encoder = new TextEncoder();
+function noopStream(): ReadableStream<Uint8Array> {
+  return new ReadableStream({
+    start(ctrl) {
+      ctrl.close();
+    },
+  });
+}
+function createStream(resp: ServerResponse): ReadableStream<Uint8Array> {
+  const { body, trailers } = resp;
+  if (!body) {
+    return noopStream();
+  }
+  // TODO: trailer
+  if (body instanceof ReadableStream) {
+    return body;
+  } else if (body instanceof Uint8Array) {
+    return new ReadableStream<Uint8Array>({
+      start(ctrl) {
+        ctrl.enqueue(body);
+        ctrl.close();
+      },
+    });
+  } else if (typeof body === "string") {
+    return new ReadableStream<Uint8Array>({
+      start(ctrl) {
+        ctrl.enqueue(encoder.encode(body));
+        ctrl.close();
+      },
+    });
+  } else {
+    const buf = new Uint8Array(2048);
+    return new ReadableStream<Uint8Array>({
+      async pull(ctrl) {
+        const len = await body.read(buf);
+        if (len != null) {
+          ctrl.enqueue(buf.subarray(0, len));
+        } else {
+          ctrl.close();
+        }
+      },
+    });
   }
 }
