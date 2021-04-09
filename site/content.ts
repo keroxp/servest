@@ -16,7 +16,7 @@ export async function fetchExample(filename: string): Promise<string> {
     const [pat] = m;
     ret = ret.replace(
       new RegExp(pat, "g"),
-      `https://servestjs.org/@${Version}/`,
+      `https://deno.land/x/servest@${Version}/`,
     );
   }
   if (ret.match("{{ServestVersion}}")) {

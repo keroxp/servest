@@ -12,25 +12,6 @@ const app = createApp({ logLevel: Loglevel.INFO });
 const resolve = pathResolver(import.meta);
 app.use(serveStatic(resolve("./public")));
 app.use(serveJsx(resolve("./pages"), (f) => import(f), Layout));
-app.get(
-  new RegExp("^/@(?<version>.*?)/(?<pathname>.+?)$"),
-  async (req) => {
-    let { version, pathname } = req.match.groups!;
-    if (!version) {
-      version = "master";
-    }
-    const u =
-      `https://raw.githubusercontent.com/keroxp/servest/${version}/${pathname}`;
-    const resp = await fetch(u);
-    if (resp.status === 200) {
-      await req.respond(resp);
-    } else if (resp.status === 404) {
-      throw new RoutingError(404);
-    } else {
-      throw new Error(await resp.text());
-    }
-  },
-);
 app.catch(async (e, req) => {
   if (e instanceof RoutingError) {
     await req.sendFile(resolve("./public/error.html"));
