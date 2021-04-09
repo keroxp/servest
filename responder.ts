@@ -1,9 +1,8 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import { HttpBody, RequestEvent, ServerResponse } from "./server.ts";
+import { ServerResponse } from "./server.ts";
 import { CookieSetter, cookieSetter } from "./cookie.ts";
 import { basename, extname } from "./vendor/https/deno.land/std/path/mod.ts";
 import { contentTypeByExt } from "./media_types.ts";
-import { Deferred, deferred } from "./vendor/https/deno.land/std/async/mod.ts";
 /** Basic responder for http response */
 export interface Responder extends CookieSetter {
   /**

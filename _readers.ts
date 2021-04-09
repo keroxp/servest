@@ -79,3 +79,11 @@ export function streamReader(stream: ReadableStream<Uint8Array>): Deno.Reader {
   };
   return { read };
 }
+
+export function noopReader(): Deno.Reader {
+  return {
+    async read() {
+      return null;
+    },
+  };
+}
