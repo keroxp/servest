@@ -32,6 +32,17 @@ export const Layout: FC = ({ children }) => (
     <body>
       <div id="root">
         <Header />
+        <div style={{ padding: "10px 5px", textAlign: "center" }}>
+          NOTICE: 2021/04/09 servestjs.org no longer hosts typescript files. Use
+          {" "}
+          <a
+            href="https://deno.land/x/servest"
+            target="_blak
+          nk"
+          >
+            https://deno.land/x/servest
+          </a>
+        </div>
         {children}
         <Footer />
       </div>
