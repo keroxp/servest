@@ -1,9 +1,9 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { Deferred, deferred } from "./vendor/https/deno.land/std/async/mod.ts";
+import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
 import { initServeOptions } from "./serveio.ts";
 import { createResponder, Responder } from "./responder.ts";
-import { promiseInterrupter } from "./_util.ts";
+import { promiseInterrupter, promiseWaitQueue } from "./_util.ts";
 import { createDataHolder, DataHolder } from "./data_holder.ts";
 import { BodyParser } from "./body_parser.ts";
 import { classicAdapter, HttpApiAdapter, nativeAdapter } from "./_adapter.ts";
@@ -191,6 +191,7 @@ export function handleKeepAliveConn(
   const adapter = opts.useNative
     ? nativeAdapter(conn)
     : classicAdapter({ bufReader, bufWriter });
+  const q = promiseWaitQueue<ServerResponse, void>(adapter.respond);
   // ignore keepAliveTimeout and use readTimeout for the first time
   scheduleReadRequest({
     keepAliveTimeout: opts.readTimeout,
@@ -214,9 +215,9 @@ export function handleKeepAliveConn(
   ): Promise<ServeOptions | undefined> {
     const baseReq = await adapter.next(opts);
     if (!baseReq) return;
-    const responded: Deferred<ServerResponse> = deferred();
+    let responded: Promise<void> = Promise.resolve();
     const responder = createResponder(async (resp) => {
-      responded.resolve(resp);
+      return responded = q.enqueue(resp);
     });
     const match = baseReq.url.match(/^\//);
     if (!match) {
@@ -233,8 +234,7 @@ export function handleKeepAliveConn(
       match,
     };
     await handler(req);
-    const resp = await responded;
-    await adapter.respond(resp);
+    await responded;
     await req.body.close();
     if (req.respondedStatus() === 101) {
       // If upgraded, stop processing
