@@ -1,2 +1,2 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-export const Version = "v1.1.7";
+export const Version = "v1.3.0";
