@@ -9,9 +9,7 @@ import {
   writeRequest,
   writeResponse,
 } from "./serveio.ts";
-import {
-  assertEquals,
-} from "./vendor/https/deno.land/std/testing/asserts.ts";
+import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { encode } from "./_util.ts";
 import Buffer = Deno.Buffer;
