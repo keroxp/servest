@@ -38,6 +38,7 @@ export function initServeOptions(opts: ServeOptions = {}): ServeOptions {
   let cancel = opts.cancel;
   let keepAliveTimeout = kDefaultKeepAliveTimeout;
   let readTimeout = kDefaultKeepAliveTimeout;
+  let useNative = false;
   if (opts.keepAliveTimeout !== void 0) {
     keepAliveTimeout = opts.keepAliveTimeout;
   }
@@ -46,7 +47,7 @@ export function initServeOptions(opts: ServeOptions = {}): ServeOptions {
   }
   assert(keepAliveTimeout >= 0, "keepAliveTimeout must be >= 0");
   assert(readTimeout >= 0, "readTimeout must be >= 0");
-  return { cancel, keepAliveTimeout, readTimeout };
+  return { cancel, keepAliveTimeout, readTimeout, useNative };
 }
 
 /**
@@ -264,6 +265,32 @@ export function setupBody(
   }
   return [r, chunked ? undefined : len];
 }
+
+export function setupBodyInit(body: HttpBody): [BodyInit, string] {
+  if (typeof body === "string") {
+    return [body, "text/plain; charset=UTF-8"];
+  } else if (body instanceof Uint8Array) {
+    return [body, "application/octet-stream"];
+  } else if (body instanceof ReadableStream) {
+    return [body, "application/octet-stream"];
+  } else {
+    const buf = new Uint8Array(2048);
+    return [
+      new ReadableStream<Uint8Array>({
+        async pull(ctrl) {
+          const len = await body.read(buf);
+          if (len != null) {
+            ctrl.enqueue(buf.subarray(0, len));
+          } else {
+            ctrl.close();
+          }
+        },
+      }),
+      "application/octet-stream",
+    ];
+  }
+}
+
 /** write http response to writer. Content-Length, Transfer-Encoding headers are set if needed */
 export async function writeResponse(
   w: Writer,

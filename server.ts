@@ -190,7 +190,7 @@ export function handleKeepAliveConn(
   const originalOpts = opts;
   const adapter = opts.useNative
     ? nativeAdapter(conn)
-    : classicAdapter({ bufReader, bufWriter });
+    : classicAdapter({ conn, bufReader, bufWriter });
   const q = promiseWaitQueue<ServerResponse, void>(adapter.respond);
   // ignore keepAliveTimeout and use readTimeout for the first time
   scheduleReadRequest({
@@ -205,7 +205,7 @@ export function handleKeepAliveConn(
         if (v) scheduleReadRequest(v);
       })
       .catch(() => {
-        conn.close();
+        adapter.close();
       });
   }
 
@@ -214,7 +214,9 @@ export function handleKeepAliveConn(
     opts: ServeOptions,
   ): Promise<ServeOptions | undefined> {
     const baseReq = await adapter.next(opts);
-    if (!baseReq) return;
+    if (!baseReq) {
+      throw new Error("connection closed");
+    }
     let responded: Promise<void> = Promise.resolve();
     const responder = createResponder(async (resp) => {
       return responded = q.enqueue(resp);
