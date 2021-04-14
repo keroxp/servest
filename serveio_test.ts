@@ -5,16 +5,19 @@ import {
   readRequest,
   readResponse,
   setupBody,
+  setupBodyInit,
   writeRequest,
   writeResponse,
 } from "./serveio.ts";
-import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
+import {
+  assertEquals,
+} from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { encode } from "./_util.ts";
 import Buffer = Deno.Buffer;
-import copy = Deno.copy;
 import { ServerResponse } from "./server.ts";
 import { group } from "./_test_util.ts";
+import { noopReader } from "./_readers.ts";
 
 group("serveio", (t) => {
   t.test("serveioReadRequestGet", async function serveioReadRequestGet() {
@@ -418,6 +421,32 @@ group("serveio/setupBody", (t) => {
     assertEquals(h.has("content-length"), false);
     assertEquals(h.get("transfer-encoding"), "chunked");
     assertEquals(l, undefined);
+  });
+});
+
+group("serveio/setupBodyInit", ({ test }) => {
+  test("string", () => {
+    const [body, ct] = setupBodyInit("");
+    assertEquals(body, "");
+    assertEquals(ct, "text/plain; charset=UTF-8");
+  });
+  test("Uint8Array", () => {
+    const arr = new Uint8Array();
+    const [body, ct] = setupBodyInit(arr);
+    assertEquals(body, arr);
+    assertEquals(ct, "application/octet-stream");
+  });
+  test("Uint8Array", () => {
+    const stream = new ReadableStream();
+    const [body, ct] = setupBodyInit(stream);
+    assertEquals(body, stream);
+    assertEquals(ct, "application/octet-stream");
+  });
+  test("Reader", () => {
+    const reader = noopReader();
+    const [body, ct] = setupBodyInit(reader);
+    assertEquals((body instanceof ReadableStream), true);
+    assertEquals(ct, "application/octet-stream");
   });
 });
 

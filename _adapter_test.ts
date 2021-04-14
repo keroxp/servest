@@ -1,3 +1,4 @@
+// Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { classicAdapter, nativeAdapter } from "./_adapter.ts";
