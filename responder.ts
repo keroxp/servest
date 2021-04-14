@@ -1,8 +1,6 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import Writer = Deno.Writer;
-import { HttpBody, ServerResponse } from "./server.ts";
+import { ServerResponse } from "./server.ts";
 import { CookieSetter, cookieSetter } from "./cookie.ts";
-import { writeResponse } from "./serveio.ts";
 import { basename, extname } from "./vendor/https/deno.land/std/path/mod.ts";
 import { contentTypeByExt } from "./media_types.ts";
 /** Basic responder for http response */
@@ -45,9 +43,7 @@ export interface Responder extends CookieSetter {
 
 /** create ServerResponder object */
 export function createResponder(
-  w: Writer,
-  onResponse: (r: ServerResponse) => Promise<void> = (resp) =>
-    writeResponse(w, resp),
+  onResponse: (resp: ServerResponse) => Promise<void>,
 ): Responder {
   const responseHeaders = new Headers();
   const cookie = cookieSetter(responseHeaders);

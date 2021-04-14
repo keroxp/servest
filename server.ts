@@ -1,11 +1,12 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
-import { initServeOptions, readRequest, writeResponse } from "./serveio.ts";
+import { initServeOptions } from "./serveio.ts";
 import { createResponder, Responder } from "./responder.ts";
 import { promiseInterrupter, promiseWaitQueue } from "./_util.ts";
 import { createDataHolder, DataHolder } from "./data_holder.ts";
 import { BodyParser } from "./body_parser.ts";
+import { classicAdapter, HttpApiAdapter, nativeAdapter } from "./_adapter.ts";
 
 export type HttpBody =
   | string
@@ -107,6 +108,8 @@ export interface ServeOptions {
   keepAliveTimeout?: number;
   /** read timeout for all read request. ms. default=75000(ms) */
   readTimeout?: number;
+  /** use native http binding api (needs --unstable) */
+  useNative?: boolean;
 }
 
 export type ServeListener = Deno.Closer;
@@ -185,10 +188,10 @@ export function handleKeepAliveConn(
   const bufReader = new BufReader(conn);
   const bufWriter = new BufWriter(conn);
   const originalOpts = opts;
-  const q = promiseWaitQueue<ServerResponse, void>((resp) =>
-    writeResponse(bufWriter, resp)
-  );
-
+  const adapter = opts.useNative
+    ? nativeAdapter(conn)
+    : classicAdapter({ conn, bufReader, bufWriter });
+  const q = promiseWaitQueue<ServerResponse, void>(adapter.respond);
   // ignore keepAliveTimeout and use readTimeout for the first time
   scheduleReadRequest({
     keepAliveTimeout: opts.readTimeout,
@@ -196,36 +199,38 @@ export function handleKeepAliveConn(
     cancel: opts.cancel,
   });
 
-  function scheduleReadRequest(opts: ServeOptions) {
-    processRequest(opts)
+  async function scheduleReadRequest(opts: ServeOptions) {
+    processRequest(adapter, opts)
       .then((v) => {
         if (v) scheduleReadRequest(v);
       })
       .catch(() => {
-        conn.close();
+        adapter.close();
       });
   }
 
   async function processRequest(
+    adapter: HttpApiAdapter,
     opts: ServeOptions,
   ): Promise<ServeOptions | undefined> {
-    const baseReq = await readRequest(bufReader, opts);
+    const baseReq = await adapter.next(opts);
+    if (!baseReq) {
+      throw new Error("connection closed");
+    }
     let responded: Promise<void> = Promise.resolve();
-    const onResponse = (resp: ServerResponse) => {
-      responded = q.enqueue(resp);
-      return responded;
-    };
-    const responder = createResponder(bufWriter, onResponse);
+    const responder = createResponder(async (resp) => {
+      return responded = q.enqueue(resp);
+    });
     const match = baseReq.url.match(/^\//);
     if (!match) {
       throw new Error("malformed url");
     }
     const dataHolder = createDataHolder();
     const req: ServerRequest = {
-      ...baseReq,
       bufWriter,
       bufReader,
       conn,
+      ...baseReq,
       ...responder,
       ...dataHolder,
       match,

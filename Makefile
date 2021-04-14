@@ -4,7 +4,7 @@ types:
 	deno run -A tools/gen_types.ts
 	deno fmt types/**/*.ts
 test:
-	deno test -A *_test.ts
+	deno test -A --unstable
 build:
 	docker build -t servest/site .
 bench:
