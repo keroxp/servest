@@ -9,7 +9,7 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createBodyParser, parserMultipartRequest } from "./body_parser.ts";
 import { exists as fsExists } from "./vendor/https/deno.land/std/fs/exists.ts";
-import Buffer = Deno.Buffer;
+import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
 import { group } from "./_test_util.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 
@@ -117,7 +117,7 @@ group("bodyParser", ({ test }) => {
     );
   });
   test("arrayBuffer()", async () => {
-    const bin = new Deno.Buffer(new Uint8Array([0, 1, 2, 3]));
+    const bin = new Buffer(new Uint8Array([0, 1, 2, 3]));
     const br = createBodyParser(
       { reader: bin, contentType: "application/octet-stream" },
     );

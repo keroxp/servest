@@ -4,6 +4,7 @@ import {
   MultipartReader,
 } from "./vendor/https/deno.land/std/mime/multipart.ts";
 import { decode } from "./_util.ts";
+import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
 
 import Reader = Deno.Reader;
 export interface BodyParser {
@@ -18,7 +19,7 @@ export function createBodyParser(holder: {
   readonly contentType: string;
   readonly maxMemory?: number;
 }): BodyParser {
-  let bodyBuf: Deno.Buffer | undefined;
+  let bodyBuf: Buffer | undefined;
   let formBody: MultipartFormData | undefined;
   let textBody: string | undefined;
   let jsonBody: any | undefined;
@@ -67,7 +68,7 @@ export function createBodyParser(holder: {
     } else if (bodyBuf) {
       return (jsonBody = JSON.parse(decode(bodyBuf.bytes())));
     }
-    bodyBuf = new Deno.Buffer();
+    bodyBuf = new Buffer();
     await Deno.copy(holder.reader, bodyBuf);
     return JSON.parse(decode(bodyBuf.bytes()));
   }
@@ -78,7 +79,7 @@ export function createBodyParser(holder: {
     } else if (bodyBuf) {
       return (textBody = decode(bodyBuf.bytes()));
     }
-    bodyBuf = new Deno.Buffer();
+    bodyBuf = new Buffer();
     await Deno.copy(holder.reader, bodyBuf);
     return (textBody = decode(bodyBuf.bytes()));
   }
@@ -87,7 +88,7 @@ export function createBodyParser(holder: {
     if (bodyBuf) {
       return bodyBuf.bytes();
     }
-    bodyBuf = new Deno.Buffer();
+    bodyBuf = new Buffer();
     await Deno.copy(holder.reader, bodyBuf);
     return bodyBuf.bytes();
   }
@@ -138,7 +139,7 @@ export async function parseUrlEncodedForm(req: {
   ) {
     throw new Error("is not form urlencoded request");
   }
-  const buf = new Deno.Buffer();
+  const buf = new Buffer();
   await Deno.copy(req.body, buf);
   const params = new URLSearchParams(decodeURIComponent(decode(buf.bytes())));
   function* entries() {

@@ -8,13 +8,14 @@ import {
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { readResponse, writeResponse } from "./serveio.ts";
 import { group } from "./_test_util.ts";
+import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
 
 group("responder", (t) => {
   function _createResponder(w: Deno.Writer) {
     return createResponder((resp) => writeResponse(w, resp));
   }
   t.test("basic", async function () {
-    const w = new Deno.Buffer();
+    const w = new Buffer();
     const res = _createResponder(w);
     assert(!res.isResponded());
     await res.respond({
@@ -32,7 +33,7 @@ group("responder", (t) => {
   });
 
   t.test("respond() should throw if already responded", async function () {
-    const w = new Deno.Buffer();
+    const w = new Buffer();
     const res = _createResponder(w);
     await res.respond({
       status: 200,
@@ -50,7 +51,7 @@ group("responder", (t) => {
   });
 
   t.test("sendFile() basic", async function () {
-    const w = new Deno.Buffer();
+    const w = new Buffer();
     const res = _createResponder(w);
     await res.sendFile("./fixtures/sample.txt");
     const resp = await readResponse(w);
@@ -60,7 +61,7 @@ group("responder", (t) => {
   });
 
   t.test("sendFile() should throw if file not found", async () => {
-    const w = new Deno.Buffer();
+    const w = new Buffer();
     const res = _createResponder(w);
     await assertThrowsAsync(
       () => res.sendFile("./fixtures/not-found"),
@@ -69,7 +70,7 @@ group("responder", (t) => {
   });
 
   t.test("sendFile() with attachment", async () => {
-    const w = new Deno.Buffer();
+    const w = new Buffer();
     const res = _createResponder(w);
     await res.sendFile("./fixtures/sample.txt", {
       contentDisposition: "inline",
@@ -81,7 +82,7 @@ group("responder", (t) => {
   });
 
   t.test("sendFile() with attachment", async () => {
-    const w = new Deno.Buffer();
+    const w = new Buffer();
     const res = _createResponder(w);
     await res.sendFile("./fixtures/sample.txt", {
       contentDisposition: "attachment",
@@ -96,7 +97,7 @@ group("responder", (t) => {
   });
 
   t.test("redirect() should set Location header", async () => {
-    const w = new Deno.Buffer();
+    const w = new Buffer();
     const res = _createResponder(w);
     await res.redirect("/index.html");
     const { status, headers } = await readResponse(w);
@@ -105,7 +106,7 @@ group("responder", (t) => {
   });
 
   t.test("redirect() should use partial body for response", async () => {
-    const w = new Deno.Buffer();
+    const w = new Buffer();
     const res = _createResponder(w);
     await res.redirect("/", {
       status: 303,
@@ -119,7 +120,7 @@ group("responder", (t) => {
   });
 
   t.test("resirect() should throw error if status code is not in 300~399", async () => {
-    const w = new Deno.Buffer();
+    const w = new Buffer();
     const res = _createResponder(w);
     await assertThrowsAsync(
       async () => {
@@ -131,7 +132,7 @@ group("responder", (t) => {
   });
 
   t.test("markResponded()", async () => {
-    const w = new Deno.Buffer();
+    const w = new Buffer();
     const res = _createResponder(w);
     res.markAsResponded(200);
     assertEquals(res.isResponded(), true);

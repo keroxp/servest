@@ -1,5 +1,6 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
+import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
 import { TextProtoReader } from "./vendor/https/deno.land/std/textproto/mod.ts";
 import { closableBodyReader, streamReader, timeoutReader } from "./_readers.ts";
 import { encode, promiseInterrupter } from "./_util.ts";
@@ -19,7 +20,6 @@ import {
 } from "./server.ts";
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
-import Buffer = Deno.Buffer;
 import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 import { parseCookie } from "./cookie.ts";
 import {

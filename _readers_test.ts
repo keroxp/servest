@@ -3,6 +3,7 @@ import { streamReader } from "./_readers.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { group } from "./_test_util.ts";
 import { decode, encode } from "./_util.ts";
+import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
 
 group("streamReader", ({ test }) => {
   test("basic", async () => {
@@ -16,7 +17,7 @@ group("streamReader", ({ test }) => {
     });
     const sr = streamReader(stream);
     const buf = new Uint8Array(3);
-    const dest = new Deno.Buffer();
+    const dest = new Buffer();
     let result: null | number = 0;
     while ((result = await sr.read(buf)) !== null) {
       await dest.write(buf.subarray(0, result));

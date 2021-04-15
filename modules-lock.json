@@ -11,6 +11,7 @@
       "/io/bufio.ts",
       "/io/readers.ts",
       "/io/writers.ts",
+      "/io/buffer.ts",
       "/http/_io.ts",
       "/http/http_status.ts",
       "/flags/mod.ts",
