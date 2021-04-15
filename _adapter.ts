@@ -47,6 +47,7 @@ export interface HttpConn extends AsyncIterable<RequestEvent> {
 }
 
 export function nativeAdapter(conn: Deno.Conn): HttpApiAdapter {
+  // @ts-ignore
   const http: HttpConn = Deno.serveHttp(conn);
   let ev: RequestEvent | null;
   let closed = false;
