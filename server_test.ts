@@ -13,7 +13,7 @@ import { createAgent } from "./agent.ts";
 import { readResponse, writeRequest } from "./serveio.ts";
 import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { deferred, delay } from "./vendor/https/deno.land/std/async/mod.ts";
-import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts"
+import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
 import { group } from "./_test_util.ts";
 
 let port = 8880;
