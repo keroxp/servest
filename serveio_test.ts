@@ -12,7 +12,7 @@ import {
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { encode } from "./_util.ts";
-import Buffer = Deno.Buffer;
+import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
 import { ServerResponse } from "./server.ts";
 import { group } from "./_test_util.ts";
 import { noopReader } from "./_readers.ts";

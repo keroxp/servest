@@ -1,5 +1,6 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
+import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
 import {
   BodyReader,
   HttpBody,
@@ -50,7 +51,7 @@ export function createRecorder(opts?: {
       return 0;
     },
   };
-  const buf = new Deno.Buffer();
+  const buf = new Buffer();
   const bufReader = new BufReader(buf);
   const bufWriter = new BufWriter(buf);
   let br: BodyReader;
