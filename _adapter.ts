@@ -1,5 +1,6 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { createBodyParser } from "./body_parser.ts";
+import { Router } from "./router.ts";
 import { readRequest, setupBodyInit, writeResponse } from "./serveio.ts";
 import {
   BodyReader,
@@ -62,23 +63,9 @@ export function nativeAdapter(conn: Deno.Conn): HttpApiAdapter {
     },
     async respond(resp) {
       if (!ev) throw new Error("Unexpected respond");
-      const headers = resp.headers ?? new Headers();
-      let body: BodyInit | undefined;
-      if (resp.body) {
-        const [_body, contentType] = setupBodyInit(resp.body);
-        body = _body;
-        if (!headers.has("content-type")) {
-          headers.set("content-type", contentType);
-        }
-      }
       // TODO: trailer
       try {
-        await ev.respondWith(
-          new Response(body, {
-            status: resp.status,
-            headers,
-          }),
-        );
+        await respondToEvent(ev, resp);
       } finally {
         ev = null;
       }
@@ -91,7 +78,25 @@ export function nativeAdapter(conn: Deno.Conn): HttpApiAdapter {
   };
 }
 
-function requestFromEvent(ev: RequestEvent): IncomingRequest {
+export async function respondToEvent(ev: RequestEvent, resp: ServerResponse) {
+  const headers = resp.headers ?? new Headers();
+  let body: BodyInit | undefined;
+  if (resp.body) {
+    const [_body, contentType] = setupBodyInit(resp.body);
+    body = _body;
+    if (!headers.has("content-type")) {
+      headers.set("content-type", contentType);
+    }
+  }
+  await ev.respondWith(
+    new Response(body, {
+      status: resp.status,
+      headers,
+    }),
+  );
+}
+
+export function requestFromEvent(ev: RequestEvent): IncomingRequest {
   const { pathname, search, searchParams } = new URL(
     ev.request.url,
     "http://dummy",
