@@ -3332,9 +3332,9 @@ declare global {
 
     // We can't recurse forever because `type` can't be self-referential;
     // let's assume it's reasonable to do a single React.lazy() around a single React.memo() / vice-versa
-    type LibraryManagedAttributes<C, P> = C extends 
+    type LibraryManagedAttributes<C, P> = C extends
       | React.MemoExoticComponent<infer T>
-      | React.LazyExoticComponent<infer T> ? T extends 
+      | React.LazyExoticComponent<infer T> ? T extends
       | React.MemoExoticComponent<infer U>
       | React.LazyExoticComponent<infer U> ? ReactManagedAttributes<U, P>
     : ReactManagedAttributes<T, P>

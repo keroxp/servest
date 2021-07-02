@@ -16,12 +16,12 @@ export interface CORSOptions {
    * @default none
    */
   allowedHeaders?: string[];
-  /** 
+  /**
    * values for Access-Control-Expose-Headers
    * @default none
    */
   exposedHeaders?: string[];
-  /** 
+  /**
    * values for Access-Control-Allow-Credentials
    * @default none
    */
