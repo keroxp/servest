@@ -20,7 +20,7 @@ export interface ServeStaticOptions {
   contentDispositionMap?: Map<string, "inline" | "attachment">;
   /** Custom filter function for files */
   filter?: (file: string) => boolean | Promise<boolean>;
-  /** 
+  /**
    * Delactives for Cache-Control header
    * No value will be sent by default.
    *  */

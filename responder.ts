@@ -6,7 +6,7 @@ import { contentTypeByExt } from "./media_types.ts";
 /** Basic responder for http response */
 export interface Responder extends CookieSetter {
   /**
-   * Respond to request 
+   * Respond to request
    * Error will be thrown if request has already been responded.
    * headers is merged with responseHeaders
    * */
