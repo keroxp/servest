@@ -11,7 +11,7 @@ export default () => (
         <p>
           Servest was developed as the optional HTTP server module to Deno's
           {" "}
-          <a href={"https://github.com/denoland/deno/tree/master/std/http"}>
+          <a href={"https://github.com/denoland/deno_std/tree/main/http"}>
             standard http module
           </a>
           .
