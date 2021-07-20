@@ -70,7 +70,7 @@ export function cors({
       if(isValidOrigin === false) return;
       setAccessControlRequestMethods(methods, req);
       setAccessControlRequestHeaders(allowedHeaders, req);
-      setAcessControllExposedHeaders(exposedHeaders, req);
+      setAcessControlExposeHeaders(exposedHeaders, req);
 
       req.responseHeaders.set("access-control-allow-credentials", withCredentials.toString());
       req.responseHeaders.set("access-control-max-age", `${maxAge}`);
@@ -78,7 +78,7 @@ export function cors({
       return req.respond({ status: 204 });
     } else { //actual response
       setAccessControlAllowOrigin(origin, requestOrigin, req);
-      setAcessControllExposedHeaders(exposedHeaders, req);
+      setAcessControlExposeHeaders(exposedHeaders, req);
       req.responseHeaders.set("access-control-allow-credentials", withCredentials.toString());
 
     }
@@ -131,7 +131,7 @@ function setAccessControlRequestMethods(methods: string[], req: ServerRequest) {
   }
 }
 
-function setAcessControllExposedHeaders(
+function setAcessControlExposeHeaders(
   exposedHeaders: string[],
   req: ServerRequest,
 ) {
