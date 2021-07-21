@@ -66,21 +66,30 @@ export function cors({
       return;
     }
     if (req.method === "OPTIONS") { //preflight
-      const isValidOrigin = setAccessControlAllowOrigin(origin, requestOrigin, req);
-      if(isValidOrigin === false) return;
+      const isValidOrigin = setAccessControlAllowOrigin(
+        origin,
+        requestOrigin,
+        req,
+      );
+      if (isValidOrigin === false) return;
       setAccessControlRequestMethods(methods, req);
       setAccessControlRequestHeaders(allowedHeaders, req);
       setAcessControlExposeHeaders(exposedHeaders, req);
 
-      req.responseHeaders.set("access-control-allow-credentials", withCredentials.toString());
+      req.responseHeaders.set(
+        "access-control-allow-credentials",
+        withCredentials.toString(),
+      );
       req.responseHeaders.set("access-control-max-age", `${maxAge}`);
 
       return req.respond({ status: 204 });
     } else { //actual response
       setAccessControlAllowOrigin(origin, requestOrigin, req);
       setAcessControlExposeHeaders(exposedHeaders, req);
-      req.responseHeaders.set("access-control-allow-credentials", withCredentials.toString());
-
+      req.responseHeaders.set(
+        "access-control-allow-credentials",
+        withCredentials.toString(),
+      );
     }
   };
 }
