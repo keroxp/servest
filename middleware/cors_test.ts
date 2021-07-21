@@ -18,7 +18,7 @@ group("cors", (t) => {
       methods: ["GET", "HEAD"],
       allowedHeaders: ["x-servest-version", "x-deno-version"],
       exposedHeaders: ["x-node-version"],
-      credentials: true,
+      withCredentials: true,
       maxAge: 100,
     });
     await m(r);
@@ -45,6 +45,7 @@ group("cors", (t) => {
       "100",
     );
   });
+
   t.test("shouldn't respond if method is not OPTIONS", () => {
     const m = cors({ origin: "*" });
     const r = createRecorder();
@@ -52,6 +53,7 @@ group("cors", (t) => {
     assertEquals(r.isResponded(), false);
     assertEquals(r.responseHeaders.has("access-control-allow-origin"), false);
   });
+
   t.test("shouldn't respond if origin isn't sent", async () => {
     const m = cors({ origin: "*" });
     const r = createRecorder({ method: "OPTIONS" });
@@ -59,6 +61,7 @@ group("cors", (t) => {
     assertEquals(r.isResponded(), false);
     assertEquals(r.responseHeaders.has("access-control-allow-origin"), false);
   });
+
   t.test("shouldn't allow if origin is not verified", async () => {
     const m = cors({ origin: "https://servestjs.org" });
     const r = createRecorder({
@@ -71,6 +74,7 @@ group("cors", (t) => {
     assertEquals(r.isResponded(), false);
     assertEquals(r.responseHeaders.has("access-control-allow-origin"), false);
   });
+
   t.test("wildcard", async () => {
     const m = cors({ origin: "*" });
     const r = createRecorder({
@@ -83,6 +87,7 @@ group("cors", (t) => {
     assertEquals(r.respondedStatus(), 204);
     assertEquals(r.responseHeaders.get("access-control-allow-origin"), "*");
   });
+
   t.test("verifiers", async () => {
     for (
       const origin of [
@@ -108,5 +113,35 @@ group("cors", (t) => {
         "https://servestjs.org",
       );
     }
+  });
+
+  t.test("Should respond the correct access-control-allow-origin header on other methods", async () => {
+    const m = cors({ origin: "*" });
+    const r = createRecorder({
+      method: "POST",
+      headers: new Headers({
+        "origin": "https://servestjs.org",
+      }),
+    });
+    await m(r);
+    assertEquals(r.responseHeaders.get("access-control-allow-origin"), "*");
+  });
+
+  t.test("Should respond the correct access-control-expose-headers header on other methods", async () => {
+    const m = cors({
+      origin: "*",
+      exposedHeaders: ["x-node-version"],
+    });
+    const r = createRecorder({
+      method: "POST",
+      headers: new Headers({
+        "origin": "https://servestjs.org",
+      }),
+    });
+    await m(r);
+    assertEquals(
+      r.responseHeaders.get("access-control-expose-headers"),
+      "x-node-version",
+    );
   });
 });
