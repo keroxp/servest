@@ -9,14 +9,17 @@ import {
 } from "./server.ts";
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { closableBodyReader, noopReader, streamReader } from "./_readers.ts";
-
 export interface HttpApiAdapter {
   next(opts: ServeOptions): Promise<IncomingRequest | undefined>;
   respond(resp: ServerResponse): Promise<void>;
   close(): void;
 }
 
-export function classicAdapter({ conn, bufReader, bufWriter }: {
+export function classicAdapter({
+  conn,
+  bufReader,
+  bufWriter,
+}: {
   conn: Deno.Conn;
   bufReader: BufReader;
   bufWriter: BufWriter;
@@ -117,6 +120,7 @@ function requestFromEvent(ev: RequestEvent): IncomingRequest {
     headers,
     cookies: new Map(),
     body,
+    ev,
     ...bodyParser,
   };
 }

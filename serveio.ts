@@ -38,7 +38,7 @@ export function initServeOptions(opts: ServeOptions = {}): ServeOptions {
   let cancel = opts.cancel;
   let keepAliveTimeout = kDefaultKeepAliveTimeout;
   let readTimeout = kDefaultKeepAliveTimeout;
-  let useNative = false;
+  let useNative = opts.useNative;
   if (opts.keepAliveTimeout !== void 0) {
     keepAliveTimeout = opts.keepAliveTimeout;
   }

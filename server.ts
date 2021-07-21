@@ -6,7 +6,12 @@ import { createResponder, Responder } from "./responder.ts";
 import { promiseInterrupter, promiseWaitQueue } from "./_util.ts";
 import { createDataHolder, DataHolder } from "./data_holder.ts";
 import { BodyParser } from "./body_parser.ts";
-import { classicAdapter, HttpApiAdapter, nativeAdapter } from "./_adapter.ts";
+import {
+  classicAdapter,
+  HttpApiAdapter,
+  nativeAdapter,
+  RequestEvent,
+} from "./_adapter.ts";
 
 export type HttpBody =
   | string
@@ -60,6 +65,8 @@ export interface IncomingRequest extends BodyParser {
   cookies: Map<string, string>;
   /** keep-alive info */
   keepAlive?: KeepAlive;
+  /** Native HTTP Request. Set if accepted via Deno.serveHttp() */
+  ev?: RequestEvent;
 }
 
 export interface KeepAlive {
@@ -219,7 +226,7 @@ export function handleKeepAliveConn(
     }
     let responded: Promise<void> = Promise.resolve();
     const responder = createResponder(async (resp) => {
-      return responded = q.enqueue(resp);
+      return (responded = q.enqueue(resp));
     });
     const match = baseReq.url.match(/^\//);
     if (!match) {

@@ -2,34 +2,23 @@
 import { findLongestAndNearestMatches } from "./_matcher.ts";
 import { ServeHandler, ServerRequest } from "./server.ts";
 import { RoutingError } from "./error.ts";
-import {
-  acceptable,
-  acceptWebSocket,
-  WebSocket,
-} from "./vendor/https/deno.land/std/ws/mod.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
+import * as ws from "./vendor/https/deno.land/std/ws/mod.ts";
+import { upgradeWebSocket } from "./ws.ts";
 
 /** Router handler */
 export interface RouteHandler {
-  (req: ServerRequest):
-    | void
-    | Promise<void>;
+  (req: ServerRequest): void | Promise<void>;
 }
 
 /** WebSocket Handler */
 export interface WebSocketHandler {
-  (
-    sock: WebSocket,
-    req: ServerRequest,
-  ): void | Promise<void>;
+  (sock: ws.WebSocket, req: ServerRequest): void | Promise<void>;
 }
 
 /** Global error handler for requests */
 export interface ErrorHandler {
-  (
-    e: any | RoutingError,
-    req: ServerRequest,
-  ): void | Promise<void>;
+  (e: any | RoutingError, req: ServerRequest): void | Promise<void>;
 }
 
 export interface Route {
@@ -233,10 +222,15 @@ export function createRouter(): Router {
         if (await chainRoutes(parentMatch + match, req, handlers)) {
           return;
         }
-        if (wsHandler && acceptable(req)) {
-          const sock = await acceptWebSocket(req);
-          req.markAsResponded(101);
-          wsHandler(sock, req);
+        if (wsHandler) {
+          const sock = await upgradeWebSocket(req);
+          if (sock) {
+            req.markAsResponded(101);
+            wsHandler(sock, req);
+          } else {
+            req.respond({ status: 400 });
+            return;
+          }
         }
       }
       if (!req.isResponded()) {
