@@ -81,7 +81,7 @@ export function cors({
         withCredentials.toString(),
       );
       req.responseHeaders.set("access-control-max-age", `${maxAge}`);
-      
+
       return req.respond({ status: 204 });
     } else { //actual response
       setAccessControlAllowOrigin(origin, requestOrigin, req);
