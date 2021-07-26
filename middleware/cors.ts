@@ -72,7 +72,7 @@ export function cors({
         req,
       );
       if (isValidOrigin === false) return;
-      setAccessControlRequestMethods(methods, req);
+      setAccessControlRequestMethod(methods, req);
       setAccessControlRequestHeaders(allowedHeaders, req);
       setAcessControlExposeHeaders(exposedHeaders, req);
 
@@ -128,8 +128,8 @@ function setAccessControlAllowOrigin(
   }
 }
 
-function setAccessControlRequestMethods(methods: string[], req: ServerRequest) {
-  const requestMethods = req.headers.get("access-control-request-methods");
+function setAccessControlRequestMethod(methods: string[], req: ServerRequest) {
+  const requestMethods = req.headers.get("access-control-request-method");
   if (requestMethods && methods.length > 0) {
     const list = requestMethods.split(",").map((v) => v.trim());
     const allowed = list.filter((v) => methods.includes(v));
