@@ -9,7 +9,7 @@ group("cors", (t) => {
       method: "OPTIONS",
       headers: new Headers({
         "origin": "https://servestjs.org",
-        "access-control-request-methods": "GET,HEAD,POST",
+        "access-control-request-method": "GET",
         "access-control-request-headers": "x-servest-version",
       }),
     });
@@ -30,7 +30,7 @@ group("cors", (t) => {
     );
     assertEquals(
       resp.headers.get("access-control-allow-methods"),
-      "GET, HEAD",
+      "GET",
     );
     assertEquals(
       resp.headers.get("access-control-allow-headers"),
