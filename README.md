@@ -1,3 +1,9 @@
+
+# DEPRECADED!
+
+This projected has been deprecated and no longer maintained.
+No PR/Issues will be responded.
+
 # servest
 
 [![Build Status](https://github.com/keroxp/servest/workflows/CI/badge.svg)](https://github.com/keroxp/servest/actions)
@@ -20,8 +26,6 @@ In order to experiment and be progressive, we have our own implementation of
 HTTP/1.1 server apart from [std/http](https://deno.land/std/http).
 
 ## Usage
-
-To get a more detailed information, go to https://servestjs.org
 
 ```ts
 // @deno-types="https://deno.land/x/servest/types/react/index.d.ts"
