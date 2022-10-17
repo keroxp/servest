@@ -1,9 +1,8 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { findLongestAndNearestMatches, resolveIndexPath } from "./_matcher.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { group } from "./_test_util.ts";
 
-group("matcher", ({ test }) => {
+Deno.test("matcher", async (t) => {
   type Pat = [string, (string | RegExp)[], number[]][];
   ([
     ["/foo", ["/foo", "/bar", "/f"], [0]],
@@ -16,7 +15,7 @@ group("matcher", ({ test }) => {
     ["/foo", [/\/foo/, /\/bar\/foo/], [0]],
     ["/foo", [/\/a\/foo/, /\/foo/], [1]],
   ] as Pat).forEach(([path, pat, idx]) => {
-    test("findLongestAndNearestMatch:" + path, () => {
+    t.step("findLongestAndNearestMatch:" + path, () => {
       const matches = findLongestAndNearestMatches(path, pat);
       assertEquals(matches.length, idx.length);
       for (let i = 0; i < idx.length; i++) {
@@ -25,7 +24,7 @@ group("matcher", ({ test }) => {
     });
   });
 
-  test("resolveIndexPath", async () => {
+  await t.step("resolveIndexPath", async () => {
     for (
       const [dir, fp, exp] of [
         [".", "/README.md", "README.md"],

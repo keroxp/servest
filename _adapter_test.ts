@@ -1,9 +1,8 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { nativeAdapter } from "./_adapter.ts";
-import { group } from "./_test_util.ts";
 
-group("adapter", ({ test }) => {
+Deno.test("adapter", async (t) => {
   async function doTest() {
     const resp = await fetch("http://localhost:8899", {
       method: "POST",
@@ -13,7 +12,7 @@ group("adapter", ({ test }) => {
     assertEquals(resp.headers.get("content-type"), "text/html");
     assertEquals(await resp.text(), "hello");
   }
-  test("native", async () => {
+  await t.step("native", async () => {
     async function serve() {
       const l = Deno.listen({ port: 8899 });
       const conn = await l.accept();

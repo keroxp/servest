@@ -4,52 +4,53 @@ import {
   assertEquals,
   assertMatch,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { group, makeGet } from "./_test_util.ts";
+import { makeGet } from "./_test_util.ts";
 import { Loglevel, setLevel } from "./logger.ts";
 setLevel(Loglevel.NONE);
 
-group({
+Deno.test({
   name: "app",
-}, ({ setupAll, test }) => {
+}, async (t) => {
   const app = createApp();
   app.handle("/no-response", () => {});
   app.handle("/throw", () => {
     throw new Error("throw");
   });
   const get = makeGet(app);
-  setupAll(() => {
+  (() => {
     const l = app.listen({ port: 8899 });
     return () => l.close();
-  });
-  test("should respond if req.respond wasn't called", async () => {
+  })();
+  await t.step("should respond if req.respond wasn't called", async () => {
     const res = await get("/no-response");
     assertEquals(res.status, 404);
   });
-  test("should respond for unknown path", async () => {
+  await t.step("should respond for unknown path", async () => {
     const res = await get("/not-found");
     assertEquals(res.status, 404);
   });
-  test("should handle global error", async () => {
+  await t.step("should handle global error", async () => {
     const res = await get("/throw");
     const text = await res.text();
     assertEquals(res.status, 500);
     assertMatch(text, /Error: throw/);
   });
 });
-group({
+Deno.test({
   name: "app/ws",
+  ignore: true,
   sanitizeResources: false,
-}, ({ test, setupAll }) => {
+}, async (t) => {
   const app = createApp();
   app.ws("/ws", async (sock) => {
     await sock.send("Hello");
     await sock.close(1000);
   });
-  setupAll(() => {
+  (() => {
     const l = app.listen({ port: 8890 });
     return () => l.close();
-  });
-  test({
+  })();
+  await t.step({
     name: "should accept ws",
     fn: async () => {
       const sock = new WebSocket("ws://127.0.0.1:8890/ws");

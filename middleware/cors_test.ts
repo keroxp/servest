@@ -1,10 +1,9 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import { group } from "../_test_util.ts";
 import { createRecorder } from "../testing.ts";
 import { cors } from "./cors.ts";
 import { assertEquals } from "../vendor/https/deno.land/std/testing/asserts.ts";
-group("cors", (t) => {
-  t.test("basic", async () => {
+Deno.test("cors", async (t) => {
+  await t.step("basic", async () => {
     const r = createRecorder({
       method: "OPTIONS",
       headers: new Headers({
@@ -46,7 +45,7 @@ group("cors", (t) => {
     );
   });
 
-  t.test("shouldn't respond if method is not OPTIONS", () => {
+  await t.step("shouldn't respond if method is not OPTIONS", () => {
     const m = cors({ origin: "*" });
     const r = createRecorder();
     m(r);
@@ -54,7 +53,7 @@ group("cors", (t) => {
     assertEquals(r.responseHeaders.has("access-control-allow-origin"), false);
   });
 
-  t.test("shouldn't respond if origin isn't sent", async () => {
+  await t.step("shouldn't respond if origin isn't sent", () => {
     const m = cors({ origin: "*" });
     const r = createRecorder({ method: "OPTIONS" });
     m(r);
@@ -62,7 +61,7 @@ group("cors", (t) => {
     assertEquals(r.responseHeaders.has("access-control-allow-origin"), false);
   });
 
-  t.test("shouldn't allow if origin is not verified", async () => {
+  await t.step("shouldn't allow if origin is not verified", () => {
     const m = cors({ origin: "https://servestjs.org" });
     const r = createRecorder({
       method: "OPTIONS",
@@ -75,7 +74,7 @@ group("cors", (t) => {
     assertEquals(r.responseHeaders.has("access-control-allow-origin"), false);
   });
 
-  t.test("wildcard", async () => {
+  await t.step("wildcard", async () => {
     const m = cors({ origin: "*" });
     const r = createRecorder({
       method: "OPTIONS",
@@ -88,7 +87,7 @@ group("cors", (t) => {
     assertEquals(r.responseHeaders.get("access-control-allow-origin"), "*");
   });
 
-  t.test("verifiers", async () => {
+  await t.step("verifiers", async () => {
     for (
       const origin of [
         "https://servestjs.org",
@@ -115,33 +114,39 @@ group("cors", (t) => {
     }
   });
 
-  t.test("Should respond the correct access-control-allow-origin header on other methods", async () => {
-    const m = cors({ origin: "*" });
-    const r = createRecorder({
-      method: "POST",
-      headers: new Headers({
-        "origin": "https://servestjs.org",
-      }),
-    });
-    await m(r);
-    assertEquals(r.responseHeaders.get("access-control-allow-origin"), "*");
-  });
+  await t.step(
+    "Should respond the correct access-control-allow-origin header on other methods",
+    async () => {
+      const m = cors({ origin: "*" });
+      const r = createRecorder({
+        method: "POST",
+        headers: new Headers({
+          "origin": "https://servestjs.org",
+        }),
+      });
+      await m(r);
+      assertEquals(r.responseHeaders.get("access-control-allow-origin"), "*");
+    },
+  );
 
-  t.test("Should respond the correct access-control-expose-headers header on other methods", async () => {
-    const m = cors({
-      origin: "*",
-      exposedHeaders: ["x-node-version"],
-    });
-    const r = createRecorder({
-      method: "POST",
-      headers: new Headers({
-        "origin": "https://servestjs.org",
-      }),
-    });
-    await m(r);
-    assertEquals(
-      r.responseHeaders.get("access-control-expose-headers"),
-      "x-node-version",
-    );
-  });
+  await t.step(
+    "Should respond the correct access-control-expose-headers header on other methods",
+    async () => {
+      const m = cors({
+        origin: "*",
+        exposedHeaders: ["x-node-version"],
+      });
+      const r = createRecorder({
+        method: "POST",
+        headers: new Headers({
+          "origin": "https://servestjs.org",
+        }),
+      });
+      await m(r);
+      assertEquals(
+        r.responseHeaders.get("access-control-expose-headers"),
+        "x-node-version",
+      );
+    },
+  );
 });

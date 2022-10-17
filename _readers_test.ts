@@ -1,12 +1,11 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { streamReader } from "./_readers.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { group } from "./_test_util.ts";
 import { decode, encode } from "./_util.ts";
 import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
 
-group("streamReader", ({ test }) => {
-  test("basic", async () => {
+Deno.test("streamReader", async (t) => {
+  await t.step("basic", async () => {
     const stream = new ReadableStream<Uint8Array>({
       start(ctrl) {
         ctrl.enqueue(encode("Go "));

@@ -5,11 +5,10 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createRecorder } from "./testing.ts";
 import { buildCacheControlHeader, serveStatic } from "./serve_static.ts";
-import { group } from "./_test_util.ts";
 import { createApp } from "./app.ts";
 import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 
-group("serveStatic", (t) => {
+Deno.test("serveStatic", async (t) => {
   const func = serveStatic("./fixtures/public", {
     contentTypeMap: new Map([[".vue", "application/vue"]]),
   });
@@ -23,8 +22,8 @@ group("serveStatic", (t) => {
     ["/sample.vue", "application/vue"],
     ["/sample.xx", "application/octet-stream"],
   ];
-  data.forEach(([path, type]) => {
-    t.test(path, async () => {
+  await Promise.all(data.map(async ([path, type]) => {
+    await t.step(path, async () => {
       const rec = createRecorder({ url: path });
       await func(rec);
       const resp = await rec.response();
@@ -32,9 +31,9 @@ group("serveStatic", (t) => {
       const contentType = resp.headers.get("content-type");
       assertMatch(contentType!, new RegExp(type));
     });
-  });
+  }));
 
-  t.test("cace-control", async () => {
+  await t.step("cace-control", async () => {
     const f = serveStatic("./fixtures/public", {
       cacheControl: {
         public: true,
@@ -47,7 +46,7 @@ group("serveStatic", (t) => {
     assertEquals(resp.headers.get("cache-control"), "public, max-age=3600");
   });
 
-  t.test("expires", async () => {
+  await t.step("expires", async () => {
     const expires = new Date();
     const f = serveStatic("./fixtures/public", {
       expires,
@@ -59,12 +58,12 @@ group("serveStatic", (t) => {
   });
 });
 
-group("serveStatic/cacheControl", (t) => {
-  t.test("empty", () => {
+Deno.test("serveStatic/cacheControl", async (t) => {
+  await t.step("empty", () => {
     const s = buildCacheControlHeader({});
     assertEquals(s, "");
   });
-  t.test("basic", () => {
+  await t.step("basic", () => {
     assertEquals(
       buildCacheControlHeader({
         public: true,
@@ -112,8 +111,8 @@ group("serveStatic/cacheControl", (t) => {
   });
 });
 
-group("serveStatic integration", (t) => {
-  t.setupAll(() => {
+Deno.test("serveStatic integration", async (t) => {
+  (() => {
     const router = createApp();
     router.use((req) => {
       req.responseHeaders.set("Connection", "close");
@@ -121,23 +120,23 @@ group("serveStatic integration", (t) => {
     router.use(serveStatic("./fixtures/public"));
     const l = router.listen({ port: 9988 });
     return () => l.close();
-  });
-  t.test("basic", async () => {
+  })();
+  await t.step("basic", async () => {
     const resp = await fetch("http://127.0.0.1:9988/index.html");
     assertEquals(resp.status, 200);
     await resp.text();
   });
-  t.test("not found", async () => {
+  await t.step("not found", async () => {
     const resp = await fetch("http://127.0.0.1:9988/no-file");
     assertEquals(resp.status, 404);
     await resp.text();
   });
-  t.test("Capitalized", async () => {
+  await t.step("Capitalized", async () => {
     const resp = await fetch("http://127.0.0.1:9988/File.txt");
     assertEquals(resp.status, 200);
     await resp.text();
   });
-  t.test("Multi bytes", async () => {
+  await t.step("Multi bytes", async () => {
     const resp = await fetch("http://127.0.0.1:9988/日本語.txt");
     assertEquals(resp.status, 200);
     await resp.text();

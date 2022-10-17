@@ -10,11 +10,10 @@ import {
 import { createBodyParser, parserMultipartRequest } from "./body_parser.ts";
 import { exists as fsExists } from "./vendor/https/deno.land/std/fs/exists.ts";
 import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
-import { group } from "./_test_util.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 
-group("multipart", ({ test }) => {
-  test("basic", async () => {
+Deno.test("multipart", async (t) => {
+  await t.step("basic", async () => {
     const buf = new Buffer();
     const w = new MultipartWriter(buf);
     await w.writeField("deno", "land");
@@ -40,7 +39,7 @@ group("multipart", ({ test }) => {
     await m.removeAll();
     assertEquals(await fsExists(mfile.tempfile!), false);
   });
-  test("should throw if content-type is invalid", async () => {
+  await t.step("should throw if content-type is invalid", async () => {
     const body = new Buffer();
     await assertThrowsAsync(
       async () => {
@@ -79,8 +78,8 @@ group("multipart", ({ test }) => {
   });
 });
 
-group("bodyParser", ({ test }) => {
-  test("text()", async () => {
+Deno.test("bodyParser", async (t) => {
+  await t.step("text()", async () => {
     const s = "denoland";
     const r = new StringReader(s);
     const br = createBodyParser({
@@ -89,14 +88,17 @@ group("bodyParser", ({ test }) => {
     });
     assertEquals(await br.text(), s);
   });
-  test("text() should return empty string if body is empty", async () => {
-    const s = "";
-    const r = new StringReader(s);
-    const br = createBodyParser({ reader: r, contentType: "text/plain" });
-    assertEquals(await br.text(), "");
-    assertEquals(await br.text(), "");
-  });
-  test("json()", async () => {
+  await t.step(
+    "text() should return empty string if body is empty",
+    async () => {
+      const s = "";
+      const r = new StringReader(s);
+      const br = createBodyParser({ reader: r, contentType: "text/plain" });
+      assertEquals(await br.text(), "");
+      assertEquals(await br.text(), "");
+    },
+  );
+  await t.step("json()", async () => {
     const j = { deno: "land" };
     const s = JSON.stringify(j);
     const r = new StringReader(s);
@@ -104,7 +106,7 @@ group("bodyParser", ({ test }) => {
     assertEquals(await br.json(), j);
     assertEquals(await br.json(), j);
   });
-  test("json() should throw if input is invalid", async () => {
+  await t.step("json() should throw if input is invalid", async () => {
     const j = `{ deno: "land" `;
     const r = new StringReader(j);
     const br = createBodyParser({ reader: r, contentType: "application/json" });
@@ -116,7 +118,7 @@ group("bodyParser", ({ test }) => {
       "JSON",
     );
   });
-  test("arrayBuffer()", async () => {
+  await t.step("arrayBuffer()", async () => {
     const bin = new Buffer(new Uint8Array([0, 1, 2, 3]));
     const br = createBodyParser(
       { reader: bin, contentType: "application/octet-stream" },
@@ -124,7 +126,7 @@ group("bodyParser", ({ test }) => {
     assertEquals([...(await br.arrayBuffer()).values()], [0, 1, 2, 3]);
     assertEquals([...(await br.arrayBuffer()).values()], [0, 1, 2, 3]);
   });
-  test("formData(), urlencoded", async () => {
+  await t.step("formData(), urlencoded", async () => {
     const s = "deno=land&での=らんど&👉=🦕";
     const e = encodeURIComponent(s);
     const r = new StringReader(e);
@@ -136,7 +138,7 @@ group("bodyParser", ({ test }) => {
     assertEquals(f.value("での"), "らんど");
     assertEquals(f.value("👉"), "🦕");
   });
-  test("formData() should throw if invalid content type", async () => {
+  await t.step("formData() should throw if invalid content type", async () => {
     const br = createBodyParser(
       { reader: new StringReader("deno=land"), contentType: "text/plain" },
     );
@@ -148,7 +150,7 @@ group("bodyParser", ({ test }) => {
       "request is not multipart/form-data nor application/x-www-form-urlencoded",
     );
   });
-  test("multi transforming", async () => {
+  await t.step("multi transforming", async () => {
     const s = `{"deno": "land"}`;
     const encoder = new TextEncoder();
     const br = createBodyParser(

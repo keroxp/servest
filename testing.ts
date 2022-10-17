@@ -63,7 +63,7 @@ export function createRecorder(opts?: {
       br = closableBodyReader(bodyReader(cl, new BufReader(reader)));
     } else {
       br = closableBodyReader(
-        chunkedBodyReader(headers, new BufReader(reader))
+        chunkedBodyReader(headers, new BufReader(reader)),
       );
     }
   } else {

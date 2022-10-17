@@ -7,14 +7,13 @@ import {
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
 import { readResponse, writeResponse } from "./serveio.ts";
-import { group } from "./_test_util.ts";
 import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
 
-group("responder", (t) => {
+Deno.test("responder", async (t) => {
   function _createResponder(w: Deno.Writer) {
     return createResponder((resp) => writeResponse(w, resp));
   }
-  t.test("basic", async function () {
+  await t.step("basic", async function () {
     const w = new Buffer();
     const res = _createResponder(w);
     assert(!res.isResponded());
@@ -32,25 +31,28 @@ group("responder", (t) => {
     assertEquals(await resp.text(), "ok");
   });
 
-  t.test("respond() should throw if already responded", async function () {
-    const w = new Buffer();
-    const res = _createResponder(w);
-    await res.respond({
-      status: 200,
-      headers: new Headers(),
-    });
-    await assertThrowsAsync(
-      async () =>
-        res.respond({
-          status: 200,
-          headers: new Headers(),
-        }),
-      Error,
-      "responded",
-    );
-  });
+  await t.step(
+    "respond() should throw if already responded",
+    async function () {
+      const w = new Buffer();
+      const res = _createResponder(w);
+      await res.respond({
+        status: 200,
+        headers: new Headers(),
+      });
+      await assertThrowsAsync(
+        async () =>
+          res.respond({
+            status: 200,
+            headers: new Headers(),
+          }),
+        Error,
+        "responded",
+      );
+    },
+  );
 
-  t.test("sendFile() basic", async function () {
+  await t.step("sendFile() basic", async function () {
     const w = new Buffer();
     const res = _createResponder(w);
     await res.sendFile("./fixtures/sample.txt");
@@ -60,7 +62,7 @@ group("responder", (t) => {
     assertEquals(await resp.text(), "sample");
   });
 
-  t.test("sendFile() should throw if file not found", async () => {
+  await t.step("sendFile() should throw if file not found", async () => {
     const w = new Buffer();
     const res = _createResponder(w);
     await assertThrowsAsync(
@@ -69,7 +71,7 @@ group("responder", (t) => {
     );
   });
 
-  t.test("sendFile() with attachment", async () => {
+  await t.step("sendFile() with attachment", async () => {
     const w = new Buffer();
     const res = _createResponder(w);
     await res.sendFile("./fixtures/sample.txt", {
@@ -81,7 +83,7 @@ group("responder", (t) => {
     assertEquals(await resp.text(), "sample");
   });
 
-  t.test("sendFile() with attachment", async () => {
+  await t.step("sendFile() with attachment", async () => {
     const w = new Buffer();
     const res = _createResponder(w);
     await res.sendFile("./fixtures/sample.txt", {
@@ -96,7 +98,7 @@ group("responder", (t) => {
     assertEquals(await resp.text(), "sample");
   });
 
-  t.test("redirect() should set Location header", async () => {
+  await t.step("redirect() should set Location header", async () => {
     const w = new Buffer();
     const res = _createResponder(w);
     await res.redirect("/index.html");
@@ -105,7 +107,7 @@ group("responder", (t) => {
     assertEquals(headers.get("location"), "/index.html");
   });
 
-  t.test("redirect() should use partial body for response", async () => {
+  await t.step("redirect() should use partial body for response", async () => {
     const w = new Buffer();
     const res = _createResponder(w);
     await res.redirect("/", {
@@ -119,19 +121,22 @@ group("responder", (t) => {
     assertEquals(await resp.text(), "Redirecting...");
   });
 
-  t.test("resirect() should throw error if status code is not in 300~399", async () => {
-    const w = new Buffer();
-    const res = _createResponder(w);
-    await assertThrowsAsync(
-      async () => {
-        await res.redirect("/", { status: 200 });
-      },
-      Error,
-      "redirection status code",
-    );
-  });
+  await t.step(
+    "resirect() should throw error if status code is not in 300~399",
+    async () => {
+      const w = new Buffer();
+      const res = _createResponder(w);
+      await assertThrowsAsync(
+        async () => {
+          await res.redirect("/", { status: 200 });
+        },
+        Error,
+        "redirection status code",
+      );
+    },
+  );
 
-  t.test("markResponded()", async () => {
+  await t.step("markResponded()", async () => {
     const w = new Buffer();
     const res = _createResponder(w);
     res.markAsResponded(200);

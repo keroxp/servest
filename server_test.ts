@@ -14,13 +14,13 @@ import { readResponse, writeRequest } from "./serveio.ts";
 import { BufReader } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { deferred, delay } from "./vendor/https/deno.land/std/async/mod.ts";
 import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
-import { group } from "./_test_util.ts";
 
 let port = 8880;
 const handler = (req: ServerRequest) =>
   req.respond({ status: 200, body: "ok" });
-group("server", (t) => {
-  t.test("basic", async function server() {
+
+Deno.test("server", async (t) => {
+  await t.step("basic", async function server() {
     port++;
     const listener = listenAndServe({ port }, handler);
     const agent = createAgent("http://127.0.0.1:" + port);
@@ -38,7 +38,7 @@ group("server", (t) => {
       listener.close();
     }
   });
-  t.test("serverConnectionClose", async function serverConnectionClose() {
+  await t.step("serverConnectionClose", async function serverConnectionClose() {
     port++;
     const listener = listenAndServe({ port }, handler);
     const agent = createAgent(`http://127.0.0.1:${port}`);
@@ -63,7 +63,7 @@ group("server", (t) => {
       listener.close();
     }
   });
-  t.test("handleKeepAliveConn should respond exclusively", async () => {
+  await t.step("handleKeepAliveConn should respond exclusively", async () => {
     const r = new Buffer();
     const w = new Buffer();
     await writeRequest(r, {
@@ -110,5 +110,7 @@ function dummyConn(r: Deno.Reader, w: Deno.Writer): Deno.Conn {
     remoteAddr: addr,
     read: (p) => r.read(p),
     write: (p) => w.write(p),
+    readable: new ReadableStream(),
+    writable: new WritableStream(),
   };
 }

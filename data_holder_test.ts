@@ -1,10 +1,9 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
-import { group } from "./_test_util.ts";
 import { createDataHolder } from "./data_holder.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
-group("data_holder", ({ test }) => {
-  test("basic", () => {
+Deno.test("data_holder", async (t) => {
+  await t.step("basic", () => {
     const data = createDataHolder();
     assertEquals(data.get("k"), undefined);
     assertEquals(data.getString("k"), undefined);

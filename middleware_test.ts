@@ -1,10 +1,9 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { basicAuth } from "./middleware.ts";
-import { group } from "./_test_util.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { createRecorder } from "./testing.ts";
-group("middleware", ({ test }) => {
-  test("basicAuth", async () => {
+Deno.test("middleware", async (t) => {
+  await t.step("basicAuth", async () => {
     const auth = basicAuth({
       credentials: [{
         username: "deno",
@@ -32,7 +31,7 @@ group("middleware", ({ test }) => {
     await auth(req);
     assertEquals(req.isResponded(), false);
   });
-  test("basicAuth failed", async () => {
+  await t.step("basicAuth failed", async () => {
     const patterns = [
       "Basic hoge",
       `Basic ${btoa("deno:js")}`,

@@ -4,13 +4,12 @@ import {
   assertEquals,
   assertThrows,
 } from "./vendor/https/deno.land/std/testing/asserts.ts";
-import { group } from "./_test_util.ts";
 import { cookieToString, parseCookie, parseSetCookie } from "./cookie.ts";
 import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
 import { createApp } from "./app.ts";
 
-group("parseCookie", ({ test }) => {
-  test("basic", () => {
+Deno.test("parseCookie", async (t) => {
+  await t.step("basic", () => {
     const cookie = parseCookie(
       `deno=land; foo=var; ${encodeURIComponent("👉=🦕")}`,
     );
@@ -19,13 +18,13 @@ group("parseCookie", ({ test }) => {
     assertEquals(cookie.get("👉"), "🦕");
   });
 });
-group("parseSetCookie", ({ test }) => {
+Deno.test("parseSetCookie", async (t) => {
   const expires = new Date();
   const maxAge = 1000;
   const domain = "servestjs.org";
   const path = "/path";
   const sameSite = "Lax";
-  test("basic", () => {
+  await t.step("basic", () => {
     const e = `deno=land; Expires=${
       toIMF(
         expires,
@@ -43,8 +42,8 @@ group("parseSetCookie", ({ test }) => {
     assertEquals(opts.sameSite, sameSite);
   });
 });
-group("cookieToString", ({ test }) => {
-  test("basic", () => {
+Deno.test("cookieToString", async (t) => {
+  await t.step("basic", () => {
     const expires = new Date();
     const maxAge = 1000;
     const domain = "servestjs.org";
@@ -68,14 +67,14 @@ group("cookieToString", ({ test }) => {
       }; Max-Age=${maxAge}; Domain=${domain}; Path=${path}; Secure; HttpOnly; SameSite=${sameSite}`,
     );
   });
-  test("should throw if maxAge is not integer", () => {
+  await t.step("should throw if maxAge is not integer", () => {
     assertThrows(() =>
       cookieToString("deno", "land", {
         maxAge: 1.11,
       })
     );
   });
-  test("should throw if maxAge is lesser than or equals 0", () => {
+  await t.step("should throw if maxAge is lesser than or equals 0", () => {
     assertThrows(() => {
       cookieToString("deno", "land", {
         maxAge: -1,
@@ -84,14 +83,14 @@ group("cookieToString", ({ test }) => {
   });
 });
 
-group(
+Deno.test(
   {
     name: "cookie integration",
   },
-  ({ setupAll, test }) => {
+  async (t) => {
     const now = new Date();
     now.setMilliseconds(0);
-    setupAll(() => {
+    (() => {
       const router = createApp();
       router.get("/", (req) => {
         req.setCookie("deno", "land", {
@@ -119,8 +118,8 @@ group(
       });
       const lis = router.listen({ port: 9983 });
       return () => lis.close();
-    });
-    test("basic", async () => {
+    })();
+    await t.step("basic", async () => {
       const resp = await fetch("http://127.0.0.1:9983/");
       const sc = resp.headers.get("Set-Cookie");
       assert(sc != null, "should set cookie");
