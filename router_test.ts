@@ -41,7 +41,7 @@ group("router", (t) => {
     });
     router.handle("/redirect", (req) => req.redirect("/index"));
     router.handle("/respond-raw", async (req) => {
-      await writeResponse(req.bufWriter, { status: 200, body: "ok" });
+      req.event.respondWith(new Response("ok"));
       req.markAsResponded(200);
     });
   });
@@ -214,10 +214,9 @@ group("router error", (t) => {
 });
 
 group("router nested", (t) => {
-  const handler = (name: string, subpath: string) =>
-    (req: ServerRequest) => {
-      req.respond({ status: 200, body: `${name} ${subpath}` });
-    };
+  const handler = (name: string, subpath: string) => (req: ServerRequest) => {
+    req.respond({ status: 200, body: `${name} ${subpath}` });
+  };
   const PostRoute = () => {
     const route = createRouter();
     route.get("/", handler("PostRoute", "/"));

@@ -23,7 +23,7 @@ export interface ServeStaticOptions {
   /**
    * Delactives for Cache-Control header
    * No value will be sent by default.
-   *  */
+   */
   cacheControl?: CacheControlOptions;
   /** Value for Expires header */
   expires?: Date;
@@ -52,7 +52,7 @@ export interface CacheControlOptions {
 
 /**
  * Serve static files in specified directory.
- * */
+ */
 
 export function serveStatic(
   dir: string,

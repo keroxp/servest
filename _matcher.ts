@@ -4,7 +4,7 @@ import * as path from "./vendor/https/deno.land/std/path/mod.ts";
  * Find the match that appeared in the nearest position to the beginning of word.
  * If positions are same, the longest one will be picked.
  * Return -1 and null if no match found.
- * */
+ */
 export function findLongestAndNearestMatches(
   pathname: string,
   patterns: (string | RegExp)[],

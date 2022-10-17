@@ -9,13 +9,13 @@ export interface Responder extends CookieSetter {
    * Respond to request
    * Error will be thrown if request has already been responded.
    * headers is merged with responseHeaders
-   * */
+   */
   respond(response: ServerResponse): Promise<void>;
 
   /**
    * Send file as a response. Content-Type will be guessed but may not be found.
    * Default Content-Type is application/octet-stream
-   *  */
+   */
   sendFile(
     path: string,
     opts?: {

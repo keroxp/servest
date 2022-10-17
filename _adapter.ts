@@ -1,13 +1,12 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { createBodyParser } from "./body_parser.ts";
-import { readRequest, setupBodyInit, writeResponse } from "./serveio.ts";
+import { setupBodyInit } from "./serveio.ts";
 import {
   BodyReader,
   IncomingRequest,
   ServeOptions,
   ServerResponse,
 } from "./server.ts";
-import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
 import { closableBodyReader, noopReader, streamReader } from "./_readers.ts";
 
 export interface HttpApiAdapter {
@@ -16,40 +15,9 @@ export interface HttpApiAdapter {
   close(): void;
 }
 
-export function classicAdapter({ conn, bufReader, bufWriter }: {
-  conn: Deno.Conn;
-  bufReader: BufReader;
-  bufWriter: BufWriter;
-}): HttpApiAdapter {
-  return {
-    async next(opts) {
-      return readRequest(bufReader, opts);
-    },
-    async respond(resp) {
-      await writeResponse(bufWriter, resp);
-    },
-    close() {
-      conn.close();
-    },
-  };
-}
-
-export interface RequestEvent {
-  readonly request: Request;
-  respondWith(r: Response | Promise<Response>): void;
-}
-
-export interface HttpConn extends AsyncIterable<RequestEvent> {
-  readonly rid: number;
-
-  nextRequest(): Promise<RequestEvent | null>;
-  close(): void;
-}
-
 export function nativeAdapter(conn: Deno.Conn): HttpApiAdapter {
-  // @ts-ignore
-  const http: HttpConn = Deno.serveHttp(conn);
-  let ev: RequestEvent | null;
+  const http: Deno.HttpConn = Deno.serveHttp(conn);
+  let ev: Deno.RequestEvent | null;
   let closed = false;
   return {
     async next() {
@@ -91,7 +59,7 @@ export function nativeAdapter(conn: Deno.Conn): HttpApiAdapter {
   };
 }
 
-function requestFromEvent(ev: RequestEvent): IncomingRequest {
+export function requestFromEvent(ev: Deno.RequestEvent): IncomingRequest {
   const { pathname, search, searchParams } = new URL(
     ev.request.url,
     "http://dummy",
@@ -117,6 +85,7 @@ function requestFromEvent(ev: RequestEvent): IncomingRequest {
     headers,
     cookies: new Map(),
     body,
+    event: ev,
     ...bodyParser,
   };
 }

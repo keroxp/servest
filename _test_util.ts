@@ -63,7 +63,7 @@ export function group(
   function test(s: string, f: TestFunc): void;
   function test(d: Deno.TestDefinition): void;
   function test(
-    arg1: (TestFunc | string | Deno.TestDefinition),
+    arg1: TestFunc | string | Deno.TestDefinition,
     arg2?: TestFunc,
   ) {
     let fn: TestFunc;

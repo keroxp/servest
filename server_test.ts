@@ -38,63 +38,6 @@ group("server", (t) => {
       listener.close();
     }
   });
-  t.test("keepAliveTimeout", async () => {
-    port++;
-    const l = listenAndServe(
-      { port },
-      handler,
-      { keepAliveTimeout: 10 },
-    );
-    const agent = createAgent(`http://127.0.0.1:${port}`);
-    try {
-      const req = {
-        path: "/",
-        method: "POST",
-        headers: new Headers({
-          host: "deno.land",
-        }),
-        body: "hello",
-      };
-      const { status, body } = await agent.send(req);
-      await body.close();
-      assertEquals(200, status);
-      await delay(100);
-      await assertThrowsAsync(async () => {
-        await agent.send(req);
-      });
-    } finally {
-      agent.conn.close();
-      l.close();
-    }
-  });
-  t.test(
-    "serverKeepAliveTimeoutMax",
-    async function serverKeepAliveTimeoutMax() {
-      port++;
-      const listener = listenAndServe({ port }, handler);
-      const agent = createAgent(`http://127.0.0.1:${port}`);
-      try {
-        const req = {
-          path: "/",
-          method: "POST",
-          headers: new Headers({
-            host: "deno.land",
-            "Keep-Alive": "max=0, timeout=1000",
-          }),
-          body: encode("hello"),
-        };
-        const { status, body } = await agent.send(req);
-        await body.close();
-        assertEquals(200, status);
-        await assertThrowsAsync(async () => {
-          await agent.send(req);
-        });
-      } finally {
-        agent.conn.close();
-        listener.close();
-      }
-    },
-  );
   t.test("serverConnectionClose", async function serverConnectionClose() {
     port++;
     const listener = listenAndServe({ port }, handler);

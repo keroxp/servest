@@ -12,20 +12,15 @@ import {
   BodyReader,
   ClientRequest,
   HttpBody,
-  IncomingRequest,
   IncomingResponse,
-  KeepAlive,
-  ServeOptions,
   ServerResponse,
 } from "./server.ts";
 import Reader = Deno.Reader;
 import Writer = Deno.Writer;
 import { toIMF } from "./vendor/https/deno.land/std/datetime/mod.ts";
-import { parseCookie } from "./cookie.ts";
 import {
   bodyReader,
   chunkedBodyReader,
-  emptyReader,
   writeTrailers,
 } from "./vendor/https/deno.land/std/http/_io.ts";
 import { createBodyParser } from "./body_parser.ts";
@@ -33,106 +28,6 @@ import { UnexpectedEofError } from "./error.ts";
 import { STATUS_TEXT } from "./vendor/https/deno.land/std/http/http_status.ts";
 
 export const kDefaultKeepAliveTimeout = 75000; // ms
-
-export function initServeOptions(opts: ServeOptions = {}): ServeOptions {
-  let cancel = opts.cancel;
-  let keepAliveTimeout = kDefaultKeepAliveTimeout;
-  let readTimeout = kDefaultKeepAliveTimeout;
-  let useNative = false;
-  if (opts.keepAliveTimeout !== void 0) {
-    keepAliveTimeout = opts.keepAliveTimeout;
-  }
-  if (opts.readTimeout !== void 0) {
-    readTimeout = opts.readTimeout;
-  }
-  assert(keepAliveTimeout >= 0, "keepAliveTimeout must be >= 0");
-  assert(readTimeout >= 0, "readTimeout must be >= 0");
-  return { cancel, keepAliveTimeout, readTimeout, useNative };
-}
-
-/**
- * Read http request from reader.
- * 'status-line' and headers are certainly read. body and trailers may not be read.
- * Read will be aborted when opts.cancel is called or any read wait to reader is over opts.readTimeout.
- * */
-export async function readRequest(
-  r: Reader,
-  opts: ServeOptions = {},
-): Promise<IncomingRequest> {
-  opts = initServeOptions(opts);
-  const reader = BufReader.create(r);
-  const tpReader = new TextProtoReader(reader);
-  // read status line
-  // use keepAliveTimeout for reading request line
-  const resLine = await promiseInterrupter({
-    timeout: opts.keepAliveTimeout,
-    cancel: opts.cancel,
-  })(tpReader.readLine());
-  if (resLine === null) {
-    throw new UnexpectedEofError();
-  }
-  const m = resLine.match(/^([^ ]+)? ([^ ]+?) ([^ ]+?)$/);
-  assert(m != null, "invalid start line");
-  let [_, method, url, proto] = m;
-  const { searchParams: query, pathname: path } = new URL(url, "http://dummy");
-  method = method.toUpperCase();
-  // read header
-  const headers = await promiseInterrupter({
-    timeout: opts.readTimeout,
-    cancel: opts.cancel,
-  })(tpReader.readMIMEHeader());
-  if (headers === null) {
-    throw new UnexpectedEofError();
-  }
-  let keepAlive;
-  if (headers.has("keep-alive")) {
-    keepAlive = parseKeepAlive(headers);
-  }
-  // cookie
-  const cookies = parseCookie(headers.get("Cookie") || "");
-  // body
-  let body: BodyReader = closableBodyReader(emptyReader());
-  if (method === "POST" || method === "PUT") {
-    if (headers.get("transfer-encoding") === "chunked") {
-      const tr = timeoutReader(chunkedBodyReader(headers, reader), {
-        timeout: opts.readTimeout,
-        cancel: opts.cancel,
-      });
-      body = closableBodyReader(tr);
-    } else {
-      const contentLength = parseInt(headers.get("content-length")!);
-      assert(
-        contentLength >= 0,
-        `content-length is missing or invalid: ${
-          headers.get(
-            "content-length",
-          )
-        }`,
-      );
-      const tr = timeoutReader(bodyReader(contentLength, reader), {
-        timeout: opts.readTimeout,
-        cancel: opts.cancel,
-      });
-      body = closableBodyReader(tr);
-    }
-  }
-  const bodyParser = createBodyParser({
-    reader: body,
-    contentType: headers.get("content-type") ?? "",
-  });
-  return {
-    method,
-    url,
-    path,
-    query,
-    proto,
-    headers,
-    cookies,
-    body,
-    keepAlive,
-    ...bodyParser,
-  };
-}
 
 /** write http request. Host, Content-Length, Transfer-Encoding headers are set if needed */
 export async function writeRequest(
@@ -372,24 +267,4 @@ export async function writeBody(
       }
     }
   }
-}
-
-export function parseKeepAlive(h: Headers): KeepAlive {
-  let timeout: number = -1;
-  let max: number = -1;
-  const keepAlive = h.get("keep-alive");
-  if (keepAlive === null) {
-    throw new AssertionError("keep-alive must be set");
-  }
-  const kv = keepAlive.split(",").map((s) => s.trim().split("="));
-  for (const [key, value] of kv) {
-    if (key === "timeout") {
-      timeout = parseInt(value);
-    } else if (key === "max") {
-      max = parseInt(value);
-    }
-  }
-  assert(Number.isInteger(timeout), `"timeout" must be integer: ${timeout}`);
-  assert(Number.isInteger(max), `"max" max be integer: ${max}`);
-  return { timeout, max };
 }

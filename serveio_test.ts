@@ -1,8 +1,6 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 
 import {
-  parseKeepAlive,
-  readRequest,
   readResponse,
   setupBody,
   setupBodyInit,
@@ -11,131 +9,13 @@ import {
 } from "./serveio.ts";
 import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 import { StringReader } from "./vendor/https/deno.land/std/io/readers.ts";
-import { encode } from "./_util.ts";
+import { decode, encode } from "./_util.ts";
 import { Buffer } from "./vendor/https/deno.land/std/io/buffer.ts";
 import { ServerResponse } from "./server.ts";
 import { group } from "./_test_util.ts";
 import { noopReader } from "./_readers.ts";
 
 group("serveio", (t) => {
-  t.test("serveioReadRequestGet", async function serveioReadRequestGet() {
-    const f = await Deno.open("./fixtures/request_get.txt");
-    const req = await readRequest(f);
-    assertEquals(req.method, "GET");
-    assertEquals(req.url, "/index.html?deno=land&msg=gogo");
-    assertEquals(req.path, "/index.html");
-    assertEquals(req.query.get("deno"), "land");
-    assertEquals(req.query.get("msg"), "gogo");
-    assertEquals(req.proto, "HTTP/1.1");
-    assertEquals(req.headers.get("host"), "deno.land");
-    assertEquals(req.headers.get("content-type"), "text/plain");
-    const eof = await req.body.read(new Uint8Array());
-    assertEquals(eof, null);
-    f.close();
-  });
-
-  t.test(
-    "serveioReadRequestGetCapital",
-    async function serveioReadRequestGetCapital() {
-      const f = await Deno.open("./fixtures/request_get_capital.txt");
-      const req = await readRequest(f);
-      assertEquals(req.method, "GET");
-      assertEquals(req.url, "/About/Index.html?deno=land&msg=gogo");
-      assertEquals(req.query.get("deno"), "land");
-      assertEquals(req.query.get("msg"), "gogo");
-      assertEquals(req.proto, "HTTP/1.1");
-      assertEquals(req.headers.get("host"), "deno.land");
-      assertEquals(req.headers.get("content-type"), "text/plain");
-      const eof = await req.body.read(new Uint8Array());
-      assertEquals(eof, null);
-      f.close();
-    },
-  );
-
-  t.test(
-    "serveioReadRequestEncoded",
-    async function serveioReadRequestEncoded() {
-      const f = await Deno.open("./fixtures/request_get_encoded.txt");
-      const req = await readRequest(f);
-      assertEquals(req.method, "GET");
-      assertEquals(
-        req.url,
-        "/%E3%81%A7%E3%81%AE%E3%81%8F%E3%81%AB?deno=%F0%9F%A6%95",
-      );
-      assertEquals(req.proto, "HTTP/1.1");
-      assertEquals(req.path, "/%E3%81%A7%E3%81%AE%E3%81%8F%E3%81%AB");
-      assertEquals(req.query.get("deno"), "🦕");
-      assertEquals(req.headers.get("host"), "deno.land");
-      assertEquals(req.headers.get("content-type"), "text/plain");
-      const eof = await req.body.read(new Uint8Array());
-      assertEquals(eof, null);
-      f.close();
-    },
-  );
-
-  t.test("serveioReadRequestPost", async function serveioReadRequestPost() {
-    const f = await Deno.open("./fixtures/request_post.txt");
-    const req = await readRequest(f);
-    assertEquals(req.method, "POST");
-    assertEquals(req.url, "/index.html");
-    assertEquals(req.path, "/index.html");
-    assertEquals(req.proto, "HTTP/1.1");
-    assertEquals(req.headers.get("host"), "deno.land");
-    assertEquals(req.headers.get("content-type"), "text/plain");
-    assertEquals(req.headers.get("content-length"), "69");
-    assertEquals(
-      await req.text(),
-      "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
-    );
-    f.close();
-  });
-
-  t.test(
-    "serveioReadRequestPostChunked",
-    async function serveioReadRequestPostChunked() {
-      const f = await Deno.open("./fixtures/request_post_chunked.txt");
-      const req = await readRequest(f);
-      assertEquals(req.method, "POST");
-      assertEquals(req.url, "/index.html");
-      assertEquals(req.proto, "HTTP/1.1");
-      assertEquals(req.headers.get("host"), "deno.land");
-      assertEquals(req.headers.get("content-type"), "text/plain");
-      assertEquals(req.headers.get("transfer-encoding"), "chunked");
-      assertEquals(
-        await req.text(),
-        "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
-      );
-      f.close();
-    },
-  );
-
-  t.test(
-    "serveioReadRequestPostChunkedWithTrailers",
-    async function serveioReadRequestPostChunkedWithTrailers() {
-      const f = await Deno.open(
-        "./fixtures/request_post_chunked_trailers.txt",
-      );
-      const req = await readRequest(f);
-      assertEquals(req.method, "POST");
-      assertEquals(req.url, "/index.html");
-      assertEquals(req.proto, "HTTP/1.1");
-      assertEquals(req.headers.get("host"), "deno.land");
-      assertEquals(req.headers.get("content-type"), "text/plain");
-      assertEquals(req.headers.get("transfer-encoding"), "chunked");
-      assertEquals(req.headers.get("x-deno"), null);
-      assertEquals(req.headers.get("x-node"), null);
-      assertEquals(req.headers.get("trailer"), "x-deno, x-node");
-      assertEquals(
-        await req.text(),
-        "A secure JavaScript/TypeScript runtime built with V8, Rust, and Tokio",
-      );
-      assertEquals(req.headers.get("x-deno"), "land");
-      assertEquals(req.headers.get("x-node"), "js");
-      assertEquals(req.headers.get("trailer"), null);
-      f.close();
-    },
-  );
-
   t.test("serveioReadResponse", async function () {
     const f = await Deno.open("./fixtures/response.txt");
     const res = await readResponse(f);
@@ -182,11 +62,16 @@ group("serveio", (t) => {
       }),
       body: "ok",
     });
-    const req = await readRequest(buf);
-    assertEquals(req.url, "/");
-    assertEquals(req.headers.get("content-type"), "text/plain");
-    assertEquals(req.headers.get("content-length"), "2");
-    assertEquals(await req.text(), "ok");
+    const exp = [
+      "POST / HTTP/1.1",
+      "content-length: 2",
+      "content-type: text/plain",
+      "date: ",
+      "host: localhsot",
+      "",
+      "ok",
+    ].join("\r\n");
+    assertEquals(decode(buf.bytes()), exp);
   });
 
   t.test("writeRequestWithTrailer", async () => {
@@ -206,16 +91,22 @@ group("serveio", (t) => {
           node: "js",
         }),
     });
-    const req = await readRequest(buf);
-    assertEquals(req.url, "/");
-    assertEquals(req.headers.get("content-type"), "text/plain");
-    assertEquals(req.headers.has("content-length"), false);
-    assertEquals(req.headers.get("deno"), null);
-    assertEquals(req.headers.get("node"), null);
-    assertEquals(req.headers.get("trailer"), "deno,node");
-    assertEquals(await req.text(), "ok");
-    assertEquals(req.headers.get("deno"), "land");
-    assertEquals(req.headers.get("node"), "js");
+    const exp = [
+      "POST / HTTP/1.1",
+      "content-length: 2",
+      "content-type: text/plain",
+      "date: ",
+      "host: localhsot",
+      "trailer: deno,node",
+      "transfer-encoding: chunked",
+      "",
+      "ok",
+    ].join("\r\n") + [
+      "deno: land",
+      "node: js",
+      "",
+    ].join("\r\n");
+    assertEquals(decode(buf.bytes()), exp);
   });
 
   t.test("serveioWriteResponse", async function serveioWriteResponse() {
@@ -443,19 +334,7 @@ group("serveio/setupBodyInit", ({ test }) => {
   test("Reader", () => {
     const reader = noopReader();
     const [body, ct] = setupBodyInit(reader);
-    assertEquals((body instanceof ReadableStream), true);
+    assertEquals(body instanceof ReadableStream, true);
     assertEquals(ct, "application/octet-stream");
-  });
-});
-
-group("serveio/keep-alive", (t) => {
-  t.test("serveioParseKeepAlive", function () {
-    const ka = parseKeepAlive(
-      new Headers({
-        "keep-alive": "timeout=5, max=100",
-      }),
-    );
-    assertEquals(ka.timeout, 5);
-    assertEquals(ka.max, 100);
   });
 });

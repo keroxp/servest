@@ -11,7 +11,7 @@ import { DFC } from "./jsx.ts";
  * @params onImport import delegation, commonly pass f => import(f)
  *   This is because deno's dynamic import resolution problem.
  * @params parentComponent Custom wrapper component
- * */
+ */
 export function serveJsx(
   dir: string,
   onImport: (file: string) => Promise<any>,

@@ -1,12 +1,10 @@
 // Copyright 2019-2020 Yusuke Sakurai. All rights reserved. MIT license.
 import { BufReader, BufWriter } from "./vendor/https/deno.land/std/io/bufio.ts";
-import { deferred } from "./vendor/https/deno.land/std/async/mod.ts";
-import { initServeOptions } from "./serveio.ts";
 import { createResponder, Responder } from "./responder.ts";
-import { promiseInterrupter, promiseWaitQueue } from "./_util.ts";
+import { promiseWaitQueue } from "./_util.ts";
 import { createDataHolder, DataHolder } from "./data_holder.ts";
 import { BodyParser } from "./body_parser.ts";
-import { classicAdapter, HttpApiAdapter, nativeAdapter } from "./_adapter.ts";
+import { HttpApiAdapter, nativeAdapter } from "./_adapter.ts";
 
 export type HttpBody =
   | string
@@ -58,20 +56,13 @@ export interface IncomingRequest extends BodyParser {
   body: BodyReader;
   /** Cookie */
   cookies: Map<string, string>;
-  /** keep-alive info */
-  keepAlive?: KeepAlive;
-}
-
-export interface KeepAlive {
-  timeout: number;
-  max: number;
+  /** original event */
+  event: Deno.RequestEvent;
 }
 
 /** Outgoing http response for building request to server */
 export interface ServerRequest extends IncomingRequest, DataHolder, Responder {
   conn: Deno.Conn;
-  bufWriter: BufWriter;
-  bufReader: BufReader;
   /** Match result of path patterns */
   match: RegExpMatchArray;
 }
@@ -102,14 +93,8 @@ export interface ClientResponse extends IncomingResponse {
 
 /** serve options */
 export interface ServeOptions {
-  /** canceller promise for async iteration. use defer() */
-  cancel?: Promise<void>;
-  /** read timeout for keep-alive connection. ms. default=75000(ms) */
-  keepAliveTimeout?: number;
-  /** read timeout for all read request. ms. default=75000(ms) */
-  readTimeout?: number;
-  /** use native http binding api (needs --unstable) */
-  useNative?: boolean;
+  /** abort signal for async iteration.  */
+  signal?: AbortSignal;
 }
 
 export type ServeListener = Deno.Closer;
@@ -138,7 +123,6 @@ export function listenAndServe(
   handler: ServeHandler,
   opts: ServeOptions = {},
 ): ServeListener {
-  opts = initServeOptions(opts);
   const listener = createListener(listenOptions);
   return listenInternal(listener, handler, opts);
 }
@@ -148,27 +132,20 @@ function listenInternal(
   handler: ServeHandler,
   opts: ServeOptions = {},
 ): ServeListener {
-  let cancel: Promise<void>;
-  let d = deferred<void>();
-  if (opts.cancel) {
-    cancel = Promise.race([opts.cancel, d]);
-  } else {
-    cancel = d;
-  }
-  const throwIfCancelled = promiseInterrupter({
-    cancel,
-  });
   let closed = false;
   const close = () => {
     if (!closed) {
-      d.resolve();
       listener.close();
       closed = true;
     }
   };
+  if (opts.signal) {
+    opts.signal.addEventListener("abort", close);
+  }
   const acceptRoutine = () => {
     if (closed) return;
-    throwIfCancelled(listener.accept())
+    listener
+      .accept()
       .then((conn) => {
         handleKeepAliveConn(conn, handler, opts);
         acceptRoutine();
@@ -185,24 +162,15 @@ export function handleKeepAliveConn(
   handler: ServeHandler,
   opts: ServeOptions = {},
 ): void {
-  const bufReader = new BufReader(conn);
-  const bufWriter = new BufWriter(conn);
-  const originalOpts = opts;
-  const adapter = opts.useNative
-    ? nativeAdapter(conn)
-    : classicAdapter({ conn, bufReader, bufWriter });
+  const adapter = nativeAdapter(conn);
   const q = promiseWaitQueue<ServerResponse, void>(adapter.respond);
   // ignore keepAliveTimeout and use readTimeout for the first time
-  scheduleReadRequest({
-    keepAliveTimeout: opts.readTimeout,
-    readTimeout: opts.readTimeout,
-    cancel: opts.cancel,
-  });
+  scheduleReadRequest();
 
-  async function scheduleReadRequest(opts: ServeOptions) {
+  async function scheduleReadRequest() {
     processRequest(adapter, opts)
-      .then((v) => {
-        if (v) scheduleReadRequest(v);
+      .then(() => {
+        scheduleReadRequest();
       })
       .catch(() => {
         adapter.close();
@@ -212,14 +180,14 @@ export function handleKeepAliveConn(
   async function processRequest(
     adapter: HttpApiAdapter,
     opts: ServeOptions,
-  ): Promise<ServeOptions | undefined> {
+  ): Promise<void> {
     const baseReq = await adapter.next(opts);
     if (!baseReq) {
       throw new Error("connection closed");
     }
     let responded: Promise<void> = Promise.resolve();
     const responder = createResponder(async (resp) => {
-      return responded = q.enqueue(resp);
+      return (responded = q.enqueue(resp));
     });
     const match = baseReq.url.match(/^\//);
     if (!match) {
@@ -227,8 +195,6 @@ export function handleKeepAliveConn(
     }
     const dataHolder = createDataHolder();
     const req: ServerRequest = {
-      bufWriter,
-      bufReader,
       conn,
       ...baseReq,
       ...responder,
@@ -238,27 +204,5 @@ export function handleKeepAliveConn(
     await handler(req);
     await responded;
     await req.body.close();
-    if (req.respondedStatus() === 101) {
-      // If upgraded, stop processing
-      return;
-    }
-    let keepAliveTimeout = originalOpts.keepAliveTimeout;
-    if (req.keepAlive && req.keepAlive.max <= 0) {
-      throw new Error("keep-alive ended");
-    }
-    if (req.headers.get("connection") === "close") {
-      throw new Error("connection closed header");
-    }
-    if (req.keepAlive) {
-      keepAliveTimeout = Math.min(
-        keepAliveTimeout!,
-        req.keepAlive.timeout * 1000,
-      );
-    }
-    return {
-      keepAliveTimeout,
-      readTimeout: opts.readTimeout,
-      cancel: opts.cancel,
-    };
   }
 }

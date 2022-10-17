@@ -2,11 +2,6 @@
 import { findLongestAndNearestMatches } from "./_matcher.ts";
 import { ServeHandler, ServerRequest } from "./server.ts";
 import { RoutingError } from "./error.ts";
-import {
-  acceptable,
-  acceptWebSocket,
-  WebSocket,
-} from "./vendor/https/deno.land/std/ws/mod.ts";
 import { assert } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
 /** Router handler */
@@ -45,7 +40,7 @@ export interface Router extends Route {
   /**
    * Set global middleware.
    * It will be called for each request on any routes.
-   * */
+   */
   use(...handlers: ServeHandler[]): void;
 
   /**
@@ -54,7 +49,7 @@ export interface Router extends Route {
    * Examples:
    *   router.handle("/", ...)   => Called if request path exactly matches "/".
    *   router.handle(/^\//, ...) => Called if request path matches given regexp.
-   * */
+   */
   handle(pattern: string | RegExp, ...handlers: RouteHandler[]): void;
 
   /**
@@ -72,7 +67,7 @@ export interface Router extends Route {
 
   /**
    * Register GET/HEAD route. This is shortcut for handle();
-   * */
+   */
   get(pattern: string | RegExp, ...handlers: RouteHandler[]): void;
 
   /** Register POST route. This is shortcut for handle() */
@@ -233,10 +228,10 @@ export function createRouter(): Router {
         if (await chainRoutes(parentMatch + match, req, handlers)) {
           return;
         }
-        if (wsHandler && acceptable(req)) {
-          const sock = await acceptWebSocket(req);
-          req.markAsResponded(101);
-          wsHandler(sock, req);
+        if (wsHandler) {
+          const { socket, response } = Deno.upgradeWebSocket(req.event.request);
+          req.markAsResponded(response.status);
+          wsHandler(socket, req);
         }
       }
       if (!req.isResponded()) {

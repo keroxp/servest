@@ -78,9 +78,7 @@ const Index: DFC<{
           <h2>Ready for WebSocket</h2>
           <p>
             Make your real-time application with{" "}
-            <a
-              href="/handle-ws"
-            >
+            <a href="/handle-ws">
               several lines of code
             </a>.
           </p>

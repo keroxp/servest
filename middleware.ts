@@ -8,12 +8,12 @@ import { ServeHandler } from "./server.ts";
 export const contentTypeFilter = (
   ...types: (string | RegExp)[]
 ): ServeHandler =>
-  async (req) => {
-    if (types.some((v) => req.headers.get("content-type")?.match(v))) {
-      return;
-    }
-    throw new RoutingError(400);
-  };
+async (req) => {
+  if (types.some((v) => req.headers.get("content-type")?.match(v))) {
+    return;
+  }
+  throw new RoutingError(400);
+};
 
 function timeSafeCompare(secret: string, other: string): boolean {
   const a = new Sha1();

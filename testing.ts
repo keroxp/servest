@@ -50,6 +50,8 @@ export function createRecorder(opts?: {
     async write(p: Uint8Array): Promise<number> {
       return 0;
     },
+    readable: new ReadableStream(),
+    writable: new WritableStream(),
   };
   const buf = new Buffer();
   const bufReader = new BufReader(buf);
@@ -61,7 +63,7 @@ export function createRecorder(opts?: {
       br = closableBodyReader(bodyReader(cl, new BufReader(reader)));
     } else {
       br = closableBodyReader(
-        chunkedBodyReader(headers, new BufReader(reader)),
+        chunkedBodyReader(headers, new BufReader(reader))
       );
     }
   } else {
@@ -96,11 +98,12 @@ export function createRecorder(opts?: {
     proto,
     body: br,
     response,
-    bufWriter,
-    bufReader,
     conn,
     cookies,
     match,
+    get event(): Deno.RequestEvent {
+      throw new Error("");
+    },
     ...responder,
     ...bodyParser,
     ...dataHolder,

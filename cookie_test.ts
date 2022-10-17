@@ -84,63 +84,66 @@ group("cookieToString", ({ test }) => {
   });
 });
 
-group({
-  name: "cookie integration",
-}, ({ setupAll, test }) => {
-  const now = new Date();
-  now.setMilliseconds(0);
-  setupAll(() => {
-    const router = createApp();
-    router.get("/", (req) => {
-      req.setCookie("deno", "land", {
+group(
+  {
+    name: "cookie integration",
+  },
+  ({ setupAll, test }) => {
+    const now = new Date();
+    now.setMilliseconds(0);
+    setupAll(() => {
+      const router = createApp();
+      router.get("/", (req) => {
+        req.setCookie("deno", "land", {
+          path: "/",
+          maxAge: 1000,
+          expires: now,
+        });
+        return req.respond({
+          status: 200,
+          body: "ok",
+          headers: new Headers({
+            Connection: "close",
+          }),
+        });
+      });
+      router.get("/deno", (req) => {
+        const deno = req.cookies.get("deno");
+        return req.respond({
+          status: 200,
+          body: deno || "",
+          headers: new Headers({
+            Connection: "close",
+          }),
+        });
+      });
+      const lis = router.listen({ port: 9983 });
+      return () => lis.close();
+    });
+    test("basic", async () => {
+      const resp = await fetch("http://127.0.0.1:9983/");
+      const sc = resp.headers.get("Set-Cookie");
+      assert(sc != null, "should set cookie");
+      const cookie = parseSetCookie(sc);
+      await resp.text();
+      assertEquals(cookie, {
+        name: "deno",
+        value: "land",
         path: "/",
         maxAge: 1000,
         expires: now,
+        sameSite: undefined,
+        domain: undefined,
+        secure: undefined,
+        httpOnly: undefined,
       });
-      return req.respond({
-        status: 200,
-        body: "ok",
-        headers: new Headers({
-          "Connection": "close",
-        }),
+      const resp2 = await fetch("http://127.0.0.1:9983/deno", {
+        headers: {
+          Cookie: "deno=land",
+        },
       });
+      const body = await resp2.text();
+      assertEquals(body, "land");
     });
-    router.get("/deno", (req) => {
-      const deno = req.cookies.get("deno");
-      return req.respond({
-        status: 200,
-        body: deno || "",
-        headers: new Headers({
-          "Connection": "close",
-        }),
-      });
-    });
-    const lis = router.listen({ port: 9983 });
-    return () => lis.close();
-  });
-  test("basic", async () => {
-    const resp = await fetch("http://127.0.0.1:9983/");
-    const sc = resp.headers.get("Set-Cookie");
-    assert(sc != null, "should set cookie");
-    const cookie = parseSetCookie(sc);
-    await resp.text();
-    assertEquals(cookie, {
-      name: "deno",
-      value: "land",
-      path: "/",
-      maxAge: 1000,
-      expires: now,
-      sameSite: undefined,
-      domain: undefined,
-      secure: undefined,
-      httpOnly: undefined,
-    });
-    const resp2 = await fetch("http://127.0.0.1:9983/deno", {
-      headers: {
-        Cookie: "deno=land",
-      },
-    });
-    const body = await resp2.text();
-    assertEquals(body, "land");
-  });
-});
+  },
+);
