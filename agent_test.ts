@@ -10,13 +10,13 @@ import { ServeListener } from "./server.ts";
 
 function setupRouter(port: number): ServeListener {
   const app = createApp();
-  app.route("/get", async (req) => {
+  app.route("/get", (req) => {
     return req.respond({
       status: 200,
       body: encode("ok"),
     });
   });
-  app.route("/post", async (req) => {
+  app.route("/post", (req) => {
     return req.respond({
       status: 200,
       headers: req.headers,
@@ -28,10 +28,9 @@ function setupRouter(port: number): ServeListener {
 
 Deno.test("agent", async (t) => {
   let port = 8700;
-  (() => {
-    const listener = setupRouter(port);
-    return () => listener.close();
-  })();
+  const listener = setupRouter(port);
+  const tearDown = () => listener.close();
+
   await t.step("basic", async () => {
     const agent = createAgent(`http://127.0.0.1:${port}`);
     try {
@@ -100,9 +99,8 @@ Deno.test("agent", async (t) => {
       agent.conn.close();
     }
   });
-  await t.step("agent invalid scheme", async () => {
-    assertThrows(() => {
-      createAgent("ftp://127.0.0.1");
-    });
+  await t.step("agent invalid scheme", () => {
+    assertThrows(() => createAgent("ftp://127.0.0.1"));
   });
+  tearDown();
 });

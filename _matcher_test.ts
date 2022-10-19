@@ -4,7 +4,7 @@ import { assertEquals } from "./vendor/https/deno.land/std/testing/asserts.ts";
 
 Deno.test("matcher", async (t) => {
   type Pat = [string, (string | RegExp)[], number[]][];
-  ([
+  const cases: Pat = [
     ["/foo", ["/foo", "/bar", "/f"], [0]],
     ["/foo", ["/foo", "/foo/bar"], [0]],
     ["/foo/bar", ["/", "/foo", "/hoo", "/hoo/foo/bar", "/foo/bar"], [4]],
@@ -14,15 +14,16 @@ Deno.test("matcher", async (t) => {
     ["/foo", ["/", "/a/foo", "/foo"], [2]],
     ["/foo", [/\/foo/, /\/bar\/foo/], [0]],
     ["/foo", [/\/a\/foo/, /\/foo/], [1]],
-  ] as Pat).forEach(([path, pat, idx]) => {
-    t.step("findLongestAndNearestMatch:" + path, () => {
+  ];
+  for (const [path, pat, idx] of cases) {
+    await t.step("findLongestAndNearestMatch:" + path, () => {
       const matches = findLongestAndNearestMatches(path, pat);
       assertEquals(matches.length, idx.length);
       for (let i = 0; i < idx.length; i++) {
         assertEquals(matches[i][0], idx[i]);
       }
     });
-  });
+  }
 
   await t.step("resolveIndexPath", async () => {
     for (

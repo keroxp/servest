@@ -22,7 +22,8 @@ Deno.test("serveStatic", async (t) => {
     ["/sample.vue", "application/vue"],
     ["/sample.xx", "application/octet-stream"],
   ];
-  await Promise.all(data.map(async ([path, type]) => {
+
+  for (const [path, type] of data) {
     await t.step(path, async () => {
       const rec = createRecorder({ url: path });
       await func(rec);
@@ -31,7 +32,7 @@ Deno.test("serveStatic", async (t) => {
       const contentType = resp.headers.get("content-type");
       assertMatch(contentType!, new RegExp(type));
     });
-  }));
+  }
 
   await t.step("cace-control", async () => {
     const f = serveStatic("./fixtures/public", {
@@ -112,15 +113,14 @@ Deno.test("serveStatic/cacheControl", async (t) => {
 });
 
 Deno.test("serveStatic integration", async (t) => {
-  (() => {
-    const router = createApp();
+  const router = createApp();
     router.use((req) => {
       req.responseHeaders.set("Connection", "close");
     });
     router.use(serveStatic("./fixtures/public"));
-    const l = router.listen({ port: 9988 });
-    return () => l.close();
-  })();
+  const l = router.listen({ port: 9988 });
+  const tearDown = () => l.close()
+
   await t.step("basic", async () => {
     const resp = await fetch("http://127.0.0.1:9988/index.html");
     assertEquals(resp.status, 200);
@@ -141,4 +141,5 @@ Deno.test("serveStatic integration", async (t) => {
     assertEquals(resp.status, 200);
     await resp.text();
   });
+  tearDown()
 });

@@ -17,10 +17,9 @@ Deno.test({
     throw new Error("throw");
   });
   const get = makeGet(app);
-  (() => {
-    const l = app.listen({ port: 8899 });
-    return () => l.close();
-  })();
+  const l = app.listen({ port: 8899 });
+  const tearDown = () => l.close();
+  
   await t.step("should respond if req.respond wasn't called", async () => {
     const res = await get("/no-response");
     assertEquals(res.status, 404);
@@ -35,6 +34,7 @@ Deno.test({
     assertEquals(res.status, 500);
     assertMatch(text, /Error: throw/);
   });
+  tearDown()
 });
 Deno.test({
   name: "app/ws",

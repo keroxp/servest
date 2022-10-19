@@ -17,9 +17,9 @@ export enum Loglevel {
 export interface Logger {
   (level: Loglevel, msg: string, ...args: any[]): void;
 }
-let logLevel = Loglevel.INFO;
+let globalLogLevel = Loglevel.INFO;
 export function setLevel(level: Loglevel) {
-  logLevel = level;
+  globalLogLevel = level;
 }
 const kPrefixMap = new Map<Loglevel, string>([
   [Loglevel.INFO, "I"],
@@ -44,18 +44,22 @@ export interface NamedLogger {
   error(msg: string, ...args: any[]): void;
 }
 
+const defaultHandler: Logger = (level, msg, ...args) => console.log(msg, ...args)
 export function createLogger(
-  handler: Logger = (level, msg, ...args) => console.log(msg, ...args),
   {
+    handler = defaultHandler,
     prefixMap = kPrefixMap,
     prefixColorMap = kColorFuncMap,
     prefixFmt = "%s[%s] %s",
     noColor = false,
+    logLevel = globalLogLevel
   }: {
+    handler?: Logger
     prefixFmt?: string;
     prefixMap?: Map<Loglevel, string>;
     prefixColorMap?: Map<Loglevel, ColorFunc>;
-    noColor?: boolean;
+      noColor?: boolean;
+    logLevel?: Loglevel
   } = {},
 ): Logger {
   return function log(level: Loglevel, msg: string, ...args: any[]) {

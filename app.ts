@@ -27,10 +27,9 @@ export interface AppOptions {
 
 /** Create App */
 export function createApp(
-  opts: AppOptions = {
-    logger: createLogger(),
-  },
+  opts: AppOptions = {}
 ): App {
+  const logger = opts.logger ?? createLogger({ logLevel: opts.logLevel });
   const { info, error } = namedLogger("servest:router", opts.logger);
   const router = createRouter();
   const finalErrorHandler = async (e: any, req: ServerRequest) => {

@@ -41,7 +41,7 @@ Deno.test("responder", async (t) => {
         headers: new Headers(),
       });
       await assertThrowsAsync(
-        async () =>
+         () =>
           res.respond({
             status: 200,
             headers: new Headers(),
