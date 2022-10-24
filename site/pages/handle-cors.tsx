@@ -17,6 +17,7 @@ const HandleCors: DFC<{
           <DocLink file="middleware/cors.ts">cors</DocLink>
           is built-in middleware for CORS (cross-origin resource sharing).
         </p>
+        <p>Note: The same version for Servest and CORS middleware must be use</p>
         <Code
           href={"/example/handle_cors.ts"}
           code={codes["handle_cors.ts"]}
